@@ -16,6 +16,12 @@ type IconSymbolName = keyof typeof MAPPING;
 const MAPPING = {
   'house.fill': 'home',
   'paperplane.fill': 'send',
+  'hands.sparkles.fill': 'volunteer-activism',
+  'hands.press.fill': 'self-improvement',
+  'alarm.fill': 'alarm',
+  'person.crop.circle.fill': 'account-circle',
+  'hands.sparkles': 'volunteer-activism',
+  'plus': 'add',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as IconMapping;
