@@ -62,14 +62,11 @@ export default function CreateWorkModal() {
       <Surface
         style={[styles.container, { backgroundColor: theme.colors.background }]}
       >
-        <Text variant="headlineSmall" style={styles.title}>
-          Add your testimony
-        </Text>
         <Text
           variant="bodyMedium"
           style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
         >
-          Capture a work that God has done.
+          Capture a work that God has done in your life.
         </Text>
 
         <ScrollView
@@ -77,7 +74,7 @@ export default function CreateWorkModal() {
           keyboardShouldPersistTaps="handled"
         >
           <TextInput
-            label="Details"
+            label="Your testimony"
             mode="outlined"
             value={details}
             onChangeText={setDetails}
@@ -102,14 +99,12 @@ export default function CreateWorkModal() {
             </View>
             <Switch value={isPublic} onValueChange={setIsPublic} />
           </View>
+          <Button mode="contained" onPress={handleSubmit} disabled={!details}>
+            Create
+          </Button>
         </ScrollView>
 
-        <View style={styles.actions}>
-          <Button onPress={() => router.back()}>Cancel</Button>
-          <Button mode="contained" onPress={handleSubmit}>
-            Add work
-          </Button>
-        </View>
+        <View style={styles.actions}></View>
       </Surface>
     </KeyboardAvoidingView>
   );

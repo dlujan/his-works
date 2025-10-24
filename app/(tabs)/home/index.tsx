@@ -1,278 +1,215 @@
-import { useRouter } from "expo-router";
+import type { AppTheme } from "@/constants/paper-theme";
+import { Testimony } from "@/lib/types";
+import { formatTimeSince } from "@/utils/time";
 import React, { useCallback } from "react";
-import { FlatList, Share, StyleSheet, View } from "react-native";
+import { FlatList, Image, Share, StyleSheet, View } from "react-native";
 import {
   Appbar,
-  Button,
-  Card,
   IconButton,
   Surface,
   Text,
   useTheme,
 } from "react-native-paper";
 
-import type { AppTheme } from "@/constants/paper-theme";
-import { formatTimeSince } from "@/utils/time";
-
-type Testimony = {
-  id: string;
-  title: string;
-  author: string;
-  excerpt: string;
-  createdAt: string;
-  likes: number;
-};
-
 const now = Date.now();
 
 const testimonies: Testimony[] = [
   {
-    id: "t1",
-    title: "Breakthrough in the city",
-    author: "Elena Martinez",
-    excerpt:
-      "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
-    createdAt: new Date(now - 1000 * 60 * 25).toISOString(), // 25 minutes ago
+    uuid: "t1",
+    user: {
+      full_name: "Elena Martinez",
+      avatar_url: "https://i.pravatar.cc/100?img=1",
+    },
+
+    text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
+    created_at: new Date(now - 1000 * 60 * 25).toISOString(),
     likes: 24,
   },
   {
-    id: "t2",
-    title: "Provision for the pantry",
-    author: "Marcus Lee",
-    excerpt:
-      "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
-    createdAt: new Date(now - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
+    uuid: "t2",
+    user: {
+      full_name: "Marcus Lee",
+      avatar_url: "https://i.pravatar.cc/100?img=2",
+    },
+    text: "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
+    created_at: new Date(now - 1000 * 60 * 60 * 3).toISOString(),
     likes: 18,
   },
   {
-    id: "t3",
-    title: "Youth night transformation",
-    author: "Sarah Johnson",
-    excerpt:
-      "Students shared testimonies of freedom, and three new families asked how they could get involved.",
-    createdAt: new Date(now - 1000 * 60 * 60 * 6).toISOString(), // 6 hours ago
+    uuid: "t3",
+    user: {
+      full_name: "Sarah Johnson",
+      avatar_url: "https://i.pravatar.cc/100?img=3",
+    },
+    text: "Students shared testimonies of freedom, and three new families asked how they could get involved.",
+    created_at: new Date(now - 1000 * 60 * 60 * 6).toISOString(),
     likes: 32,
   },
   {
-    id: "t4",
-    title: "Answered prayer for healing",
-    author: "David Kim",
-    excerpt:
-      "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
-    createdAt: new Date(now - 1000 * 60 * 60 * 12).toISOString(), // 12 hours ago
+    uuid: "t4",
+    user: {
+      full_name: "David Kim",
+      avatar_url: "https://i.pravatar.cc/100?img=4",
+    },
+    text: "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
+    created_at: new Date(now - 1000 * 60 * 60 * 12).toISOString(),
     likes: 45,
   },
 ];
 
 export default function HomeScreen() {
-  const router = useRouter();
   const theme = useTheme<AppTheme>();
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
       await Share.share({
-        title: item.title,
-        message: `${item.title} — ${item.excerpt}`,
+        title: "Shared testimony",
+        message: `${item.user.full_name} — ${item.text}`,
       });
     } catch (error) {
       console.warn("Unable to share testimony", error);
     }
   }, []);
 
-  // const handleOpen = useCallback(
-  //   (item: Testimony) => {
-  //     router.push({
-  //       pathname: "/(tabs)/home/[id]",
-  //       params: { id: item.id },
-  //     });
-  //   },
-  //   [router]
-  // );
-
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => (
-      <Card
-        mode="elevated"
-        style={styles.card}
-        // onPress={() => handleOpen(item)}
-        accessible
-        accessibilityLabel={`${item.title} by ${item.author}`}
-      >
-        <Card.Content style={styles.cardContent}>
+      <View style={styles.postContainer}>
+        <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
+
+        <View style={styles.postBody}>
           <View style={styles.headerRow}>
             <Text
-              variant="titleMedium"
-              style={{ color: theme.colors.onSurface }}
+              variant="titleSmall"
+              style={{
+                color: theme.colors.onSurface,
+                fontWeight: "600",
+              }}
             >
-              {item.title}
+              {item.user.full_name}
             </Text>
             <Text
-              variant="labelMedium"
-              style={{ color: theme.colors.onSurfaceVariant }}
+              variant="bodySmall"
+              style={{
+                color: theme.colors.onSurfaceVariant,
+                marginLeft: 6,
+              }}
             >
-              {formatTimeSince(item.createdAt)}
+              • {formatTimeSince(item.created_at)}
             </Text>
           </View>
-          <Text
-            variant="bodyMedium"
-            style={[styles.author, { color: theme.colors.inkMuted }]}
-          >
-            {item.author}
-          </Text>
+
           <Text
             variant="bodyMedium"
             style={[styles.excerpt, { color: theme.colors.onSurface }]}
-            numberOfLines={3}
           >
-            {item.excerpt}
+            {item.text}
           </Text>
-        </Card.Content>
 
-        <Card.Actions style={styles.actions}>
-          <View style={styles.actionsLeft}>
-            <View style={styles.likesChip}>
+          <View style={styles.actionsRow}>
+            <View style={styles.likesRow}>
               <IconButton
                 icon="heart-outline"
-                size={20}
+                size={18}
                 iconColor={theme.colors.primary}
-                disabled
-                accessibilityLabel="Like testimony"
               />
               <Text
-                variant="labelLarge"
+                variant="labelSmall"
                 style={{ color: theme.colors.primary }}
               >
                 {item.likes}
               </Text>
             </View>
+            <IconButton
+              icon="share-variant"
+              size={18}
+              onPress={() => handleShare(item)}
+              iconColor={theme.colors.onSurfaceVariant}
+            />
           </View>
-
-          <Button
-            mode="text"
-            icon="share-variant"
-            onPress={() => handleShare(item)}
-            labelStyle={styles.shareLabel}
-          >
-            Share
-          </Button>
-        </Card.Actions>
-      </Card>
+        </View>
+      </View>
     ),
-    [
-      // handleOpen,
-      handleShare,
-      theme.colors.onSurface,
-      theme.colors.onSurfaceVariant,
-      theme.colors.inkMuted,
-      theme.colors.primary,
-    ]
+    [handleShare, theme.colors]
   );
 
   return (
-    <Surface
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.colors.background,
-        },
-      ]}
-    >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content
-          title="Community Feed"
-          subtitle="Stories that build faith"
-        />
-      </Appbar.Header>
+    <View style={{ flex: 1 }}>
+      {/* 🌄 Subtle gradient background */}
+      {/* <LinearGradient
+        colors={["#FFFDF8", "#F8F9FA"]}
+        style={StyleSheet.absoluteFill}
+      /> */}
 
-      <FlatList
-        data={testimonies}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        renderItem={renderItem}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <Text
-              variant="headlineSmall"
-              style={{ color: theme.colors.onSurface }}
-            >
-              Community testimonies
-            </Text>
-            <Text
-              variant="bodyMedium"
-              style={{ color: theme.colors.onSurfaceVariant }}
-            >
-              Stories of God&apos;s faithfulness to inspire and encourage.
-            </Text>
-          </View>
-        }
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
-    </Surface>
+      <Surface style={{ flex: 1, backgroundColor: "transparent" }}>
+        <Appbar.Header
+          mode="center-aligned"
+          style={[
+            styles.headerBar,
+            {
+              backgroundColor: theme.colors.surface,
+              borderBottomColor: theme.colors.outlineVariant,
+            },
+          ]}
+        >
+          <Appbar.Content title="Community Feed" />
+        </Appbar.Header>
+
+        <FlatList
+          data={testimonies}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+      </Surface>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  headerBar: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    elevation: 0,
-  },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
-    paddingTop: 16,
+    paddingVertical: 16,
   },
-  header: {
-    marginBottom: 12,
-    gap: 4,
+  headerBar: {
+    elevation: 0,
   },
-  separator: {
-    height: 16,
+  postContainer: {
+    flexDirection: "row",
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.2)",
   },
-  card: {
-    borderRadius: 20,
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    marginTop: 4,
   },
-  cardContent: {
-    gap: 8,
+  postBody: {
+    flex: 1,
+    paddingBottom: 8,
   },
   headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-  },
-  author: {
-    fontWeight: "600",
+    marginBottom: 4,
   },
   excerpt: {
-    lineHeight: 20,
+    lineHeight: 21,
   },
-  actions: {
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 8,
-  },
-  actionsLeft: {
+  actionsRow: {
     flexDirection: "row",
+    marginTop: 6,
     alignItems: "center",
-    gap: 4,
+    justifyContent: "space-between",
   },
-  likesChip: {
+  likesRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
   },
-  shareLabel: {
-    fontWeight: "600",
+  separator: {
+    height: 20,
   },
 });

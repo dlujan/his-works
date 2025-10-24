@@ -1,8 +1,8 @@
 import { ThemeProvider } from "@react-navigation/native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState, type PropsWithChildren } from "react";
-import { View } from "react-native";
+import { Button, View } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 
@@ -25,6 +25,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const queryClient = new QueryClient();
+  const router = useRouter();
 
   const isDark = colorScheme === "dark";
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
@@ -40,7 +41,17 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="modal"
-                  options={{ presentation: "modal", title: "" }}
+                  options={{
+                    presentation: "modal",
+                    title: "New testimony",
+                    headerLeft: () => (
+                      <Button
+                        title="Cancel"
+                        onPress={() => router.back()}
+                        color="#000" // customize this
+                      />
+                    ),
+                  }}
                 />
               </Stack>
             </AuthGate>

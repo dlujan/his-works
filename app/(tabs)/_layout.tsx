@@ -1,19 +1,19 @@
 import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
-import { PlatformPressable } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { Tabs, useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { palette } from "@/constants/paper-theme";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const accentColor = Colors[colorScheme ?? "light"].tint;
+  const createBtnColor = palette.surfaceSoft;
 
   return (
     <Tabs
@@ -21,23 +21,40 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarStyle: {
+          height: 75,
+          paddingBottom: 0,
+          paddingTop: 5,
+          paddingHorizontal: 16,
+        },
+        tabBarLabelStyle: {
+          display: "none",
+        },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              size={28}
+              name={focused ? "house.fill" : "house"}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="works"
+        name="testimonies"
         options={{
-          title: "Works",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="hands.sparkles.fill" color={color} />
+          title: "Testimonies",
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              size={28}
+              name={focused ? "book.fill" : "book"}
+              color={color}
+            />
           ),
         }}
       />
@@ -54,7 +71,7 @@ export default function TabLayout() {
                 }
                 router.push("/modal");
               }}
-              accentColor={accentColor}
+              color={createBtnColor}
             />
           ),
           listeners: {
@@ -68,8 +85,12 @@ export default function TabLayout() {
         name="activity"
         options={{
           title: "Activity",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bell.badge.fill" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <IconSymbol
+              size={28}
+              name={focused ? "bell.fill" : "bell"}
+              color={color}
+            />
           ),
         }}
       />
@@ -77,10 +98,10 @@ export default function TabLayout() {
         name="account"
         options={{
           title: "Account",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color, focused }) => (
             <IconSymbol
               size={28}
-              name="person.crop.circle.fill"
+              name={focused ? "person.fill" : "person"}
               color={color}
             />
           ),
@@ -102,51 +123,40 @@ export default function TabLayout() {
 }
 
 type CreateWorkTabButtonProps = BottomTabBarButtonProps & {
-  accentColor: string;
+  color: string;
 };
 
 function CreateWorkTabButton({
-  accentColor,
-  style,
+  color,
   onPress,
   ...rest
 }: CreateWorkTabButtonProps) {
   return (
-    <PlatformPressable
-      {...rest}
-      onPress={(ev) => {
-        onPress?.(ev);
-      }}
-      style={({ pressed }) => [
-        styles.createWrapper,
-        style,
-        pressed && { opacity: 0.9 },
-      ]}
-    >
-      <View style={[styles.createButton, { backgroundColor: accentColor }]}>
-        <IconSymbol size={24} name="plus" color="#000" />
-      </View>
-    </PlatformPressable>
+    <View style={styles.createWrapperContainer}>
+      <TouchableOpacity
+        // {...rest}
+        onPress={(ev) => onPress?.(ev)}
+        activeOpacity={0.8}
+        style={[styles.createButton, { backgroundColor: color }]}
+      >
+        <IconSymbol size={24} name="plus" color={palette.inkMuted} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  createWrapper: {
-    top: -26,
-    borderRadius: 32,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  createWrapperContainer: {
+    position: "absolute",
+    bottom: 30,
+    alignSelf: "center",
+    zIndex: 10,
   },
   createButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 50,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    borderRadius: 12,
   },
 });

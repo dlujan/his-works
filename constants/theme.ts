@@ -3,28 +3,28 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
-import { palette } from '@/constants/paper-theme';
+import { palette } from "@/constants/paper-theme";
 
-const tintColorLight = palette.green;
-const tintColorDark = palette.green;
+const tintColorLight = palette.primary;
+const tintColorDark = palette.primary;
 
 export const Colors = {
   light: {
     text: palette.ink,
-    background: palette.beige,
+    background: palette.background,
     tint: tintColorLight,
     icon: palette.ink,
     tabIconDefault: palette.ink,
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: palette.beige,
+    text: palette.background,
     background: palette.ink,
     tint: tintColorDark,
-    icon: palette.beige,
-    tabIconDefault: palette.beige,
+    icon: palette.background,
+    tabIconDefault: palette.background,
     tabIconSelected: tintColorDark,
   },
 };
@@ -32,24 +32,25 @@ export const Colors = {
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
+    sans: "system-ui",
     /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
+    serif: "ui-serif",
     /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
+    rounded: "ui-rounded",
     /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    mono: "ui-monospace",
   },
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+    sans: "normal",
+    serif: "serif",
+    rounded: "normal",
+    mono: "monospace",
   },
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    rounded:
+      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });

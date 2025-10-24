@@ -45,7 +45,9 @@ export default function AccountScreen() {
       await signOut();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Unable to log out. Please try again.";
+        error instanceof Error
+          ? error.message
+          : "Unable to log out. Please try again.";
       setSignOutError(message);
     } finally {
       setLoading(false);
@@ -71,7 +73,7 @@ export default function AccountScreen() {
           },
         ]}
       >
-        <Appbar.Content title="Account" subtitle="Your profile and preferences" />
+        <Appbar.Content title="Account" />
       </Appbar.Header>
 
       <ScrollView
@@ -87,53 +89,58 @@ export default function AccountScreen() {
               icon="account"
               size={64}
               style={{ backgroundColor: theme.colors.primaryContainer }}
-            color={theme.colors.onPrimaryContainer}
-          />
-          <View style={styles.headerText}>
-            <Text variant="headlineSmall">{user?.user_metadata?.full_name ?? "Account"}</Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              Manage your profile and preferences
-            </Text>
+              color={theme.colors.onPrimaryContainer}
+            />
+            <View style={styles.headerText}>
+              <Text variant="headlineSmall">
+                {user?.user_metadata?.full_name ?? "Account"}
+              </Text>
+              <Text
+                variant="bodyMedium"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
+                Manage your profile and preferences
+              </Text>
+            </View>
           </View>
-        </View>
 
-        <List.Section>
-          <List.Item
-            title="Email"
-            description={email}
-            left={(props) => <List.Icon {...props} icon="email-outline" />}
-          />
-          <List.Item
-            title="Phone"
-            description={phone}
-            left={(props) => <List.Icon {...props} icon="phone-outline" />}
-          />
-          <List.Item
-            title="Joined"
-            description={joined}
-            left={(props) => <List.Icon {...props} icon="calendar-account" />}
-          />
-          <List.Item
-            title="User ID"
-            description={user?.id ?? "Unknown"}
-            left={(props) => <List.Icon {...props} icon="identifier" />}
-          />
-        </List.Section>
+          <List.Section>
+            <List.Item
+              title="Email"
+              description={email}
+              left={(props) => <List.Icon {...props} icon="email-outline" />}
+            />
+            <List.Item
+              title="Phone"
+              description={phone}
+              left={(props) => <List.Icon {...props} icon="phone-outline" />}
+            />
+            <List.Item
+              title="Joined"
+              description={joined}
+              left={(props) => <List.Icon {...props} icon="calendar-account" />}
+            />
+            <List.Item
+              title="User ID"
+              description={user?.id ?? "Unknown"}
+              left={(props) => <List.Icon {...props} icon="identifier" />}
+            />
+          </List.Section>
 
-        <HelperText
-          type="error"
-          visible={Boolean(signOutError)}
-          style={[styles.helper, { color: theme.colors.error }]}
-        >
-          {signOutError ?? ""}
-        </HelperText>
+          <HelperText
+            type="error"
+            visible={Boolean(signOutError)}
+            style={[styles.helper, { color: theme.colors.error }]}
+          >
+            {signOutError ?? ""}
+          </HelperText>
 
-        <Button
-          mode="contained"
-          icon="logout"
-          onPress={handleSignOut}
-          loading={loading}
-          disabled={loading}
+          <Button
+            mode="contained"
+            icon="logout"
+            onPress={handleSignOut}
+            loading={loading}
+            disabled={loading}
           >
             Log out
           </Button>

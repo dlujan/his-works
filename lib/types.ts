@@ -12,4 +12,6 @@ export type Testimony = {
   text: string;
   is_public: boolean;
   image_url?: string;
+  user_uuid: string;
+  user: User;
 };
