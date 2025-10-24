@@ -6,6 +6,8 @@ import { View } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
 
+import { LoginScreen } from "@/components/login-screen";
+import { SignupScreen } from "@/components/signup-screen";
 import {
   navigationDarkTheme,
   navigationLightTheme,
@@ -13,10 +15,8 @@ import {
   paperLightTheme,
 } from "@/constants/paper-theme";
 import { AuthProvider, useAuth } from "@/context/auth-context";
-import { LoginScreen } from "@/components/login-screen";
-import { SignupScreen } from "@/components/signup-screen";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { WorksProvider } from "@/context/works-context";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -24,30 +24,31 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const queryClient = new QueryClient();
 
   const isDark = colorScheme === "dark";
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
   const navigationTheme = isDark ? navigationDarkTheme : navigationLightTheme;
 
   return (
-    <AuthProvider>
-      <PaperProvider theme={paperTheme}>
-        <ThemeProvider value={navigationTheme}>
-          <WorksProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PaperProvider theme={paperTheme}>
+          <ThemeProvider value={navigationTheme}>
             <AuthGate>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="modal"
-                  options={{ presentation: "modal", title: "Modal" }}
+                  options={{ presentation: "modal", title: "" }}
                 />
               </Stack>
             </AuthGate>
-          </WorksProvider>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </PaperProvider>
-    </AuthProvider>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </PaperProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

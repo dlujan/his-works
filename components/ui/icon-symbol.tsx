@@ -18,7 +18,7 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'hands.sparkles.fill': 'volunteer-activism',
   'hands.press.fill': 'self-improvement',
-  'alarm.fill': 'alarm',
+  'bell.badge.fill': 'notifications',
   'person.crop.circle.fill': 'account-circle',
   'hands.sparkles': 'volunteer-activism',
   'plus': 'add',

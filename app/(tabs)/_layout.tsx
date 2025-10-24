@@ -65,11 +65,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="reminders"
+        name="activity"
         options={{
-          title: "Reminders",
+          title: "Activity",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="alarm.fill" color={color} />
+            <IconSymbol size={28} name="bell.badge.fill" color={color} />
           ),
         }}
       />
@@ -132,9 +132,10 @@ function CreateWorkTabButton({
 
 const styles = StyleSheet.create({
   createWrapper: {
-    top: -18,
+    top: -26,
     borderRadius: 32,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   createButton: {
     width: 60,

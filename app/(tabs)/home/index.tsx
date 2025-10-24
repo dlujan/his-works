@@ -1,11 +1,68 @@
-import React, { useCallback } from 'react';
-import { FlatList, Share, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Appbar, Button, Card, IconButton, Surface, Text, useTheme } from 'react-native-paper';
+import { useRouter } from "expo-router";
+import React, { useCallback } from "react";
+import { FlatList, Share, StyleSheet, View } from "react-native";
+import {
+  Appbar,
+  Button,
+  Card,
+  IconButton,
+  Surface,
+  Text,
+  useTheme,
+} from "react-native-paper";
 
-import type { AppTheme } from '@/constants/paper-theme';
-import { testimonies, type Testimony } from '@/data/testimonies';
-import { formatTimeSince } from '@/utils/time';
+import type { AppTheme } from "@/constants/paper-theme";
+import { formatTimeSince } from "@/utils/time";
+
+type Testimony = {
+  id: string;
+  title: string;
+  author: string;
+  excerpt: string;
+  createdAt: string;
+  likes: number;
+};
+
+const now = Date.now();
+
+const testimonies: Testimony[] = [
+  {
+    id: "t1",
+    title: "Breakthrough in the city",
+    author: "Elena Martinez",
+    excerpt:
+      "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
+    createdAt: new Date(now - 1000 * 60 * 25).toISOString(), // 25 minutes ago
+    likes: 24,
+  },
+  {
+    id: "t2",
+    title: "Provision for the pantry",
+    author: "Marcus Lee",
+    excerpt:
+      "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
+    createdAt: new Date(now - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
+    likes: 18,
+  },
+  {
+    id: "t3",
+    title: "Youth night transformation",
+    author: "Sarah Johnson",
+    excerpt:
+      "Students shared testimonies of freedom, and three new families asked how they could get involved.",
+    createdAt: new Date(now - 1000 * 60 * 60 * 6).toISOString(), // 6 hours ago
+    likes: 32,
+  },
+  {
+    id: "t4",
+    title: "Answered prayer for healing",
+    author: "David Kim",
+    excerpt:
+      "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
+    createdAt: new Date(now - 1000 * 60 * 60 * 12).toISOString(), // 12 hours ago
+    likes: 45,
+  },
+];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -18,39 +75,48 @@ export default function HomeScreen() {
         message: `${item.title} — ${item.excerpt}`,
       });
     } catch (error) {
-      console.warn('Unable to share testimony', error);
+      console.warn("Unable to share testimony", error);
     }
   }, []);
 
-  const handleOpen = useCallback(
-    (item: Testimony) => {
-      router.push({
-        pathname: '/(tabs)/home/[id]',
-        params: { id: item.id },
-      });
-    },
-    [router],
-  );
+  // const handleOpen = useCallback(
+  //   (item: Testimony) => {
+  //     router.push({
+  //       pathname: "/(tabs)/home/[id]",
+  //       params: { id: item.id },
+  //     });
+  //   },
+  //   [router]
+  // );
 
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => (
       <Card
         mode="elevated"
         style={styles.card}
-        onPress={() => handleOpen(item)}
+        // onPress={() => handleOpen(item)}
         accessible
         accessibilityLabel={`${item.title} by ${item.author}`}
       >
         <Card.Content style={styles.cardContent}>
           <View style={styles.headerRow}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
               {item.title}
             </Text>
-            <Text variant="labelMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text
+              variant="labelMedium"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
               {formatTimeSince(item.createdAt)}
             </Text>
           </View>
-          <Text variant="bodyMedium" style={[styles.author, { color: theme.colors.inkMuted }]}>
+          <Text
+            variant="bodyMedium"
+            style={[styles.author, { color: theme.colors.inkMuted }]}
+          >
             {item.author}
           </Text>
           <Text
@@ -72,7 +138,10 @@ export default function HomeScreen() {
                 disabled
                 accessibilityLabel="Like testimony"
               />
-              <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
+              <Text
+                variant="labelLarge"
+                style={{ color: theme.colors.primary }}
+              >
                 {item.likes}
               </Text>
             </View>
@@ -89,7 +158,14 @@ export default function HomeScreen() {
         </Card.Actions>
       </Card>
     ),
-    [handleOpen, handleShare, theme.colors.onSurface, theme.colors.onSurfaceVariant, theme.colors.inkMuted, theme.colors.primary],
+    [
+      // handleOpen,
+      handleShare,
+      theme.colors.onSurface,
+      theme.colors.onSurfaceVariant,
+      theme.colors.inkMuted,
+      theme.colors.primary,
+    ]
   );
 
   return (
@@ -111,7 +187,10 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <Appbar.Content title="Community Feed" subtitle="Stories that build faith" />
+        <Appbar.Content
+          title="Community Feed"
+          subtitle="Stories that build faith"
+        />
       </Appbar.Header>
 
       <FlatList
@@ -121,11 +200,17 @@ export default function HomeScreen() {
         renderItem={renderItem}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text variant="headlineSmall" style={{ color: theme.colors.onSurface }}>
+            <Text
+              variant="headlineSmall"
+              style={{ color: theme.colors.onSurface }}
+            >
               Community testimonies
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-              Stories of God’s faithfulness to inspire and encourage.
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              Stories of God&apos;s faithfulness to inspire and encourage.
             </Text>
           </View>
         }
@@ -162,32 +247,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   author: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
   excerpt: {
     lineHeight: 20,
   },
   actions: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 8,
   },
   actionsLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   likesChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 2,
   },
   shareLabel: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
