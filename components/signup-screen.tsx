@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import {
   Button,
   HelperText,
@@ -24,14 +24,10 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const hasError = Boolean(error);
-
   const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
 
   const handleSubmit = async () => {
-    if (!canSubmit) {
-      return;
-    }
+    if (!canSubmit) return;
 
     try {
       setLoading(true);
@@ -54,55 +50,80 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.select({ ios: "padding", android: undefined })}
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Surface style={styles.card} mode="elevated">
-        <Text variant="headlineMedium" style={styles.title}>
+      <Surface
+        elevation={2}
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.outlineVariant,
+          },
+        ]}
+      >
+        <Text
+          variant="headlineMedium"
+          style={[styles.title, { color: theme.colors.onSurface }]}
+        >
           Create your account
         </Text>
-
-        <TextInput
-          label="Email"
-          value={email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="email"
-          onChangeText={setEmail}
-          mode="outlined"
-          style={styles.input}
-          disabled={loading}
-        />
-
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          mode="outlined"
-          style={styles.input}
-          disabled={loading}
-        />
-
-        <HelperText type="error" visible={hasError} style={styles.helper}>
-          {error ?? ""}
-        </HelperText>
-
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={!canSubmit}
+        <Text
+          variant="bodyMedium"
+          style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
         >
-          Sign Up
-        </Button>
+          Join the community and make remembering God's works a habit.
+        </Text>
+
+        <View style={styles.form}>
+          <TextInput
+            label="Email"
+            value={email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            onChangeText={setEmail}
+            mode="outlined"
+            disabled={loading}
+            style={styles.input}
+          />
+
+          <TextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            mode="outlined"
+            disabled={loading}
+            style={styles.input}
+          />
+
+          <HelperText
+            type="error"
+            visible={Boolean(error)}
+            style={[styles.helper, { color: theme.colors.error }]}
+          >
+            {error ?? ""}
+          </HelperText>
+
+          <Button
+            mode="contained"
+            onPress={handleSubmit}
+            loading={loading}
+            disabled={!canSubmit}
+            style={styles.submitButton}
+            contentStyle={{ paddingVertical: 4 }}
+          >
+            Sign Up
+          </Button>
+        </View>
 
         <Button
           mode="text"
           onPress={onSwitchToLogin}
           disabled={loading}
           textColor={theme.colors.primary}
-          uppercase={false}
           style={styles.switch}
           labelStyle={styles.switchLabel}
         >
@@ -114,36 +135,46 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     justifyContent: "center",
-    padding: 24,
+    paddingHorizontal: 24,
   },
   card: {
-    padding: 24,
-    borderRadius: 16,
-    elevation: 2,
+    borderRadius: 20,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
     width: "100%",
-    maxWidth: 420,
+    maxWidth: 400,
     alignSelf: "center",
   },
   title: {
     textAlign: "center",
-    marginBottom: 16,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 28,
+  },
+  form: {
+    gap: 12,
   },
   input: {
     backgroundColor: "transparent",
-    marginBottom: 12,
   },
   helper: {
     minHeight: 20,
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  submitButton: {
+    marginTop: 4,
   },
   switch: {
-    marginTop: 12,
+    marginTop: 24,
+    alignSelf: "center",
   },
   switchLabel: {
-    fontWeight: "600",
     letterSpacing: 0.2,
   },
 });

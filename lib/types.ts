@@ -5,6 +5,12 @@ export type User = {
   full_name?: string;
   avatar_url?: string;
 };
+export type Tag = {
+  uuid: string;
+  created_at: string;
+  updated_at: string;
+  name: string;
+};
 export type Testimony = {
   uuid: string;
   created_at: string;
@@ -14,4 +20,6 @@ export type Testimony = {
   image_url?: string;
   user_uuid: string;
   user: User;
+  bible_verse?: string;
+  tags?: string[];
 };

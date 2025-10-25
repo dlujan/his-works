@@ -1,8 +1,9 @@
+import type { Session } from "@supabase/supabase-js";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
+import registerForPushNotificationsAsync from "@/utils/registerForPushNotificationsAsync";
 
 type SignInArgs = {
   email: string;
@@ -86,11 +87,31 @@ export function AuthProvider({ children }: PropsWithChildren) {
           throw error;
         }
 
+        const user = data.user;
+        if (!user) return;
+
+        // ✅ Request permission + get token
+        const expoPushToken = await registerForPushNotificationsAsync();
+
+        if (expoPushToken) {
+          // ✅ Save token in your `user` table
+          const { error: updateError } = await supabase
+            .from("user")
+            .update({ expo_push_token: expoPushToken })
+            .eq("id", user.id);
+
+          if (updateError)
+            console.log("Failed to save push token:", updateError);
+        }
+
+        // Sign in
         if (!data.session) {
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          const { error: signInError } = await supabase.auth.signInWithPassword(
+            {
+              email,
+              password,
+            }
+          );
 
           if (signInError) {
             throw signInError;

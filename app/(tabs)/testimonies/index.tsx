@@ -42,6 +42,9 @@ export default function TestimoniesScreen() {
         day: "numeric",
       });
 
+      const tags = item.tags;
+      const bibleVerse = "Psalms 23:1"; // Example placeholder
+
       return (
         <Pressable
           onPress={() => handleOpenTestimony(item.uuid)}
@@ -62,9 +65,52 @@ export default function TestimoniesScreen() {
             >
               {dateLabel}
             </Text>
+
             <Text style={[styles.text, { color: theme.colors.onSurface }]}>
               {item.text.trim()}
             </Text>
+
+            {/* Bible verse reference */}
+            <View style={styles.verseRow}>
+              <Text
+                style={[styles.verseIcon, { color: theme.colors.primary }]}
+                accessibilityLabel="Bible verse reference"
+              >
+                📖
+              </Text>
+              <Text
+                style={[
+                  styles.verseText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {bibleVerse}
+              </Text>
+            </View>
+
+            {/* Tags row */}
+            <View style={styles.tagContainer}>
+              {tags &&
+                tags.map((tag) => (
+                  <View
+                    key={tag}
+                    style={[
+                      styles.tagPill,
+                      { backgroundColor: theme.colors.primary + "20" },
+                    ]}
+                  >
+                    <Text
+                      variant="labelSmall"
+                      style={{
+                        color: theme.colors.primary,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {tag}
+                    </Text>
+                  </View>
+                ))}
+            </View>
           </Surface>
         </Pressable>
       );
@@ -167,5 +213,28 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  tagPill: {
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  verseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  verseIcon: {
+    marginRight: 6,
+    fontSize: 14,
+  },
+  verseText: {
+    fontSize: 13,
+    fontStyle: "italic",
   },
 });
