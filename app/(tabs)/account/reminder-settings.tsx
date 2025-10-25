@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import {
   Button,
   List,
@@ -69,6 +69,7 @@ export default function ReminderSettingsScreen() {
 
       if (error) throw error;
       setMessage("Reminders updated successfully!");
+      supabase.auth.refreshSession();
     } catch (err: any) {
       console.error(err);
       setMessage(err.message || "Failed to update reminder settings.");
@@ -95,7 +96,7 @@ export default function ReminderSettingsScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Text
           variant="bodyMedium"
           style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
@@ -224,7 +225,7 @@ export default function ReminderSettingsScreen() {
         >
           Test Notification
         </Button>
-      </View>
+      </ScrollView>
     </Surface>
   );
 }
@@ -234,7 +235,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flex: 1,
     paddingHorizontal: 20,
     paddingVertical: 24,
   },

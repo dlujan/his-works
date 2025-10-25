@@ -16,24 +16,26 @@ export default function AccountScreen() {
   const { session, signOut } = useAuth();
   const theme = useTheme<AppTheme>();
   const router = useRouter();
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
 
-  const user = session?.user ?? null;
-  const email = user?.email ?? "Not provided";
+  const authUser = session?.user ?? null;
+  const email = authUser?.email ?? "Not provided";
 
   const joined = useMemo(() => {
-    if (!user?.created_at) return "Unknown";
+    if (!authUser?.created_at) return "Unknown";
     try {
-      return new Date(user.created_at).toLocaleDateString(undefined, {
+      return new Date(authUser.created_at).toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
         day: "numeric",
       });
     } catch {
-      return user.created_at;
+      return authUser.created_at;
     }
-  }, [user?.created_at]);
+  }, [authUser?.created_at]);
 
   const handleSignOut = async () => {
     setSignOutError(null);
@@ -86,7 +88,7 @@ export default function AccountScreen() {
           />
           <View style={styles.profileText}>
             <Text variant="headlineSmall" style={{ fontWeight: "600" }}>
-              {user?.user_metadata?.full_name ?? "Your Account"}
+              {user?.full_name ?? "Your Account"}
             </Text>
             <Text
               variant="bodyMedium"

@@ -43,7 +43,7 @@ export default function TestimoniesScreen() {
       });
 
       const tags = item.tags;
-      const bibleVerse = "Psalms 23:1"; // Example placeholder
+      const bibleVerse = item.bible_verse;
 
       return (
         <Pressable
@@ -71,13 +71,15 @@ export default function TestimoniesScreen() {
             </Text>
 
             {/* Bible verse reference */}
-            <View style={styles.verseRow}>
-              <Text
-                style={[styles.verseIcon, { color: theme.colors.primary }]}
-                accessibilityLabel="Bible verse reference"
-              >
-                📖
-              </Text>
+            <View style={[styles.verseRow, bibleVerse && { marginBottom: 8 }]}>
+              {bibleVerse && (
+                <Text
+                  style={[styles.verseIcon, { color: theme.colors.primary }]}
+                  accessibilityLabel="Bible verse reference"
+                >
+                  📖
+                </Text>
+              )}
               <Text
                 style={[
                   styles.verseText,
@@ -227,7 +229,6 @@ const styles = StyleSheet.create({
   verseRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
   },
   verseIcon: {
     marginRight: 6,

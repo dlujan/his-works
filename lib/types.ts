@@ -4,6 +4,13 @@ export type User = {
   updated_at: string;
   full_name?: string;
   avatar_url?: string;
+  expo_push_token?: string;
+  reminder_settings: {
+    yearly: boolean;
+    quarterly: boolean;
+    surprise: boolean;
+    timeOfDay: "morning" | "evening";
+  };
 };
 export type Tag = {
   uuid: string;
@@ -22,4 +29,13 @@ export type Testimony = {
   user: User;
   bible_verse?: string;
   tags?: string[];
+  reminders?: Reminder[];
+};
+export type Reminder = {
+  uuid: string;
+  created_at: string;
+  user_uuid: string;
+  testimony_uuid: string;
+  scheduled_for: string;
+  sent_at: string;
 };

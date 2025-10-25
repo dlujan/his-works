@@ -7,14 +7,18 @@ const fetchData = async (userUuid: string) => {
     .from("testimony")
     .select(
       `
-      *,
-      testimony_tag (
-        tag:tag_uuid (
-          uuid,
-          name
-        )
+    *,
+    testimony_tag (
+      tag:tag_uuid (
+        uuid,
+        name
       )
-    `
+    ),
+    reminder (
+      uuid,
+      scheduled_for
+    )
+  `
     )
     .eq("user_uuid", userUuid)
     .order("created_at", { ascending: false });
@@ -28,6 +32,7 @@ const fetchData = async (userUuid: string) => {
   const testimonies = data?.map((t) => ({
     ...t,
     tags: t.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
+    reminders: t.reminder?.map((rem: any) => rem),
   }));
 
   return testimonies;

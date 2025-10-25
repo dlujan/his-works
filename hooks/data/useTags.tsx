@@ -9,7 +9,9 @@ const fetchData = async () => {
     throw new Error(error.message);
   }
 
-  return tags.map((tag) => tag.name);
+  return tags
+    .map((tag) => tag.name)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 };
 
 export const useTags = () => {

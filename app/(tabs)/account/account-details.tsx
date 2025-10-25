@@ -1,7 +1,6 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   Image,
@@ -23,16 +22,15 @@ import {
 
 export default function AccountDetailsScreen() {
   const { session } = useAuth();
-  const router = useRouter();
   const theme = useTheme<AppTheme>();
 
-  const user = session?.user ?? null;
-  const initialProfile = user?.user_metadata ?? {};
+  const authUser = session?.user ?? null;
+  const { user } = useAuth();
 
-  const [name, setName] = useState(initialProfile.full_name ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [phone, setPhone] = useState(user?.phone ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url ?? "");
+  const [name, setName] = useState(user?.full_name ?? "");
+  const [email, setEmail] = useState(authUser?.email ?? "");
+  // const [phone, setPhone] = useState(user?.phone ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -42,18 +40,23 @@ export default function AccountDetailsScreen() {
   }, [name]);
 
   const handleSave = async () => {
+    if (!authUser) return;
+
     setMessage(null);
     setSaving(true);
     try {
-      const { error: updateError } = await supabase.from("user").insert({
-        full_name: name,
-        avatar_url: avatarUrl,
-      });
+      const { error: updateError } = await supabase
+        .from("user")
+        .update({
+          full_name: name,
+          avatar_url: avatarUrl,
+        })
+        .eq("uuid", authUser.id);
 
       if (updateError) throw updateError;
 
-      if (email !== user?.email || phone !== user?.phone) {
-        const { error } = await supabase.auth.updateUser({ email, phone });
+      if (email !== authUser?.email) {
+        const { error } = await supabase.auth.updateUser({ email });
         if (error) throw error;
       }
 
@@ -122,14 +125,14 @@ export default function AccountDetailsScreen() {
             keyboardType="email-address"
             style={styles.input}
           />
-          <TextInput
+          {/* <TextInput
             label="Phone"
             value={phone}
             onChangeText={setPhone}
             mode="outlined"
             keyboardType="phone-pad"
             style={styles.input}
-          />
+          /> */}
 
           {message && (
             <Text
@@ -171,7 +174,6 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   container: {
-    flexGrow: 1,
     paddingHorizontal: 20,
     paddingVertical: 24,
     gap: 16,

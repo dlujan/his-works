@@ -1,11 +1,17 @@
+import { TagMultiSelect } from "@/components/TagMultiSelect";
+import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { useTags } from "@/hooks/data/useTags";
+import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
+import { supabase } from "@/lib/supabase";
+import { getNextReminder } from "@/utils/reminders";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,
-  Chip,
-  Divider,
-  Menu,
+  Icon,
   Surface,
   Switch,
   Text,
@@ -13,20 +19,13 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import type { AppTheme } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
-import { useTags } from "@/hooks/data/useTags";
-import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
-import { supabase } from "@/lib/supabase";
-import { useQueryClient } from "@tanstack/react-query";
-
 export default function EditWorkScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const theme = useTheme<AppTheme>();
   const { session } = useAuth();
-  const user = session?.user ?? null;
-  const { testimonies } = useUserTestimonies(user?.id || "");
+  const authUser = session?.user ?? null;
+  const { testimonies } = useUserTestimonies(authUser?.id || "");
   const queryClient = useQueryClient();
   const { tags: availableTags } = useTags();
 
@@ -39,8 +38,6 @@ export default function EditWorkScreen() {
   const [bibleVerse, setBibleVerse] = useState(testimony?.bible_verse ?? "");
   const [tags, setTags] = useState<string[]>(testimony?.tags ?? []);
   const [isPublic, setIsPublic] = useState(testimony?.is_public);
-
-  const [menuVisible, setMenuVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +57,7 @@ export default function EditWorkScreen() {
 
   // ✅ Save / Update
   const handleSave = async () => {
-    if (!id || !user) return;
+    if (!id || !authUser) return;
     setLoading(true);
 
     try {
@@ -73,7 +70,7 @@ export default function EditWorkScreen() {
           is_public: isPublic,
         })
         .eq("uuid", id)
-        .eq("user_uuid", user.id);
+        .eq("user_uuid", authUser.id);
 
       if (updateError) throw updateError;
 
@@ -118,7 +115,7 @@ export default function EditWorkScreen() {
 
   // ❌ Delete
   const handleDelete = async () => {
-    if (!id || !user) return;
+    if (!id || !authUser) return;
 
     Alert.alert(
       "Delete testimony",
@@ -135,7 +132,7 @@ export default function EditWorkScreen() {
                 .from("testimony")
                 .delete()
                 .eq("uuid", id)
-                .eq("user_uuid", user.id);
+                .eq("user_uuid", authUser.id);
 
               if (error) throw error;
               queryClient.invalidateQueries({ queryKey: ["user-testimonies"] });
@@ -177,13 +174,32 @@ export default function EditWorkScreen() {
     );
   }
 
+  const nextReminderText = testimony?.reminders
+    ? getNextReminder(testimony.reminders)
+    : null;
+
   return (
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.content}>
+        {nextReminderText && (
+          <View style={styles.reminderRow}>
+            <Icon
+              source="bell-outline"
+              size={16}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text
+              variant="bodySmall"
+              style={{ color: theme.colors.onSurfaceVariant, marginLeft: 6 }}
+            >
+              Next reminder {nextReminderText}
+            </Text>
+          </View>
+        )}
         <TextInput
-          label="Details"
+          label="My testimony"
           mode="outlined"
           value={details}
           onChangeText={setDetails}
@@ -203,62 +219,11 @@ export default function EditWorkScreen() {
 
         {/* Tag selection */}
         <View style={{ marginBottom: 8 }}>
-          <Text
-            variant="titleSmall"
-            style={{ marginBottom: 4, color: theme.colors.onSurface }}
-          >
-            Tags
-          </Text>
-
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <Button
-                mode="outlined"
-                icon="tag-multiple-outline"
-                onPress={() => setMenuVisible(true)}
-              >
-                Select Tags
-              </Button>
-            }
-          >
-            {availableTags.map((tag) => (
-              <Menu.Item
-                key={tag}
-                onPress={() => handleTagToggle(tag)}
-                title={tag}
-                leadingIcon={tags.includes(tag) ? "check" : undefined}
-              />
-            ))}
-            <Divider />
-            <Menu.Item
-              onPress={() => setMenuVisible(false)}
-              title="Done"
-              leadingIcon="check-circle-outline"
-            />
-          </Menu>
-
-          {tags.length > 0 && (
-            <View style={styles.tagContainer}>
-              {tags.map((tag) => (
-                <Chip
-                  key={tag}
-                  onClose={() => handleTagToggle(tag)}
-                  style={[
-                    styles.tagChip,
-                    { backgroundColor: theme.colors.primary + "20" },
-                  ]}
-                  textStyle={{
-                    color: theme.colors.primary,
-                    fontWeight: "500",
-                  }}
-                >
-                  {tag}
-                </Chip>
-              ))}
-            </View>
-          )}
+          <TagMultiSelect
+            availableTags={availableTags}
+            tags={tags}
+            setTags={setTags}
+          />
 
           <View style={styles.toggleRow}>
             <View style={{ flex: 1 }}>
@@ -288,17 +253,15 @@ export default function EditWorkScreen() {
           >
             Save changes
           </Button>
+          <Button
+            mode="text"
+            textColor={theme.colors.error}
+            onPress={handleDelete}
+            disabled={loading}
+          >
+            Delete testimony
+          </Button>
         </View>
-
-        <Button
-          mode="text"
-          textColor={theme.colors.error}
-          onPress={handleDelete}
-          style={styles.deleteButton}
-          disabled={loading}
-        >
-          Delete testimony
-        </Button>
       </ScrollView>
     </Surface>
   );
@@ -328,12 +291,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  deleteButton: {
-    alignSelf: "flex-start",
-    marginTop: 12,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
   },
   fallback: {
     flex: 1,
@@ -350,5 +311,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 12,
+  },
+  reminderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
   },
 });

@@ -20,7 +20,6 @@ const testimonies: Testimony[] = [
       full_name: "Elena Martinez",
       avatar_url: "https://i.pravatar.cc/100?img=1",
     },
-
     text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
     created_at: new Date(now - 1000 * 60 * 25).toISOString(),
     likes: 24,
@@ -78,30 +77,20 @@ export default function HomeScreen() {
 
         <View style={styles.postBody}>
           <View style={styles.headerRow}>
-            <Text
-              variant="titleSmall"
-              style={{
-                color: theme.colors.onSurface,
-                fontWeight: "600",
-              }}
-            >
+            <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
               {item.user.full_name}
             </Text>
             <Text
-              variant="bodySmall"
-              style={{
-                color: theme.colors.onSurfaceVariant,
-                marginLeft: 6,
-              }}
+              style={[
+                styles.timestamp,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
             >
               • {formatTimeSince(item.created_at)}
             </Text>
           </View>
 
-          <Text
-            variant="bodyMedium"
-            style={[styles.excerpt, { color: theme.colors.onSurface }]}
-          >
+          <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
             {item.text}
           </Text>
 
@@ -111,11 +100,9 @@ export default function HomeScreen() {
                 icon="heart-outline"
                 size={18}
                 iconColor={theme.colors.primary}
+                style={styles.iconButton}
               />
-              <Text
-                variant="labelSmall"
-                style={{ color: theme.colors.primary }}
-              >
+              <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
                 {item.likes}
               </Text>
             </View>
@@ -124,6 +111,7 @@ export default function HomeScreen() {
               size={18}
               onPress={() => handleShare(item)}
               iconColor={theme.colors.onSurfaceVariant}
+              style={styles.iconButton}
             />
           </View>
         </View>
@@ -133,52 +121,51 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* 🌄 Subtle gradient background */}
-      {/* <LinearGradient
-        colors={["#FFFDF8", "#F8F9FA"]}
-        style={StyleSheet.absoluteFill}
-      /> */}
+    <Surface
+      style={[styles.screen, { backgroundColor: theme.colors.background }]}
+    >
+      <Appbar.Header
+        mode="center-aligned"
+        style={[
+          styles.headerBar,
+          {
+            backgroundColor: theme.colors.surface,
+            borderBottomColor: theme.colors.outlineVariant,
+          },
+        ]}
+      >
+        <Appbar.Content title="Community Feed" />
+      </Appbar.Header>
 
-      <Surface style={{ flex: 1, backgroundColor: "transparent" }}>
-        <Appbar.Header
-          mode="center-aligned"
-          style={[
-            styles.headerBar,
-            {
-              backgroundColor: theme.colors.surface,
-              borderBottomColor: theme.colors.outlineVariant,
-            },
-          ]}
-        >
-          <Appbar.Content title="Community Feed" />
-        </Appbar.Header>
-
-        <FlatList
-          data={testimonies}
-          keyExtractor={(item) => item.uuid}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-      </Surface>
-    </View>
+      <FlatList
+        data={testimonies}
+        keyExtractor={(item) => item.uuid}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+      />
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   listContent: {
     paddingHorizontal: 16,
     paddingVertical: 16,
   },
   headerBar: {
     elevation: 0,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   postContainer: {
     flexDirection: "row",
     gap: 12,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.2)",
+    borderBottomColor: "rgba(0,0,0,0.12)",
   },
   avatar: {
     width: 42,
@@ -188,15 +175,30 @@ const styles = StyleSheet.create({
   },
   postBody: {
     flex: 1,
-    paddingBottom: 8,
+    paddingBottom: 2,
   },
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     marginBottom: 4,
   },
+  nameText: {
+    fontSize: 15,
+    fontWeight: "600",
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
+  timestamp: {
+    fontSize: 13,
+    marginLeft: 6,
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
   excerpt: {
-    lineHeight: 21,
+    fontSize: 15,
+    lineHeight: 22,
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
   },
   actionsRow: {
     flexDirection: "row",
@@ -209,7 +211,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
   },
+  iconButton: {
+    margin: 0,
+  },
+  likeCount: {
+    fontSize: 13,
+    fontWeight: "500",
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
   separator: {
-    height: 20,
+    height: 16,
   },
 });
