@@ -16,6 +16,7 @@ import {
 } from "@/constants/paper-theme";
 import { AuthProvider, useAuth } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useNotificationNavigation } from "@/hooks/useNotificationNavigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const unstable_settings = {
@@ -30,6 +31,8 @@ export default function RootLayout() {
   const isDark = colorScheme === "dark";
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
   const navigationTheme = isDark ? navigationDarkTheme : navigationLightTheme;
+
+  useNotificationNavigation();
 
   return (
     <QueryClientProvider client={queryClient}>
