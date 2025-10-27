@@ -21,8 +21,11 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
 import { supabase } from "@/lib/supabase";
+import { ReminderType } from "@/lib/types";
+import { getNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { DatePickerInput } from "react-native-paper-dates";
 
 export default function CreateWorkModal() {
   const theme = useTheme<AppTheme>();
@@ -35,8 +38,10 @@ export default function CreateWorkModal() {
 
   const [details, setDetails] = useState("");
   const [bibleVerse, setBibleVerse] = useState("");
+  const [date, setDate] = useState(new Date());
   const [tags, setTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -55,7 +60,9 @@ export default function CreateWorkModal() {
           user_uuid: authUser.id,
           text: trimmedDetails,
           bible_verse: bibleVerse.trim() || null,
-          is_public: isPublic,
+          date: date,
+          is_public: isPrivate ? false : isPublic,
+          is_private: isPrivate,
         })
         .select("uuid")
         .single();
@@ -86,24 +93,28 @@ export default function CreateWorkModal() {
       // 3️⃣ Create default reminders
       const reminders = [];
       const now = dayjs();
+      const testimonyDate = date ? dayjs(date) : now;
+
       if (user?.reminder_settings?.yearly) {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
-          scheduled_for: now.add(1, "year").toISOString(),
+          scheduled_for: getNextReminderDate(testimonyDate, "year"),
+          type: ReminderType.YEARLY,
         });
       }
+
       if (user?.reminder_settings?.quarterly) {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
-          scheduled_for: now.add(3, "month").toISOString(),
+          scheduled_for: getNextReminderDate(testimonyDate, "quarter"),
+          type: ReminderType.QUARTERLY,
         });
       }
       const { error: reminderError } = await supabase
         .from("reminder")
-        .insert(reminders)
-        .select("*");
+        .insert(reminders);
 
       if (reminderError) {
         console.error("Failed to create reminders:", reminderError);
@@ -158,6 +169,18 @@ export default function CreateWorkModal() {
             style={styles.input}
           />
 
+          <DatePickerInput
+            locale="en"
+            label="Date"
+            placeholder="Date of event"
+            value={date}
+            onChange={(d) => d && setDate(d)}
+            inputMode="start"
+            mode="outlined"
+            withDateFormatInLabel={false}
+            validRange={{ startDate: new Date(0), endDate: new Date() }}
+          />
+
           {/* Tag selection */}
           <View style={{ marginBottom: 8 }}>
             <TagMultiSelect
@@ -173,17 +196,37 @@ export default function CreateWorkModal() {
                 variant="titleSmall"
                 style={{ color: theme.colors.onSurface }}
               >
-                Share publicly
+                Make private
               </Text>
               <Text
                 variant="bodySmall"
                 style={{ color: theme.colors.onSurfaceVariant }}
               >
-                Let others be encouraged by this testimony.
+                Keep this testimony private — only you can see it.
               </Text>
             </View>
-            <Switch value={isPublic} onValueChange={setIsPublic} />
+            <Switch value={isPrivate} onValueChange={setIsPrivate} />
           </View>
+
+          {!isPrivate && (
+            <View style={styles.toggleRow}>
+              <View style={{ flex: 1 }}>
+                <Text
+                  variant="titleSmall"
+                  style={{ color: theme.colors.onSurface }}
+                >
+                  Share publicly
+                </Text>
+                <Text
+                  variant="bodySmall"
+                  style={{ color: theme.colors.onSurfaceVariant }}
+                >
+                  Share with everyone, not just your friends.
+                </Text>
+              </View>
+              <Switch value={isPublic} onValueChange={setIsPublic} />
+            </View>
+          )}
 
           {message && (
             <Text

@@ -58,7 +58,7 @@ export function TagMultiSelect({
         data={availableTags.map((tag) => ({ label: tag, value: tag }))}
         labelField="label"
         valueField="value"
-        placeholder="Select Tags"
+        placeholder="Select tags"
         value={tags}
         search
         searchPlaceholder="Search tags..."

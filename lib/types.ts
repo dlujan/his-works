@@ -22,8 +22,10 @@ export type Testimony = {
   uuid: string;
   created_at: string;
   updated_at: string;
+  date: string;
   text: string;
   is_public: boolean;
+  is_private: boolean;
   image_url?: string;
   user_uuid: string;
   user: User;
@@ -38,4 +40,9 @@ export type Reminder = {
   testimony_uuid: string;
   scheduled_for: string;
   sent_at: string;
+  type?: ReminderType;
 };
+export enum ReminderType {
+  YEARLY = "yearly",
+  QUARTERLY = "quarterly",
+}

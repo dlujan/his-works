@@ -21,7 +21,7 @@ const fetchData = async (userUuid: string) => {
   `
     )
     .eq("user_uuid", userUuid)
-    .order("created_at", { ascending: false });
+    .order("date", { ascending: false });
 
   if (error) {
     console.error("Error fetching testimonies:", error.message);

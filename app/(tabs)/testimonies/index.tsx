@@ -35,7 +35,7 @@ export default function TestimoniesScreen() {
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => {
       const dateLabel = new Date(
-        item.created_at || item.created_at
+        item.date || item.created_at
       ).toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
