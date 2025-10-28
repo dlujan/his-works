@@ -1,4 +1,3 @@
-// functions/send-due-reminders/index.ts
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.0";
 import dayjs from "https://esm.sh/dayjs@1.11.10";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";

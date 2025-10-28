@@ -1,23 +1,20 @@
-import { ThemeProvider } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useState, type PropsWithChildren } from "react";
-import { Button, View } from "react-native";
-import { ActivityIndicator, PaperProvider } from "react-native-paper";
-import "react-native-reanimated";
-
-import { LoginScreen } from "@/components/login-screen";
-import { SignupScreen } from "@/components/signup-screen";
+// app/_layout.tsx
 import {
   navigationDarkTheme,
   navigationLightTheme,
   paperDarkTheme,
   paperLightTheme,
 } from "@/constants/paper-theme";
-import { AuthProvider, useAuth } from "@/context/auth-context";
+import { AuthProvider } from "@/context/auth-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useNotificationNavigation } from "@/hooks/useNotificationNavigation";
+import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Button } from "react-native";
+import { PaperProvider } from "react-native-paper";
+import "react-native-reanimated";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -39,57 +36,38 @@ export default function RootLayout() {
       <AuthProvider>
         <PaperProvider theme={paperTheme}>
           <ThemeProvider value={navigationTheme}>
-            <AuthGate>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="modal"
-                  options={{
-                    presentation: "modal",
-                    title: "New testimony",
-                    headerLeft: () => (
-                      <Button
-                        title="Cancel"
-                        onPress={() => router.back()}
-                        color="#000" // customize this
-                      />
-                    ),
-                  }}
-                />
-              </Stack>
-            </AuthGate>
+            <Stack screenOptions={{ headerShown: false }}>
+              {/* Unauthenticated screens */}
+              <Stack.Screen name="welcome" />
+              <Stack.Screen name="about" />
+
+              {/* Auth screens */}
+              <Stack.Screen name="login" />
+              <Stack.Screen name="signup" />
+
+              {/* Authenticated tabs area */}
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+              {/* Modal, inside authenticated area */}
+              <Stack.Screen
+                name="modal"
+                options={{
+                  presentation: "modal",
+                  title: "New testimony",
+                  headerLeft: () => (
+                    <Button
+                      title="Cancel"
+                      onPress={() => router.back()}
+                      color="#000"
+                    />
+                  ),
+                }}
+              />
+            </Stack>
             <StatusBar style="auto" />
           </ThemeProvider>
         </PaperProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
-}
-
-function AuthGate({ children }: PropsWithChildren) {
-  const { session, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator animating size="large" />
-      </View>
-    );
-  }
-
-  if (!session) {
-    return <UnauthenticatedScreens />;
-  }
-
-  return children;
-}
-
-function UnauthenticatedScreens() {
-  const [showLogin, setShowLogin] = useState(true);
-
-  if (showLogin) {
-    return <LoginScreen onSwitchToSignup={() => setShowLogin(false)} />;
-  }
-
-  return <SignupScreen onSwitchToLogin={() => setShowLogin(true)} />;
 }

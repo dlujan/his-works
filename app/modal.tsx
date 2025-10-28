@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -143,6 +144,9 @@ export default function CreateWorkModal() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <Text variant="headlineSmall" style={{ fontWeight: "bold" }}>
+            Add Testimony
+          </Text>
           <Text
             variant="bodyMedium"
             style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
@@ -152,12 +156,16 @@ export default function CreateWorkModal() {
 
           <TextInput
             label="Your testimony"
+            placeholder="Your testimony (e.g. healing, new job, answered prayer)"
             mode="outlined"
             value={details}
             onChangeText={setDetails}
             multiline
             numberOfLines={6}
             style={[styles.input, styles.multiline]}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
           />
 
           <TextInput
@@ -167,6 +175,9 @@ export default function CreateWorkModal() {
             onChangeText={setBibleVerse}
             placeholder="e.g. Psalms 23:1"
             style={styles.input}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
           />
 
           <DatePickerInput
@@ -266,7 +277,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   subtitle: {
-    textAlign: "center",
     marginTop: 4,
     marginBottom: 8,
   },

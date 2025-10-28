@@ -1,16 +1,9 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
-import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { FlatList, Image, Share, StyleSheet, View } from "react-native";
-import {
-  Appbar,
-  IconButton,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 
 const now = Date.now();
 
@@ -57,9 +50,8 @@ const testimonies: Testimony[] = [
   },
 ];
 
-export default function HomeScreen() {
+export default function SearchScreen() {
   const theme = useTheme<AppTheme>();
-  const router = useRouter();
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
@@ -126,23 +118,6 @@ export default function HomeScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content title="Your Feed" />
-        <Appbar.Action
-          icon="magnify"
-          onPress={() => router.push("/home/search")}
-        />
-      </Appbar.Header>
-
       <FlatList
         data={testimonies}
         keyExtractor={(item) => item.uuid}

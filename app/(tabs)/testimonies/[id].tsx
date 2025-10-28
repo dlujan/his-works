@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Keyboard, ScrollView, StyleSheet, View } from "react-native";
 import {
   Button,
   Icon,
@@ -260,6 +260,9 @@ export default function EditWorkScreen() {
           multiline
           numberOfLines={8}
           style={[styles.input, styles.multiline]}
+          returnKeyType="done"
+          submitBehavior="blurAndSubmit"
+          onSubmitEditing={Keyboard.dismiss}
         />
 
         <TextInput
@@ -269,6 +272,9 @@ export default function EditWorkScreen() {
           onChangeText={setBibleVerse}
           placeholder="e.g. Psalms 23:1"
           style={styles.input}
+          returnKeyType="done"
+          submitBehavior="blurAndSubmit"
+          onSubmitEditing={Keyboard.dismiss}
         />
 
         <DatePickerInput

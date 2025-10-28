@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
 import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  Appbar,
   Button,
   HelperText,
   Surface,
@@ -10,14 +17,12 @@ import {
 } from "react-native-paper";
 
 import { useAuth } from "@/context/auth-context";
+import { useRouter } from "expo-router";
 
-type SignupScreenProps = {
-  onSwitchToLogin: () => void;
-};
-
-export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
-  const { signUpWithEmail } = useAuth();
+export default function LoginScreen() {
+  const { signInWithPassword } = useAuth();
   const theme = useTheme();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,15 +37,12 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
     try {
       setLoading(true);
       setError(null);
-      await signUpWithEmail({
-        email: email.trim(),
-        password,
-      });
+      await signInWithPassword({ email: email.trim(), password });
     } catch (authError) {
       const message =
         authError instanceof Error
           ? authError.message
-          : "Unable to sign up. Check your details and try again.";
+          : "Unable to sign in. Check your credentials and try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -52,8 +54,27 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
       behavior={Platform.select({ ios: "padding", android: undefined })}
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
+      {/* Appbar Header */}
+      <Appbar.Header
+        mode="center-aligned"
+        style={[
+          styles.headerBar,
+          {
+            backgroundColor: theme.colors.surface,
+            borderBottomColor: theme.colors.outlineVariant,
+          },
+        ]}
+      >
+        <Appbar.BackAction
+          onPress={() => router.back()}
+          color={theme.colors.onSurface}
+        />
+        <Appbar.Content title="Log in" />
+      </Appbar.Header>
+
+      {/* Card-like Surface */}
       <Surface
-        elevation={2}
+        elevation={1}
         style={[
           styles.card,
           {
@@ -66,27 +87,30 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
           variant="headlineMedium"
           style={[styles.title, { color: theme.colors.onSurface }]}
         >
-          Create your account
+          Welcome back
         </Text>
+
         <Text
           variant="bodyMedium"
           style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
         >
-          Join the community and make remembering God's works a habit.
+          Continue your rhythm of remembering God’s faithfulness.
         </Text>
 
         <View style={styles.form}>
           <TextInput
             label="Email"
             value={email}
-            keyboardType="email-address"
             autoCapitalize="none"
-            autoCorrect={false}
             autoComplete="email"
+            keyboardType="email-address"
             onChangeText={setEmail}
             mode="outlined"
             disabled={loading}
             style={styles.input}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
           />
 
           <TextInput
@@ -97,6 +121,9 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
             mode="outlined"
             disabled={loading}
             style={styles.input}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
           />
 
           <HelperText
@@ -115,19 +142,19 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
             style={styles.submitButton}
             contentStyle={{ paddingVertical: 4 }}
           >
-            Sign Up
+            Log In
           </Button>
         </View>
 
         <Button
           mode="text"
-          onPress={onSwitchToLogin}
+          onPress={() => router.replace("/signup")}
           disabled={loading}
           textColor={theme.colors.primary}
           style={styles.switch}
           labelStyle={styles.switchLabel}
         >
-          Already have an account? Log in
+          Need an account? Sign up
         </Button>
       </Surface>
     </KeyboardAvoidingView>
@@ -137,16 +164,19 @@ export function SignupScreen({ onSwitchToLogin }: SignupScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
+    backgroundColor: "transparent",
+  },
+  headerBar: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    elevation: 0,
   },
   card: {
+    marginTop: 32,
+    marginHorizontal: 20,
     borderRadius: 20,
     paddingVertical: 32,
     paddingHorizontal: 24,
-    width: "100%",
-    maxWidth: 400,
-    alignSelf: "center",
+    borderWidth: StyleSheet.hairlineWidth,
   },
   title: {
     textAlign: "center",

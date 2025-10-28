@@ -1,8 +1,10 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -21,7 +23,7 @@ import {
 } from "react-native-paper";
 
 export default function AccountDetailsScreen() {
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
   const theme = useTheme<AppTheme>();
 
   const authUser = session?.user ?? null;
@@ -32,6 +34,7 @@ export default function AccountDetailsScreen() {
   // const [phone, setPhone] = useState(user?.phone ?? "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? "");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const initials = useMemo(() => {
@@ -67,6 +70,50 @@ export default function AccountDetailsScreen() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete account",
+      "Are you sure you want to delete your account? All your data will be lost.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              const { data: _, error } = await supabase.functions.invoke(
+                "delete-account",
+                {
+                  method: "DELETE",
+                  headers: {
+                    Authorization: `Bearer ${session?.access_token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              if (error && error instanceof FunctionsHttpError) {
+                const errorMessage = await error.context.json();
+                Alert.alert(errorMessage.error.message);
+                setDeleting(false);
+                return;
+              }
+              signOut();
+            } catch (error: any) {
+              console.error("Error deleting account:", error);
+              Alert.alert(
+                "Error",
+                error.message || "Failed to delete account."
+              );
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleChangePhoto = async () => {
@@ -154,10 +201,20 @@ export default function AccountDetailsScreen() {
             mode="contained"
             onPress={handleSave}
             loading={saving}
-            disabled={saving}
+            disabled={saving || deleting}
             style={styles.saveButton}
           >
             Save Changes
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleDelete}
+            loading={deleting}
+            disabled={deleting || saving}
+            buttonColor="red"
+            style={styles.saveButton}
+          >
+            Delete Account
           </Button>
         </ScrollView>
       </Surface>

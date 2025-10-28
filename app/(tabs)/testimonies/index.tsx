@@ -1,18 +1,19 @@
+import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
+import { Testimony } from "@/lib/types";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
+  Button,
   Surface,
   Text,
   useTheme,
 } from "react-native-paper";
-
-import type { AppTheme } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
-import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
-import { Testimony } from "@/lib/types";
 
 export default function TestimoniesScreen() {
   const { session } = useAuth();
@@ -157,10 +158,23 @@ export default function TestimoniesScreen() {
               </Text>
               <Text
                 variant="bodyMedium"
-                style={{ color: theme.colors.onSurfaceVariant }}
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  textAlign: "center",
+                  marginBottom: 10,
+                }}
               >
-                Start by recording what God has done in your life.
+                Add your first testimony! Big or small, it's worth remembering.
               </Text>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push("/modal");
+                }}
+              >
+                Add Testimony
+              </Button>
             </View>
           }
         />

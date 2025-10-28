@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User as AppUser } from "@/lib/types";
 import registerForPushNotificationsAsync from "@/utils/registerForPushNotificationsAsync";
+import { useRouter } from "expo-router";
 
 type SignInArgs = { email: string; password: string };
 type SignUpArgs = { email: string; password: string };
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // 🔹 Load session + user on mount
   useEffect(() => {
@@ -101,6 +103,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         });
         if (error) throw error;
         if (data.user) await fetchUser(data.user.id);
+        router.replace("/(tabs)");
       },
 
       signUpWithEmail: async ({ email, password }) => {
@@ -112,6 +115,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
         const authUser = data.user;
         if (!authUser) return;
+
+        router.replace("/(tabs)");
 
         // ✅ Register for push notifications
         const expoPushToken = await registerForPushNotificationsAsync();
@@ -128,6 +133,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       signOut: async () => {
         await supabase.auth.signOut();
         setUser(null);
+        router.replace("/welcome");
       },
     }),
     [session, user, loading]

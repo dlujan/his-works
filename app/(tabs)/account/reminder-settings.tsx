@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
   },
   listSection: {
     marginBottom: 16,
+    marginHorizontal: -20,
   },
   saveButton: {
     marginTop: 8,
