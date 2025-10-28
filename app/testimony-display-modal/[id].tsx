@@ -1,6 +1,6 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { supabase } from "@/lib/supabase";
-import { Testimony } from "@/lib/types";
+import { AppNotificationType, Testimony } from "@/lib/types";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
@@ -32,13 +32,14 @@ export default function TestimonyDisplayModal() {
     if (id) fetchTestimony(id);
   }, [id]);
 
-  // Mark any notifications as read
+  // Mark any reminder notifications for this testimony as read
   useEffect(() => {
     const markAsRead = async () => {
       const { error } = await supabase
         .from("notification")
         .update({ read: true })
         .eq("data->>testimony_uuid", id)
+        .eq("type", AppNotificationType.REMINDER)
         .eq("read", false);
 
       if (error) {
