@@ -153,7 +153,7 @@ export default function ReminderSettingsScreen() {
                 icon="white-balance-sunny"
                 color={
                   settings.timeOfDay === "morning"
-                    ? theme.colors.primary
+                    ? "orange"
                     : theme.colors.onSurfaceVariant
                 }
               />
@@ -176,7 +176,7 @@ export default function ReminderSettingsScreen() {
                 icon="weather-night"
                 color={
                   settings.timeOfDay === "evening"
-                    ? theme.colors.primary
+                    ? "orange"
                     : theme.colors.onSurfaceVariant
                 }
               />
