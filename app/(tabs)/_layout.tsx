@@ -68,7 +68,7 @@ export default function TabLayout() {
                 if (process.env.EXPO_OS === "ios") {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 }
-                router.push("/modal");
+                router.push("/create-testimony-modal");
               }}
               color={createBtnColor}
             />

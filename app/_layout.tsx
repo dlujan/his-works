@@ -48,9 +48,24 @@ export default function RootLayout() {
               {/* Authenticated tabs area */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-              {/* Modal, inside authenticated area */}
+              {/* Modals, inside authenticated area */}
               <Stack.Screen
-                name="modal"
+                name="create-testimony-modal"
+                options={{
+                  presentation: "modal",
+                  headerShown: true,
+                  title: "Add testimony",
+                  headerLeft: () => (
+                    <Button
+                      title="Cancel"
+                      onPress={() => router.back()}
+                      color="#000"
+                    />
+                  ),
+                }}
+              />
+              <Stack.Screen
+                name="testimony-display-modal/[id]"
                 options={{
                   presentation: "modal",
                   title: "New testimony",

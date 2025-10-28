@@ -28,7 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { DatePickerInput } from "react-native-paper-dates";
 
-export default function CreateWorkModal() {
+export default function TestimonyDisplayModal() {
   const theme = useTheme<AppTheme>();
   const router = useRouter();
   const queryClient = useQueryClient();

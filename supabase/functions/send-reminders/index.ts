@@ -85,11 +85,13 @@ Deno.serve(async (req) => {
       "❤️ A reminder of His love.",
     ];
     const bodies = [
-      "Tap to revisit this testimony of God’s faithfulness.",
+      "Tap to revisit this testimony of God's faithfulness.",
       "Remember this moment when God showed up.",
       "Take a moment to reflect on this story of grace.",
       "Open to look back on this work of God in your life.",
     ];
+    const title = titles[Math.floor(Math.random() * titles.length)];
+    const body = bodies[Math.floor(Math.random() * bodies.length)];
 
     // 3️⃣ Build push messages
     const messages = timeSlottedReminders
@@ -97,12 +99,12 @@ Deno.serve(async (req) => {
       .map((r) => ({
         to: r.user!.expo_push_token,
         sound: "default",
-        title: titles[Math.floor(Math.random() * titles.length)],
-        body: bodies[Math.floor(Math.random() * bodies.length)],
+        title: title,
+        body: body,
         data: {
           testimony_uuid: r.testimony_uuid,
           reminder_uuid: r.uuid,
-          url: `hisworks://(tabs)/testimonies/${r.testimony_uuid}`, // TODO url to display screen instead
+          url: `hisworks://testimony-display-modal/${r.testimony_uuid}`,
         },
       }));
 
@@ -110,7 +112,24 @@ Deno.serve(async (req) => {
     const tickets = await sendPushNotifications(messages);
     console.log("tickets", tickets);
 
-    // 5️⃣ Mark sent reminders
+    // 5️⃣ Create new notification rows
+    const { error: notificationsError } = await supabase
+      .from("notification")
+      .insert(timeSlottedReminders.map((reminder) => ({
+        user_uuid: reminder.user_uuid,
+        type: "reminder",
+        title: title,
+        body: body,
+        read: false,
+        data: {
+          reminder_uuid: reminder.uuid,
+          testimony_uuid: reminder.testimony_uuid,
+        },
+      })));
+
+    if (notificationsError) throw notificationsError;
+
+    // 6️⃣ Mark sent reminders
     const sentUuids = timeSlottedReminders.map((r) => r.uuid);
     const { error: updateError } = await supabase
       .from("reminder")
@@ -119,7 +138,7 @@ Deno.serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    // 6️⃣ Reschedule new reminders based on their type
+    // 7️⃣ Reschedule new reminders based on their type
     for (const reminder of timeSlottedReminders) {
       // Skip if no type (e.g., surprise reminders & other)
       if (!reminder.type) continue;

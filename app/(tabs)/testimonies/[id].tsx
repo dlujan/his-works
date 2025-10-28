@@ -212,7 +212,7 @@ export default function EditWorkScreen() {
         style={[styles.fallback, { backgroundColor: theme.colors.background }]}
       >
         <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-          We couldn't find that work.
+          We couldn't find that testimony.
         </Text>
         <Text
           variant="bodyMedium"
@@ -344,6 +344,9 @@ export default function EditWorkScreen() {
             disabled={loading}
           >
             Save changes
+          </Button>
+          <Button onPress={() => router.push(`/testimony-display-modal/${id}`)}>
+            Preview
           </Button>
           <Button
             mode="text"

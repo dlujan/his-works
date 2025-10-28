@@ -46,3 +46,22 @@ export enum ReminderType {
   YEARLY = "yearly",
   QUARTERLY = "quarterly",
 }
+export type AppNotification = {
+  uuid: string;
+  created_at: string;
+  user_uuid: string;
+  type: AppNotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  data: AppNotificationData;
+};
+export enum AppNotificationType {
+  REMINDER = "reminder",
+  LIKE = "like",
+  COMMENT = "comment",
+}
+export type AppNotificationData = {
+  reminder_uuid?: string;
+  testimony_uuid?: string;
+};

@@ -1,77 +1,107 @@
-import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import { Appbar, List, Surface, Text, useTheme } from "react-native-paper";
-
-import type { AppTheme } from "@/constants/paper-theme";
+import { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
+import { AppNotification, AppNotificationType } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
-
-type ActivityItem = {
-  id: string;
-  title: string;
-  message: string;
-  createdAt: string;
-  unread?: boolean;
-};
-
-const now = Date.now();
-
-const activityItems: ActivityItem[] = [
-  {
-    id: "1",
-    title: "New testimony shared",
-    message: "Laura just posted a story about yesterday's outreach.",
-    createdAt: new Date(now - 1000 * 60 * 15).toISOString(), // 15 minutes ago
-    unread: true,
-  },
-  {
-    id: "2",
-    title: "Prayer answered",
-    message: "Community pantry received the supplies it needed.",
-    createdAt: new Date(now - 1000 * 60 * 45).toISOString(), // 45 minutes ago
-  },
-  {
-    id: "3",
-    title: "Volunteer update",
-    message: "Three new people signed up to serve this weekend.",
-    createdAt: new Date(now - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
-  },
-  {
-    id: "4",
-    title: "Reminder",
-    message: "Take a moment to encourage a team member today.",
-    createdAt: new Date(now - 1000 * 60 * 60 * 12).toISOString(), // 12 hours ago
-  },
-];
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
+import { Appbar, List, Surface, Text, useTheme } from "react-native-paper";
 
 export default function ActivityScreen() {
   const theme = useTheme<AppTheme>();
+  const { session } = useAuth();
+  const router = useRouter();
 
-  const renderItem = ({ item }: { item: ActivityItem }) => (
-    <List.Item
-      title={item.title}
-      description={item.message}
-      titleStyle={{ color: theme.colors.onSurface, fontWeight: "600" }}
-      descriptionNumberOfLines={3}
-      descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
-      style={[
-        styles.listItem,
-        item.unread && { backgroundColor: theme.colors.primaryContainer },
-      ]}
-      left={(props) => (
-        <List.Icon
-          {...props}
-          icon={item.unread ? "bell-badge" : "bell-outline"}
-          color={item.unread ? theme.colors.primary : theme.colors.onSurfaceVariant}
-        />
-      )}
-      right={() => (
-        <View style={styles.itemMeta}>
-          <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>
-            {formatTimeSince(item.createdAt)}
-          </Text>
-        </View>
-      )}
-    />
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // TODO: Use react query so this can be invalidated
+  const fetchNotifications = useCallback(async () => {
+    if (!session?.user) return;
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("notification")
+      .select("*")
+      .eq("user_uuid", session.user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching notifications:", error);
+    } else {
+      setNotifications(data || []);
+    }
+
+    setLoading(false);
+  }, [session]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const handleOpenItem = (notification: AppNotification) => {
+    const { type, data } = notification;
+    if (type === AppNotificationType.REMINDER && data.testimony_uuid) {
+      router.push(`/testimony-display-modal/${data.testimony_uuid}`);
+    }
+  };
+
+  const getIconSlug = (notification: AppNotification) => {
+    const { type, read } = notification;
+    if (type === AppNotificationType.REMINDER) {
+      return read ? "bell-outline" : "bell-badge";
+    } else if (type === AppNotificationType.LIKE) {
+      return "heart-outline";
+    } else if (type === AppNotificationType.COMMENT) {
+      return "message-outline";
+    } else {
+      return "information-outline";
+    }
+  };
+
+  const renderItem = ({ item }: { item: AppNotification }) => (
+    <Pressable
+      onPress={() => handleOpenItem(item)}
+      style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+    >
+      <List.Item
+        title={item.title ?? "Notification"}
+        description={item.body ?? ""}
+        titleStyle={{ color: theme.colors.onSurface, fontWeight: "600" }}
+        descriptionNumberOfLines={3}
+        descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
+        style={[
+          styles.listItem,
+          !item.read && { backgroundColor: theme.colors.primaryContainer },
+        ]}
+        left={(props) => (
+          <List.Icon
+            {...props}
+            icon={getIconSlug(item)}
+            color={
+              !item.read ? theme.colors.primary : theme.colors.onSurfaceVariant
+            }
+          />
+        )}
+        right={() => (
+          <View style={styles.itemMeta}>
+            <Text
+              variant="labelSmall"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
+              {formatTimeSince(item.created_at)}
+            </Text>
+          </View>
+        )}
+      />
+    </Pressable>
   );
 
   return (
@@ -93,21 +123,34 @@ export default function ActivityScreen() {
           },
         ]}
       >
-        <Appbar.Content title="Activity" subtitle="Latest updates and notifications" />
+        <Appbar.Content title="Activity" />
       </Appbar.Header>
 
       <FlatList
-        data={activityItems}
-        keyExtractor={(item) => item.id}
+        data={notifications}
+        keyExtractor={(item) => item.uuid}
         renderItem={renderItem}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={fetchNotifications}
+            tintColor={theme.colors.primary}
+          />
+        }
         contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text
+              variant="titleMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
               You&apos;re all caught up
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurfaceVariant }}
+            >
               New activity will show up here as it happens.
             </Text>
           </View>

@@ -49,7 +49,7 @@ export default function TestimoniesScreen() {
       return (
         <Pressable
           onPress={() => handleOpenTestimony(item.uuid)}
-          style={({ pressed }) => [{ opacity: pressed ? 0.95 : 1 }]}
+          style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
         >
           <Surface
             style={[
@@ -170,7 +170,7 @@ export default function TestimoniesScreen() {
                 mode="contained"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  router.push("/modal");
+                  router.push("/create-testimony-modal");
                 }}
               >
                 Add Testimony
