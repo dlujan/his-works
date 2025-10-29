@@ -60,6 +60,50 @@ const Post = () => {
           {testimony.text}
         </Text>
 
+        {/* Bible verse reference */}
+        {testimony.bible_verse && (
+          <View style={styles.verseRow}>
+            <Text
+              style={[styles.verseIcon, { color: theme.colors.primary }]}
+              accessibilityLabel="Bible verse reference"
+            >
+              —
+            </Text>
+            <Text
+              style={[
+                styles.verseText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              {testimony.bible_verse}
+            </Text>
+          </View>
+        )}
+
+        {/* Tags row */}
+        <View style={styles.tagContainer}>
+          {testimony.tags &&
+            testimony.tags.map((tag) => (
+              <View
+                key={tag}
+                style={[
+                  styles.tagPill,
+                  { backgroundColor: theme.colors.primary + "20" },
+                ]}
+              >
+                <Text
+                  variant="labelSmall"
+                  style={{
+                    color: theme.colors.primary,
+                    fontWeight: "500",
+                  }}
+                >
+                  {tag}
+                </Text>
+              </View>
+            ))}
+        </View>
+
         <View style={styles.actionsRow}>
           <View style={styles.likesRow}>
             <IconButton
@@ -74,7 +118,7 @@ const Post = () => {
           </View>
           <IconButton
             icon="share-outline"
-            size={18}
+            size={20}
             onPress={() => handleShare(testimony)}
             iconColor={theme.colors.onSurfaceVariant}
             style={styles.iconButton}
@@ -151,5 +195,30 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     includeFontPadding: false,
     textRendering: "geometricPrecision",
+  },
+  verseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 8,
+  },
+  verseIcon: {
+    marginRight: 6,
+    fontSize: 14,
+  },
+  verseText: {
+    fontSize: 13,
+    fontStyle: "italic",
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 10,
+    // marginBottom: 8,
+  },
+  tagPill: {
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
 });

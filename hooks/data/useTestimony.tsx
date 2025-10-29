@@ -14,7 +14,7 @@ const fetchData = async (id: string) => {
         name
       )
     ),
-    user(*)
+    user(avatar_url, full_name)
   `
     )
     .eq("uuid", id)

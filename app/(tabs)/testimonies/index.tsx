@@ -77,7 +77,7 @@ export default function TestimoniesScreen() {
                   style={[styles.verseIcon, { color: theme.colors.primary }]}
                   accessibilityLabel="Bible verse reference"
                 >
-                  📖
+                  —
                 </Text>
               )}
               <Text

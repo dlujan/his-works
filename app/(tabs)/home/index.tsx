@@ -127,7 +127,7 @@ export default function HomeScreen() {
               </View>
               <IconButton
                 icon="share-outline"
-                size={18}
+                size={20}
                 onPress={() => handleShare(item)}
                 iconColor={theme.colors.onSurfaceVariant}
                 style={styles.iconButton}
