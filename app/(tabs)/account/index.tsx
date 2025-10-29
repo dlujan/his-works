@@ -2,7 +2,7 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { Avatar, List, Surface, Text, useTheme } from "react-native-paper";
 
 export default function AccountScreen() {
@@ -53,12 +53,19 @@ export default function AccountScreen() {
       <View style={styles.container}>
         {/* Profile header */}
         <View style={styles.profileHeader}>
-          <Avatar.Icon
-            icon="account"
-            size={72}
-            style={{ backgroundColor: theme.colors.primaryContainer }}
-            color={theme.colors.onPrimaryContainer}
-          />
+          {user?.avatar_url ? (
+            <Image
+              source={{ uri: user.avatar_url }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Avatar.Icon
+              icon="account"
+              size={72}
+              style={{ backgroundColor: theme.colors.primaryContainer }}
+              color={theme.colors.onPrimaryContainer}
+            />
+          )}
           <View style={styles.profileText}>
             <Text variant="headlineSmall" style={{ fontWeight: "600" }}>
               {user?.full_name ?? "Your Account"}
@@ -127,6 +134,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
     gap: 16,
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 48,
   },
   profileText: {
     flex: 1,

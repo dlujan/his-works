@@ -12,7 +12,6 @@ import {
 import {
   Button,
   HelperText,
-  Surface,
   Text,
   TextInput,
   useTheme,
@@ -53,16 +52,7 @@ export default function SignupScreen() {
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
       {/* Card Section */}
-      <Surface
-        elevation={1}
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.colors.surface,
-            borderColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
+      <View style={styles.card}>
         <Text
           variant="headlineMedium"
           style={[styles.title, { color: theme.colors.onSurface }]}
@@ -137,7 +127,7 @@ export default function SignupScreen() {
         >
           Already have an account? Log in
         </Button>
-      </Surface>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -154,10 +144,8 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 32,
     marginHorizontal: 20,
-    borderRadius: 20,
     paddingVertical: 32,
     paddingHorizontal: 24,
-    borderWidth: StyleSheet.hairlineWidth,
   },
   title: {
     textAlign: "center",

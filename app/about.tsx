@@ -1,12 +1,11 @@
-// app/about.tsx
+// app/about-intro.tsx
 import { AppTheme } from "@/constants/paper-theme";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Icon, Surface, Text, useTheme } from "react-native-paper";
-const logo = require("../assets/images/icon-cropped-320x320.png");
+import { Button, Surface, Text, useTheme } from "react-native-paper";
 
-export default function AboutScreen() {
+export default function AboutIntroScreen() {
   const router = useRouter();
   const theme = useTheme<AppTheme>();
 
@@ -20,67 +19,49 @@ export default function AboutScreen() {
         </Text>
 
         <Text variant="bodyMedium" style={styles.paragraph}>
-          In Scripture, God's people often forgot His mighty works, and their
-          faith wavered. That same forgetfulness can take root in us if we don't
-          intentionally remember His faithfulness.
+          When the Israelites crossed the Jordan River, God instructed them to
+          take twelve stones from the riverbed and build a memorial — a reminder
+          of His mighty works for generations to come.
         </Text>
-        <Text variant="bodyMedium" style={styles.paragraph}>
-          <Text variant="bodyMedium" style={styles.strong}>
-            HisWorks
-          </Text>{" "}
-          helps us avoid the mistakes of the Israelites by recording the stories
-          of God's goodness, revisiting them over time, and keeping our hearts
-          anchored in the truth that He is still at work today.
-        </Text>
-
-        <Text variant="headlineSmall" style={styles.subtitle}>
-          How HisWorks helps
-        </Text>
-
-        <View style={styles.listItem}>
-          <Icon
-            source="book-outline"
-            size={20}
-            color={theme.colors.onSurfaceVariant}
-          />
-          <Text variant="bodyMedium" style={styles.listText}>
-            Keep track of your answered prayers and praise reports
-          </Text>
-        </View>
-
-        <View style={styles.listItem}>
-          <Icon
-            source="bell-outline"
-            size={20}
-            color={theme.colors.onSurfaceVariant}
-          />
-          <Text variant="bodyMedium" style={styles.listText}>
-            Be reminded of His works — we'll send you occasional reminders.
-          </Text>
-        </View>
-
-        <View style={styles.listItem}>
-          <Icon
-            source="account-group-outline"
-            size={20}
-            color={theme.colors.onSurfaceVariant}
-          />
-          <Text variant="bodyMedium" style={styles.listText}>
-            Encourage others with your testimonies and find encouragement in
-            theirs.
-          </Text>
-        </View>
 
         <Text variant="bodyMedium" style={styles.paragraph}>
-          Ready to get started? Jump in!
+          Those stones were a sign that when their children asked,
+          <Text style={styles.italic}> “What do these stones mean?” </Text>
+          they could tell of the Lord's faithfulness and power.
         </Text>
-        <Button
-          mode="contained"
-          onPress={() => router.push("/signup")}
-          style={styles.button}
+
+        <Text
+          variant="bodySmall"
+          style={[
+            styles.paragraph,
+            { fontStyle: "italic", textAlign: "center", opacity: 0.8 },
+          ]}
         >
-          Create Account
-        </Button>
+          — Joshua 4:1-7
+        </Text>
+
+        <Text variant="bodyMedium" style={styles.paragraph}>
+          In the same way, <Text style={styles.strong}>HisWorks</Text> helps you
+          build your own memorial — a record of God's goodness and grace, so
+          that you'll never forget what He has done.
+        </Text>
+
+        <View style={styles.footer}>
+          <Button
+            mode="outlined"
+            onPress={() => router.back()}
+            style={styles.buttonLeft}
+          >
+            Back
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => router.push("/about2")}
+            style={styles.buttonRight}
+          >
+            Next
+          </Button>
+        </View>
       </ScrollView>
     </Surface>
   );
@@ -90,11 +71,6 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  headerBar: {
-    justifyContent: "center",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    elevation: 0,
-  },
   content: {
     flexGrow: 1,
     padding: 20,
@@ -103,36 +79,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontWeight: "bold",
   },
-  subtitle: {
-    marginBottom: 12,
-    fontWeight: "bold",
-    fontSize: 16,
-  },
   paragraph: {
     marginBottom: 16,
     lineHeight: 22,
   },
   strong: {
-    fontWeight: 700,
+    fontWeight: "700",
+  },
+  italic: {
+    fontStyle: "italic",
+  },
+  button: {
+    marginTop: 10,
+    alignSelf: "flex-end",
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingTop: 20,
     paddingBottom: 40,
-    backgroundColor: "transparent",
   },
-  button: {
-    marginTop: 10,
+  buttonLeft: {
+    flex: 1,
+    marginRight: 8,
   },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 12,
-    gap: 8, // adds space between icon and text
-  },
-  listText: {
-    flex: 1, // allows wrapping beside the icon
-    lineHeight: 20,
+  buttonRight: {
+    flex: 1,
+    marginLeft: 8,
   },
 });

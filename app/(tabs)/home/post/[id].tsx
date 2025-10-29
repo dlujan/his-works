@@ -1,0 +1,155 @@
+import { AppTheme } from "@/constants/paper-theme";
+import { useTestimony } from "@/hooks/data/useTestimony";
+import { Testimony } from "@/lib/types";
+import { formatTimeSince } from "@/utils/time";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback } from "react";
+import { Image, Share, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
+const Post = () => {
+  const theme = useTheme<AppTheme>();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { testimony, isFetching } = useTestimony(id || "");
+  const handleShare = useCallback(async (item: Testimony) => {
+    try {
+      await Share.share({
+        title: "Shared testimony",
+        message: `${item.user.full_name} — ${item.text}`,
+      });
+    } catch (error) {
+      console.warn("Unable to share testimony", error);
+    }
+  }, []);
+
+  if (!testimony || isFetching) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator animating={true} color={theme.colors.primary} />
+      </View>
+    );
+  }
+  return (
+    <View
+      style={[
+        styles.postContainer,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
+      <View style={styles.headerRow}>
+        <Image
+          source={{ uri: testimony.user.avatar_url }}
+          style={styles.avatar}
+        />
+        <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
+          {testimony.user.full_name}
+        </Text>
+        <Text
+          style={[styles.timestamp, { color: theme.colors.onSurfaceVariant }]}
+        >
+          {formatTimeSince(testimony.created_at)}
+        </Text>
+      </View>
+
+      <View style={styles.postBody}>
+        <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
+          {testimony.text}
+        </Text>
+
+        <View style={styles.actionsRow}>
+          <View style={styles.likesRow}>
+            <IconButton
+              icon="heart-outline"
+              size={18}
+              iconColor={theme.colors.primary}
+              style={styles.iconButton}
+            />
+            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
+              12
+            </Text>
+          </View>
+          <IconButton
+            icon="share-outline"
+            size={18}
+            onPress={() => handleShare(testimony)}
+            iconColor={theme.colors.onSurfaceVariant}
+            style={styles.iconButton}
+          />
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export default Post;
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  postContainer: {
+    flexDirection: "column",
+    gap: 8,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.12)",
+    paddingBottom: 8,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    marginTop: 4,
+  },
+  nameText: {
+    fontSize: 15,
+    fontWeight: "600",
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+    marginLeft: 10,
+  },
+  postBody: {},
+  timestamp: {
+    fontSize: 13,
+    marginLeft: 6,
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
+  excerpt: {
+    fontSize: 15,
+    lineHeight: 22,
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    marginTop: 6,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  likesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  iconButton: {
+    margin: 0,
+  },
+  likeCount: {
+    fontSize: 13,
+    fontWeight: "500",
+    includeFontPadding: false,
+    textRendering: "geometricPrecision",
+  },
+});

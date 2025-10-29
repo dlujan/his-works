@@ -41,15 +41,17 @@ export default function HomeStackLayout() {
         options={{
           title: "Search",
           headerBackTitle: "Your Feed",
+          headerTitleStyle: { fontWeight: 600 },
         }}
       />
-      {/* <Stack.Screen
-        name="[id]"
+      <Stack.Screen
+        name="post/[id]"
         options={{
-          title: 'Testimony',
-          headerBackTitle: 'Home',
+          title: "Testimony",
+          headerBackTitle: "Your Feed",
+          headerTitleStyle: { fontWeight: 600 },
         }}
-      /> */}
+      />
     </Stack>
   );
 }

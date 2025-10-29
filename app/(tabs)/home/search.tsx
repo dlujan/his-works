@@ -16,7 +16,7 @@ const testimonies: Testimony[] = [
     },
     text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
     created_at: new Date(now - 1000 * 60 * 25).toISOString(),
-    likes: 24,
+    likes: 12,
   },
   {
     uuid: "t2",
@@ -101,7 +101,7 @@ export default function SearchScreen() {
               </Text>
             </View>
             <IconButton
-              icon="share-variant"
+              icon="share-outline"
               size={18}
               onPress={() => handleShare(item)}
               iconColor={theme.colors.onSurfaceVariant}
@@ -134,17 +134,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingVertical: 16,
-  },
-  headerBar: {
-    elevation: 0,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   postContainer: {
     flexDirection: "row",
     gap: 12,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(0,0,0,0.12)",
   },
@@ -156,7 +152,6 @@ const styles = StyleSheet.create({
   },
   postBody: {
     flex: 1,
-    paddingBottom: 2,
   },
   headerRow: {
     flexDirection: "row",

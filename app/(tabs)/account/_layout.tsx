@@ -25,6 +25,7 @@ export default function AccountStackLayout() {
         name="index"
         options={{
           title: "Account",
+          headerTitleStyle: { fontWeight: 600 },
           headerRight: () => (
             <View
               style={{
@@ -50,6 +51,7 @@ export default function AccountStackLayout() {
         options={{
           title: "Account Details",
           headerBackTitle: "Account",
+          headerTitleStyle: { fontWeight: 600 },
         }}
       />
       <Stack.Screen
@@ -57,6 +59,7 @@ export default function AccountStackLayout() {
         options={{
           title: "Reminder Settings",
           headerBackTitle: "Account",
+          headerTitleStyle: { fontWeight: 600 },
         }}
       />
     </Stack>

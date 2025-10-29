@@ -3,7 +3,14 @@ import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import { FlatList, Image, Share, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  Share,
+  StyleSheet,
+  View,
+} from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 const logo = require("../../../assets/images/icon-cropped-320x320.png");
 
@@ -11,44 +18,40 @@ const now = Date.now();
 
 const testimonies: Testimony[] = [
   {
-    uuid: "t1",
+    uuid: "f67a6628-76f2-4e38-aab9-93917c6f507e",
     user: {
       full_name: "Elena Martinez",
       avatar_url: "https://i.pravatar.cc/100?img=1",
     },
     text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
     created_at: new Date(now - 1000 * 60 * 25).toISOString(),
-    likes: 24,
   },
   {
-    uuid: "t2",
+    uuid: "d2dde207-7633-4cbf-9ddd-ef683e23955e",
     user: {
       full_name: "Marcus Lee",
       avatar_url: "https://i.pravatar.cc/100?img=2",
     },
     text: "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
     created_at: new Date(now - 1000 * 60 * 60 * 3).toISOString(),
-    likes: 18,
   },
   {
-    uuid: "t3",
+    uuid: "ac1abd25-a80f-416f-b84a-307b46b35821",
     user: {
       full_name: "Sarah Johnson",
       avatar_url: "https://i.pravatar.cc/100?img=3",
     },
     text: "Students shared testimonies of freedom, and three new families asked how they could get involved.",
     created_at: new Date(now - 1000 * 60 * 60 * 6).toISOString(),
-    likes: 32,
   },
   {
-    uuid: "t4",
+    uuid: "8cee63e8-b1bc-4a8a-8808-74e9b5922652",
     user: {
       full_name: "David Kim",
       avatar_url: "https://i.pravatar.cc/100?img=4",
     },
     text: "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
     created_at: new Date(now - 1000 * 60 * 60 * 12).toISOString(),
-    likes: 45,
   },
 ];
 
@@ -69,50 +72,64 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => (
-      <View style={styles.postContainer}>
-        <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
+      <Pressable
+        onPress={() => router.push(`/home/post/${item.uuid}`)}
+        style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+      >
+        <View
+          style={[
+            styles.postContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
 
-        <View style={styles.postBody}>
-          <View style={styles.headerRow}>
-            <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
-              {item.user.full_name}
-            </Text>
-            <Text
-              style={[
-                styles.timestamp,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              • {formatTimeSince(item.created_at)}
-            </Text>
-          </View>
-
-          <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-            {item.text}
-          </Text>
-
-          <View style={styles.actionsRow}>
-            <View style={styles.likesRow}>
-              <IconButton
-                icon="heart-outline"
-                size={18}
-                iconColor={theme.colors.primary}
-                style={styles.iconButton}
-              />
-              <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
-                {item.likes}
+          <View style={styles.postBody}>
+            <View style={styles.headerRow}>
+              <Text
+                style={[styles.nameText, { color: theme.colors.onSurface }]}
+              >
+                {item.user.full_name}
+              </Text>
+              <Text
+                style={[
+                  styles.timestamp,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {formatTimeSince(item.created_at)}
               </Text>
             </View>
-            <IconButton
-              icon="share-variant"
-              size={18}
-              onPress={() => handleShare(item)}
-              iconColor={theme.colors.onSurfaceVariant}
-              style={styles.iconButton}
-            />
+
+            <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
+              {item.text}
+            </Text>
+
+            <View style={styles.actionsRow}>
+              <View style={styles.likesRow}>
+                <IconButton
+                  icon="heart-outline"
+                  size={18}
+                  iconColor={theme.colors.primary}
+                  style={styles.iconButton}
+                />
+                <Text
+                  style={[styles.likeCount, { color: theme.colors.primary }]}
+                >
+                  12
+                </Text>
+              </View>
+              <IconButton
+                icon="share-outline"
+                size={18}
+                onPress={() => handleShare(item)}
+                iconColor={theme.colors.onSurfaceVariant}
+                style={styles.iconButton}
+              />
+            </View>
           </View>
         </View>
-      </View>
+      </Pressable>
     ),
     [handleShare, theme.colors]
   );
@@ -121,30 +138,6 @@ export default function HomeScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      {/* <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <View style={styles.centerContainer}>
-          <Image
-            source={logo}
-            resizeMode="contain"
-            style={{ width: 40, height: 40 }}
-          />
-        </View>
-        <Appbar.Action
-          icon="magnify"
-          onPress={() => router.push("/home/search")}
-          style={{ marginLeft: "auto" }}
-        />
-      </Appbar.Header> */}
-
       <FlatList
         data={testimonies}
         keyExtractor={(item) => item.uuid}
@@ -161,25 +154,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 16,
     paddingVertical: 16,
-  },
-  headerBar: {
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 0,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  centerContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    alignItems: "center",
   },
   postContainer: {
     flexDirection: "row",
     gap: 12,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(0,0,0,0.12)",
   },
@@ -191,7 +172,6 @@ const styles = StyleSheet.create({
   },
   postBody: {
     flex: 1,
-    paddingBottom: 2,
   },
   headerRow: {
     flexDirection: "row",

@@ -49,6 +49,14 @@ export default function RootLayout() {
                   headerTitle: () => <HeaderTitleLogo />,
                 }}
               />
+              <Stack.Screen
+                name="about2"
+                options={{
+                  headerShown: true,
+                  headerBackTitle: "Back",
+                  headerTitle: () => <HeaderTitleLogo />,
+                }}
+              />
 
               {/* Auth screens */}
               <Stack.Screen
@@ -57,6 +65,7 @@ export default function RootLayout() {
                   headerShown: true,
                   title: "Log in",
                   headerBackTitle: "Back",
+                  headerTitleStyle: { fontWeight: 600 },
                 }}
               />
               <Stack.Screen
@@ -65,6 +74,7 @@ export default function RootLayout() {
                   headerShown: true,
                   title: "Sign up",
                   headerBackTitle: "Back",
+                  headerTitleStyle: { fontWeight: 600 },
                 }}
               />
 
@@ -78,6 +88,7 @@ export default function RootLayout() {
                   presentation: "modal",
                   headerShown: true,
                   title: "Add testimony",
+                  headerTitleStyle: { fontWeight: 600 },
                   headerLeft: () => (
                     <TouchableOpacity onPress={() => router.back()}>
                       <Text style={{ fontSize: 16 }}>Cancel</Text>

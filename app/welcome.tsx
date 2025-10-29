@@ -20,7 +20,7 @@ export default function WelcomeScreen() {
       />
       <Text style={styles.title}>Welcome to HisWorks</Text>
       <Text style={styles.subtitle}>
-        A place to share and remember what God has done.
+        A place to remember and share what God has done.
       </Text>
       <View style={styles.buttons}>
         <Button mode="contained" onPress={() => router.push("/about")}>
