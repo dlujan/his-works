@@ -1,130 +1,188 @@
 import type { AppTheme } from "@/constants/paper-theme";
+import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
-import React, { useCallback } from "react";
-import { FlatList, Image, Share, StyleSheet, View } from "react-native";
-import { IconButton, Surface, Text, useTheme } from "react-native-paper";
-
-const now = Date.now();
-
-const testimonies: Testimony[] = [
-  {
-    uuid: "t1",
-    user: {
-      full_name: "Elena Martinez",
-      avatar_url: "https://i.pravatar.cc/100?img=1",
-    },
-    text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
-    created_at: new Date(now - 1000 * 60 * 25).toISOString(),
-    likes: 12,
-  },
-  {
-    uuid: "t2",
-    user: {
-      full_name: "Marcus Lee",
-      avatar_url: "https://i.pravatar.cc/100?img=2",
-    },
-    text: "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
-    created_at: new Date(now - 1000 * 60 * 60 * 3).toISOString(),
-    likes: 18,
-  },
-  {
-    uuid: "t3",
-    user: {
-      full_name: "Sarah Johnson",
-      avatar_url: "https://i.pravatar.cc/100?img=3",
-    },
-    text: "Students shared testimonies of freedom, and three new families asked how they could get involved.",
-    created_at: new Date(now - 1000 * 60 * 60 * 6).toISOString(),
-    likes: 32,
-  },
-  {
-    uuid: "t4",
-    user: {
-      full_name: "David Kim",
-      avatar_url: "https://i.pravatar.cc/100?img=4",
-    },
-    text: "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
-    created_at: new Date(now - 1000 * 60 * 60 * 12).toISOString(),
-    likes: 45,
-  },
-];
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Surface,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 
 export default function SearchScreen() {
   const theme = useTheme<AppTheme>();
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<Testimony[]>([]);
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const handleShare = useCallback(async (item: Testimony) => {
-    try {
-      await Share.share({
-        title: "Shared testimony",
-        message: `${item.user.full_name} — ${item.text}`,
+  const handleSearch = useCallback(
+    async (reset = true) => {
+      if (!query.trim()) return;
+      if (searching && !reset) return; // prevent overlap
+
+      if (reset) {
+        setSearching(true);
+        setPage(0);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const from = reset ? 0 : page * PAGE_SIZE;
+      const { data, error } = await supabase.rpc("search_testimonies", {
+        q: query.trim(),
+        limit_count: PAGE_SIZE,
+        offset_count: from,
       });
-    } catch (error) {
-      console.warn("Unable to share testimony", error);
+
+      if (error) {
+        console.error("Search error:", error.message);
+        if (reset) setResults([]);
+        setHasMore(false);
+      } else {
+        const mapped = (data ?? []).map((item: any) => ({
+          ...item,
+          user: {
+            full_name: item.user_full_name,
+            avatar_url: item.user_avatar_url,
+          },
+        }));
+
+        setResults((prev) => (reset ? mapped : [...prev, ...mapped]));
+        setHasMore(mapped.length === PAGE_SIZE);
+        setPage((p) => (reset ? 1 : p + 1));
+      }
+
+      setSearching(false);
+      setLoadingMore(false);
+    },
+    [query, page, searching]
+  );
+
+  // 🔍 Debounced search when typing
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
     }
-  }, []);
+
+    const timeout = setTimeout(() => {
+      handleSearch(true);
+    }, 600); // delay in ms (adjust as needed)
+
+    return () => clearTimeout(timeout); // cleanup on re-type
+  }, [query]);
 
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => (
-      <View style={styles.postContainer}>
-        <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
-
-        <View style={styles.postBody}>
-          <View style={styles.headerRow}>
-            <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
-              {item.user.full_name}
-            </Text>
-            <Text
-              style={[
-                styles.timestamp,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              • {formatTimeSince(item.created_at)}
-            </Text>
-          </View>
-
-          <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-            {item.text}
-          </Text>
-
-          <View style={styles.actionsRow}>
-            <View style={styles.likesRow}>
-              <IconButton
-                icon="heart-outline"
-                size={18}
-                iconColor={theme.colors.primary}
-                style={styles.iconButton}
-              />
-              <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
-                {item.likes}
+      <Pressable
+        onPress={() => router.push(`/home/post/${item.uuid}`)}
+        style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
+      >
+        <View
+          style={[
+            styles.postContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
+          <View style={styles.postBody}>
+            <View style={styles.headerRow}>
+              <Text
+                style={[styles.nameText, { color: theme.colors.onSurface }]}
+              >
+                {item.user.full_name}
+              </Text>
+              <Text
+                style={[
+                  styles.timestamp,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {formatTimeSince(item.created_at)}
               </Text>
             </View>
-            <IconButton
-              icon="share-outline"
-              size={18}
-              onPress={() => handleShare(item)}
-              iconColor={theme.colors.onSurfaceVariant}
-              style={styles.iconButton}
-            />
+
+            <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
+              {item.text}
+            </Text>
           </View>
         </View>
-      </View>
+      </Pressable>
     ),
-    [handleShare, theme.colors]
+    [theme.colors]
   );
 
   return (
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <FlatList
-        data={testimonies}
-        keyExtractor={(item) => item.uuid}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+      <View style={styles.searchBarContainer}>
+        <TextInput
+          placeholder="Search testimonies or people..."
+          mode="outlined"
+          value={query}
+          onChangeText={setQuery}
+          right={
+            <TextInput.Icon
+              icon="magnify"
+              onPress={handleSearch}
+              forceTextInputFocus={false}
+            />
+          }
+          style={styles.searchInput}
+          returnKeyType="search"
+        />
+      </View>
+
+      {searching ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator animating color={theme.colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={results}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          onEndReached={() => {
+            if (hasMore && !loadingMore && !searching) {
+              handleSearch(false);
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 16 }}>
+                <ActivityIndicator animating color={theme.colors.primary} />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            !searching && query.trim().length > 0 ? (
+              <View style={styles.emptyState}>
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    textAlign: "center",
+                  }}
+                >
+                  No results found.
+                </Text>
+              </View>
+            ) : null
+          }
+        />
+      )}
     </Surface>
   );
 }
@@ -133,14 +191,27 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  searchBarContainer: {
+    padding: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.12)",
+  },
+  searchInput: {
+    backgroundColor: "transparent",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   listContent: {
-    paddingVertical: 16,
+    paddingVertical: 0,
   },
   postContainer: {
     flexDirection: "row",
     gap: 12,
     paddingHorizontal: 16,
-    paddingBottom: 4,
+    paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(0,0,0,0.12)",
   },
@@ -161,42 +232,19 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 15,
     fontWeight: "600",
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
   timestamp: {
     fontSize: 13,
     marginLeft: 6,
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
   excerpt: {
     fontSize: 15,
     lineHeight: 22,
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
-  actionsRow: {
-    flexDirection: "row",
-    marginTop: 6,
+  emptyState: {
+    flex: 1,
     alignItems: "center",
-    justifyContent: "space-between",
-  },
-  likesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  iconButton: {
-    margin: 0,
-  },
-  likeCount: {
-    fontSize: 13,
-    fontWeight: "500",
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
-  },
-  separator: {
-    height: 16,
+    justifyContent: "center",
+    paddingVertical: 48,
   },
 });

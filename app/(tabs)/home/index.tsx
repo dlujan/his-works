@@ -1,63 +1,30 @@
 import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Image,
   Pressable,
+  RefreshControl,
   Share,
   StyleSheet,
   View,
 } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
-const logo = require("../../../assets/images/icon-cropped-320x320.png");
-
-const now = Date.now();
-
-const testimonies: Testimony[] = [
-  {
-    uuid: "f67a6628-76f2-4e38-aab9-93917c6f507e",
-    user: {
-      full_name: "Elena Martinez",
-      avatar_url: "https://i.pravatar.cc/100?img=1",
-    },
-    text: "Our team has been praying for open doors downtown. Yesterday we were invited into a neighborhood we'd never served before.",
-    created_at: new Date(now - 1000 * 60 * 25).toISOString(),
-  },
-  {
-    uuid: "d2dde207-7633-4cbf-9ddd-ef683e23955e",
-    user: {
-      full_name: "Marcus Lee",
-      avatar_url: "https://i.pravatar.cc/100?img=2",
-    },
-    text: "We were short on fresh produce, but a farmer called to donate crates of fruit right before opening.",
-    created_at: new Date(now - 1000 * 60 * 60 * 3).toISOString(),
-  },
-  {
-    uuid: "ac1abd25-a80f-416f-b84a-307b46b35821",
-    user: {
-      full_name: "Sarah Johnson",
-      avatar_url: "https://i.pravatar.cc/100?img=3",
-    },
-    text: "Students shared testimonies of freedom, and three new families asked how they could get involved.",
-    created_at: new Date(now - 1000 * 60 * 60 * 6).toISOString(),
-  },
-  {
-    uuid: "8cee63e8-b1bc-4a8a-8808-74e9b5922652",
-    user: {
-      full_name: "David Kim",
-      avatar_url: "https://i.pravatar.cc/100?img=4",
-    },
-    text: "After weeks of praying, my neighbor finally received the medical results we had been hoping for.",
-    created_at: new Date(now - 1000 * 60 * 60 * 12).toISOString(),
-  },
-];
 
 export default function HomeScreen() {
   const theme = useTheme<AppTheme>();
   const router = useRouter();
+  const PAGE_SIZE = 10;
+  const { user } = useAuth();
+  const [testimonies, setTestimonies] = useState<Testimony[]>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
@@ -69,6 +36,45 @@ export default function HomeScreen() {
       console.warn("Unable to share testimony", error);
     }
   }, []);
+
+  const fetchTestimonies = useCallback(
+    async (reset = false) => {
+      if (!user?.uuid || loading) return;
+
+      setLoading(true);
+      const from = reset ? 0 : page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { data, error } = await supabase
+        .from("testimony")
+        .select("*, user(full_name, avatar_url)")
+        .or(`is_public.eq.true,user_uuid.eq.${user?.uuid}`)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.error("Error fetching testimonies:", error.message);
+      } else if (data) {
+        setTestimonies((prev) => (reset ? data : [...prev, ...data]));
+        setHasMore(data.length === PAGE_SIZE);
+        if (reset) setPage(1);
+        else setPage((p) => p + 1);
+      }
+
+      setLoading(false);
+    },
+    [page, user?.uuid, loading]
+  );
+
+  useEffect(() => {
+    fetchTestimonies(true);
+  }, [user?.uuid]);
+
+  const handleRefresh = () => fetchTestimonies(true);
+
+  const handleLoadMore = () => {
+    if (hasMore && !loading) fetchTestimonies();
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Testimony }) => (
@@ -144,6 +150,15 @@ export default function HomeScreen() {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
       />
     </Surface>
   );
@@ -181,20 +196,14 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 15,
     fontWeight: "600",
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
   timestamp: {
     fontSize: 13,
     marginLeft: 6,
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
   excerpt: {
     fontSize: 15,
     lineHeight: 22,
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
   },
   actionsRow: {
     flexDirection: "row",

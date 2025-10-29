@@ -27,7 +27,7 @@ export default function HomeStackLayout() {
             >
               <IconButton
                 icon="magnify"
-                size={28}
+                size={26}
                 iconColor={theme.colors.onSurface}
                 onPress={() => router.push("/home/search")}
                 style={{ margin: 0 }}
@@ -40,7 +40,7 @@ export default function HomeStackLayout() {
         name="search"
         options={{
           title: "Search",
-          headerBackTitle: "Your Feed",
+          headerBackTitle: "Back",
           headerTitleStyle: { fontWeight: 600 },
         }}
       />
@@ -48,7 +48,7 @@ export default function HomeStackLayout() {
         name="post/[id]"
         options={{
           title: "Testimony",
-          headerBackTitle: "Your Feed",
+          headerBackTitle: "Back",
           headerTitleStyle: { fontWeight: 600 },
         }}
       />
