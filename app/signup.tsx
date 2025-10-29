@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 import {
-  Appbar,
   Button,
   HelperText,
   Surface,
@@ -53,24 +52,6 @@ export default function SignupScreen() {
       behavior={Platform.select({ ios: "padding", android: undefined })}
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      {/* Header */}
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.BackAction
-          onPress={() => router.back()}
-          color={theme.colors.onSurface}
-        />
-        <Appbar.Content title="Sign up" />
-      </Appbar.Header>
-
       {/* Card Section */}
       <Surface
         elevation={1}

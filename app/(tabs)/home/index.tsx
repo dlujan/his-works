@@ -4,13 +4,8 @@ import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
 import { FlatList, Image, Share, StyleSheet, View } from "react-native";
-import {
-  Appbar,
-  IconButton,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { IconButton, Surface, Text, useTheme } from "react-native-paper";
+const logo = require("../../../assets/images/icon-cropped-320x320.png");
 
 const now = Date.now();
 
@@ -126,7 +121,7 @@ export default function HomeScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Appbar.Header
+      {/* <Appbar.Header
         mode="center-aligned"
         style={[
           styles.headerBar,
@@ -136,12 +131,19 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <Appbar.Content title="Your Feed" />
+        <View style={styles.centerContainer}>
+          <Image
+            source={logo}
+            resizeMode="contain"
+            style={{ width: 40, height: 40 }}
+          />
+        </View>
         <Appbar.Action
           icon="magnify"
           onPress={() => router.push("/home/search")}
+          style={{ marginLeft: "auto" }}
         />
-      </Appbar.Header>
+      </Appbar.Header> */}
 
       <FlatList
         data={testimonies}
@@ -163,8 +165,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerBar: {
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 0,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  centerContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
   postContainer: {
     flexDirection: "row",

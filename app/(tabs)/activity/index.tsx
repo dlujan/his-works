@@ -12,7 +12,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Appbar, List, Surface, Text, useTheme } from "react-native-paper";
+import { List, Surface, Text, useTheme } from "react-native-paper";
 
 export default function ActivityScreen() {
   const theme = useTheme<AppTheme>();
@@ -113,19 +113,6 @@ export default function ActivityScreen() {
         },
       ]}
     >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content title="Activity" />
-      </Appbar.Header>
-
       <FlatList
         data={notifications}
         keyExtractor={(item) => item.uuid}

@@ -1,4 +1,5 @@
 // app/_layout.tsx
+import HeaderTitleLogo from "@/components/HeaderTitleLogo";
 import {
   navigationDarkTheme,
   navigationLightTheme,
@@ -12,9 +13,10 @@ import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { Button } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
+const logo = require("../assets/images/icon-cropped-320x320.png");
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -39,11 +41,32 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               {/* Unauthenticated screens */}
               <Stack.Screen name="welcome" />
-              <Stack.Screen name="about" />
+              <Stack.Screen
+                name="about"
+                options={{
+                  headerShown: true,
+                  headerBackTitle: "Back",
+                  headerTitle: () => <HeaderTitleLogo />,
+                }}
+              />
 
               {/* Auth screens */}
-              <Stack.Screen name="login" />
-              <Stack.Screen name="signup" />
+              <Stack.Screen
+                name="login"
+                options={{
+                  headerShown: true,
+                  title: "Log in",
+                  headerBackTitle: "Back",
+                }}
+              />
+              <Stack.Screen
+                name="signup"
+                options={{
+                  headerShown: true,
+                  title: "Sign up",
+                  headerBackTitle: "Back",
+                }}
+              />
 
               {/* Authenticated tabs area */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -56,11 +79,9 @@ export default function RootLayout() {
                   headerShown: true,
                   title: "Add testimony",
                   headerLeft: () => (
-                    <Button
-                      title="Cancel"
-                      onPress={() => router.back()}
-                      color="#000"
-                    />
+                    <TouchableOpacity onPress={() => router.back()}>
+                      <Text style={{ fontSize: 16 }}>Cancel</Text>
+                    </TouchableOpacity>
                   ),
                 }}
               />
@@ -68,14 +89,8 @@ export default function RootLayout() {
                 name="testimony-display-modal/[id]"
                 options={{
                   presentation: "modal",
+                  headerShown: false,
                   title: "New testimony",
-                  headerLeft: () => (
-                    <Button
-                      title="Cancel"
-                      onPress={() => router.back()}
-                      color="#000"
-                    />
-                  ),
                 }}
               />
             </Stack>

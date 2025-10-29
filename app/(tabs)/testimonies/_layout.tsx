@@ -4,12 +4,12 @@ import React from "react";
 export default function TestimoniesStackLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ title: "My Testimonies" }} />
       <Stack.Screen
         name="[id]"
         options={{
-          title: "Edit Testimony",
-          headerBackTitle: "Testimonies",
+          title: "Edit",
+          headerBackTitle: "My Testimonies",
         }}
       />
     </Stack>

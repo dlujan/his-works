@@ -1,10 +1,41 @@
-import { Stack } from "expo-router";
+import HeaderTitleLogo from "@/components/HeaderTitleLogo";
+import { AppTheme } from "@/constants/paper-theme";
+import { Stack, useRouter } from "expo-router";
 import React from "react";
+import { View } from "react-native";
+import { IconButton, useTheme } from "react-native-paper";
+const logo = require("../../../assets/images/icon-cropped-320x320.png");
 
 export default function HomeStackLayout() {
+  const router = useRouter();
+  const theme = useTheme<AppTheme>();
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          headerTitleAlign: "center",
+          headerTitle: () => <HeaderTitleLogo />,
+          headerRight: () => (
+            <View
+              style={{
+                height: 40,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 4,
+              }}
+            >
+              <IconButton
+                icon="magnify"
+                size={28}
+                iconColor={theme.colors.onSurface}
+                onPress={() => router.push("/home/search")}
+                style={{ margin: 0 }}
+              />
+            </View>
+          ),
+        }}
+      />
       <Stack.Screen
         name="search"
         options={{

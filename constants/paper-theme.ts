@@ -2,20 +2,21 @@ import type { Theme } from "@react-navigation/native";
 import { DarkTheme, DefaultTheme } from "@react-navigation/native";
 import type { MD3Theme } from "react-native-paper";
 import {
+  adaptNavigationTheme,
   MD3DarkTheme,
   MD3LightTheme,
-  adaptNavigationTheme,
 } from "react-native-paper";
 
 export const palette = {
   background: "#FFF4EC",
-  surface: "#F4E5D6",
+  surface: "#FBE6D4",
   surfaceSoft: "#EFD9C5",
   ink: "#36241A",
   inkMuted: "#6B4E3D",
   primary: "#3F7D3C",
   primarySoft: "#A6D8AA",
   success: "#4F7D58",
+  logoBackground: "#FCE7CF",
 } as const;
 
 type PaletteColors = typeof palette;

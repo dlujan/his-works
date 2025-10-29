@@ -7,7 +7,6 @@ import {
   View,
 } from "react-native";
 import {
-  Appbar,
   Button,
   HelperText,
   Surface,
@@ -54,24 +53,6 @@ export default function LoginScreen() {
       behavior={Platform.select({ ios: "padding", android: undefined })}
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      {/* Appbar Header */}
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.BackAction
-          onPress={() => router.back()}
-          color={theme.colors.onSurface}
-        />
-        <Appbar.Content title="Log in" />
-      </Appbar.Header>
-
       {/* Card-like Surface */}
       <Surface
         elevation={1}

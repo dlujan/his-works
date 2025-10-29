@@ -3,14 +3,8 @@ import { AppTheme } from "@/constants/paper-theme";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import {
-  Appbar,
-  Button,
-  Icon,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Button, Icon, Surface, Text, useTheme } from "react-native-paper";
+const logo = require("../assets/images/icon-cropped-320x320.png");
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -20,19 +14,6 @@ export default function AboutScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content title="LOGO" />
-      </Appbar.Header>
-
       <ScrollView contentContainerStyle={styles.content}>
         <Text variant="headlineSmall" style={styles.title}>
           Welcome to HisWorks
@@ -93,16 +74,6 @@ export default function AboutScreen() {
         <Text variant="bodyMedium" style={styles.paragraph}>
           Ready to get started? Jump in!
         </Text>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Button
-          mode="outlined"
-          onPress={() => router.back()}
-          style={styles.button}
-        >
-          Back
-        </Button>
         <Button
           mode="contained"
           onPress={() => router.push("/signup")}
@@ -110,7 +81,7 @@ export default function AboutScreen() {
         >
           Create Account
         </Button>
-      </View>
+      </ScrollView>
     </Surface>
   );
 }
@@ -120,6 +91,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBar: {
+    justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
     elevation: 0,
   },
@@ -151,8 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   button: {
-    flex: 1,
-    marginHorizontal: 8,
+    marginTop: 10,
   },
   listItem: {
     flexDirection: "row",

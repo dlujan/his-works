@@ -3,14 +3,7 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import {
-  Appbar,
-  Avatar,
-  List,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Avatar, List, Surface, Text, useTheme } from "react-native-paper";
 
 export default function AccountScreen() {
   const { session, signOut } = useAuth();
@@ -57,26 +50,6 @@ export default function AccountScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content title="Account" />
-        <Appbar.Action
-          icon="logout"
-          color={theme.colors.onSurface}
-          onPress={handleSignOut}
-          disabled={loading}
-          accessibilityLabel="Log out"
-        />
-      </Appbar.Header>
-
       <View style={styles.container}>
         {/* Profile header */}
         <View style={styles.profileHeader}>

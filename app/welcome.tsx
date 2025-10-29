@@ -1,20 +1,30 @@
-// app/Welcome.tsx
+import { palette } from "@/constants/paper-theme";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
+const logo = require("../assets/images/android-icon2-512x512.png");
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
+      <Image
+        source={logo}
+        resizeMode="contain"
+        style={{
+          width: 160,
+          height: 160,
+          bottom: -10,
+        }}
+      />
       <Text style={styles.title}>Welcome to HisWorks</Text>
       <Text style={styles.subtitle}>
         A place to share and remember what God has done.
       </Text>
       <View style={styles.buttons}>
         <Button mode="contained" onPress={() => router.push("/about")}>
-          Let's Begin
+          Get Started
         </Button>
         <Button mode="text" onPress={() => router.push("/login")}>
           Log In
@@ -30,6 +40,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: palette.surface,
   },
   title: { fontSize: 32, fontWeight: "bold", marginBottom: 10 },
   subtitle: { fontSize: 16, textAlign: "center", marginBottom: 20 },

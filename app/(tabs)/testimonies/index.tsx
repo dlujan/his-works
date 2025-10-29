@@ -8,7 +8,6 @@ import React, { useCallback } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
-  Appbar,
   Button,
   Surface,
   Text,
@@ -125,19 +124,6 @@ export default function TestimoniesScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <Appbar.Header
-        mode="center-aligned"
-        style={[
-          styles.headerBar,
-          {
-            backgroundColor: theme.colors.surface,
-            borderBottomColor: theme.colors.outlineVariant,
-          },
-        ]}
-      >
-        <Appbar.Content title="My Testimonies" />
-      </Appbar.Header>
-
       {isFetching ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator animating={true} color={theme.colors.primary} />
