@@ -14,7 +14,7 @@ const HeaderTitleLogo = () => {
       <Image
         source={logo}
         resizeMode="contain"
-        style={{ width: 40, height: 40 }}
+        style={{ width: 40, height: 40, borderRadius: 10 }}
       />
     </View>
   );

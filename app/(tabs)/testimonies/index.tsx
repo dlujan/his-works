@@ -19,8 +19,14 @@ export default function TestimoniesScreen() {
   const user = session?.user ?? null;
   const router = useRouter();
   const theme = useTheme<AppTheme>();
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
+    useUserTestimonies(user?.id || "");
 
-  const { testimonies, isFetching } = useUserTestimonies(user?.id || "");
+  const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
+
+  const handleLoadMore = () => {
+    if (hasNextPage) fetchNextPage();
+  };
 
   const handleOpenTestimony = useCallback(
     (id: string) => {
@@ -124,7 +130,7 @@ export default function TestimoniesScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      {isFetching ? (
+      {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator animating={true} color={theme.colors.primary} />
         </View>
@@ -134,34 +140,46 @@ export default function TestimoniesScreen() {
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: 16 }}>
+                <ActivityIndicator animating color={theme.colors.primary} />
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text
-                variant="titleMedium"
-                style={{ color: theme.colors.onSurface }}
-              >
-                No testimonies yet
-              </Text>
-              <Text
-                variant="bodyMedium"
-                style={{
-                  color: theme.colors.onSurfaceVariant,
-                  textAlign: "center",
-                  marginBottom: 10,
-                }}
-              >
-                Add your first testimony! Big or small, it's worth remembering.
-              </Text>
-              <Button
-                mode="contained"
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  router.push("/create-testimony-modal");
-                }}
-              >
-                Add Testimony
-              </Button>
-            </View>
+            !isLoading && (
+              <View style={styles.emptyState}>
+                <Text
+                  variant="titleMedium"
+                  style={{ color: theme.colors.onSurface }}
+                >
+                  No testimonies yet
+                </Text>
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    textAlign: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  Add your first testimony! Big or small, it's worth
+                  remembering.
+                </Text>
+                <Button
+                  mode="contained"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    router.push("/create-testimony-modal");
+                  }}
+                >
+                  Add Testimony
+                </Button>
+              </View>
+            )
           }
         />
       )}

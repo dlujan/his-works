@@ -32,6 +32,8 @@ export type Testimony = {
   bible_verse?: string;
   tags?: string[];
   reminders?: Reminder[];
+  likes_count?: number;
+  liked_by_user?: boolean;
 };
 export type Reminder = {
   uuid: string;

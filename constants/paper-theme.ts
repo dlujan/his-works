@@ -77,8 +77,8 @@ const darkElevation = {
 } as const;
 
 const darkOverrides = {
-  background: "#28170D",
-  surface: "#2F1D13",
+  background: "#181312",
+  surface: "#221C1A",
   surfaceBright: "rgba(47, 29, 19, 0.92)",
   surfaceVariant: "rgba(166, 216, 170, 0.12)",
   surfaceTint: palette.primary,

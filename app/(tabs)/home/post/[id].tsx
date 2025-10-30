@@ -1,4 +1,6 @@
 import { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
@@ -15,6 +17,9 @@ const Post = () => {
   const theme = useTheme<AppTheme>();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { testimony, isFetching } = useTestimony(id || "");
+  const { user } = useAuth();
+  const { mutate: likeTestimony } = useLikeTestimony();
+
   const handleShare = useCallback(async (item: Testimony) => {
     try {
       await Share.share({
@@ -33,6 +38,10 @@ const Post = () => {
       </View>
     );
   }
+
+  const liked = testimony.liked_by_user ?? false;
+  const likesCount = testimony.likes_count ?? 0;
+
   return (
     <View
       style={[
@@ -107,13 +116,20 @@ const Post = () => {
         <View style={styles.actionsRow}>
           <View style={styles.likesRow}>
             <IconButton
-              icon="heart-outline"
+              icon={liked ? "heart" : "heart-outline"}
               size={18}
               iconColor={theme.colors.primary}
               style={styles.iconButton}
+              onPress={() =>
+                likeTestimony({
+                  testimonyUuid: testimony.uuid,
+                  userUuid: user?.uuid!,
+                  liked: !liked,
+                })
+              }
             />
             <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
-              12
+              {likesCount}
             </Text>
           </View>
           <IconButton
