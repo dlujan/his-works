@@ -103,10 +103,8 @@ export default function AccountScreen() {
           />
           <List.Item
             title="Legal"
-            description="Legal documents, such as Privacy Policy"
-            left={(props) => (
-              <List.Icon {...props} icon="file-document-outline" />
-            )}
+            description="Legal documents and such"
+            left={(props) => <List.Icon {...props} icon="scale-balance" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/legal")}
           />

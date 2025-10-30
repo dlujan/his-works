@@ -1,5 +1,9 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
+import {
+  openBrowserAsync,
+  WebBrowserPresentationStyle,
+} from "expo-web-browser";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -41,7 +45,39 @@ export default function LegalScreen() {
               title="Privacy Policy"
               left={(props) => <List.Icon {...props} icon="lock-outline" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
-              onPress={() => null}
+              onPress={async (event) => {
+                if (process.env.EXPO_OS !== "web") {
+                  // Prevent the default behavior of linking to the default browser on native.
+                  event.preventDefault();
+                  // Open the link in an in-app browser.
+                  await openBrowserAsync(
+                    "https://github.com/dlujan/his-works/blob/main/PRIVACY_POLICY.md",
+                    {
+                      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+                    }
+                  );
+                }
+              }}
+            />
+            <List.Item
+              title="Terms of Use"
+              left={(props) => (
+                <List.Icon {...props} icon="file-document-outline" />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={async (event) => {
+                if (process.env.EXPO_OS !== "web") {
+                  // Prevent the default behavior of linking to the default browser on native.
+                  event.preventDefault();
+                  // Open the link in an in-app browser.
+                  await openBrowserAsync(
+                    "https://github.com/dlujan/his-works/blob/main/TERMS_OF_USE.md",
+                    {
+                      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+                    }
+                  );
+                }
+              }}
             />
           </List.Section>
         </ScrollView>
