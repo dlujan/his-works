@@ -62,6 +62,14 @@ export default function AccountStackLayout() {
           headerTitleStyle: { fontWeight: 600 },
         }}
       />
+      <Stack.Screen
+        name="legal"
+        options={{
+          title: "Legal",
+          headerBackTitle: "Account",
+          headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
     </Stack>
   );
 }

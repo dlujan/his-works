@@ -101,6 +101,15 @@ export default function AccountScreen() {
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/reminder-settings")}
           />
+          <List.Item
+            title="Legal"
+            description="Legal documents, such as Privacy Policy"
+            left={(props) => (
+              <List.Icon {...props} icon="file-document-outline" />
+            )}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => router.push("/account/legal")}
+          />
         </List.Section>
 
         {signOutError && (
