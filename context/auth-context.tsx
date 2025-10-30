@@ -8,7 +8,7 @@ import registerForPushNotificationsAsync from "@/utils/registerForPushNotificati
 import { useRouter } from "expo-router";
 
 type SignInArgs = { email: string; password: string };
-type SignUpArgs = { email: string; password: string };
+type SignUpArgs = { email: string; password: string; name: string };
 
 type AuthContextValue = {
   session: Session | null;
@@ -107,7 +107,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         router.replace("/(tabs)");
       },
 
-      signUpWithEmail: async ({ email, password }) => {
+      signUpWithEmail: async ({ email, password, name }) => {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -124,7 +124,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
         if (expoPushToken) {
           await supabase
             .from("user")
-            .update({ expo_push_token: expoPushToken })
+            .update({ expo_push_token: expoPushToken, full_name: name })
+            .eq("uuid", authUser.id);
+        } else {
+          await supabase
+            .from("user")
+            .update({ full_name: name })
             .eq("uuid", authUser.id);
         }
 

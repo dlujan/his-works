@@ -1,13 +1,16 @@
+import { palette } from "@/constants/paper-theme";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { MultiSelect } from "react-native-element-dropdown";
 import { Chip, Text, useTheme } from "react-native-paper";
 
 export function TagMultiSelect({
+  useModal = false,
   availableTags,
   tags,
   setTags,
 }: {
+  useModal?: boolean;
   availableTags: string[];
   tags: string[];
   setTags: (value: string[]) => void;
@@ -30,7 +33,7 @@ export function TagMultiSelect({
           style={[
             styles.itemText,
             {
-              color: isSelected ? theme.colors.primary : theme.colors.onSurface,
+              color: isSelected ? theme.colors.primary : palette.ink,
               fontWeight: isSelected ? "600" : "400",
             },
           ]}
@@ -57,11 +60,15 @@ export function TagMultiSelect({
             borderColor: theme.colors.onSurfaceVariant,
           },
         ]}
+        dropdownPosition={useModal ? "top" : "auto"}
         inputSearchStyle={styles.inputSearchStyle}
         itemTextStyle={{ color: theme.colors.onSurface }}
         selectedTextStyle={{ color: theme.colors.primary }}
         placeholderStyle={{ color: theme.colors.onSurfaceVariant }}
-        containerStyle={{ backgroundColor: "white" }}
+        containerStyle={{
+          backgroundColor: "white",
+          bottom: useModal ? -55 : 0,
+        }}
         data={availableTags.map((tag) => ({ label: tag, value: tag }))}
         labelField="label"
         valueField="value"

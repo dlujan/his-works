@@ -153,6 +153,9 @@ export default function EditWorkScreen() {
       }
 
       queryClient.invalidateQueries({ queryKey: ["testimony", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["user-testimonies", user!.uuid],
+      });
       if (dateChanged) {
         setMessage(
           "Success! Your testimony has been updated and your reminders have been rescheduled."

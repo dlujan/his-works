@@ -27,7 +27,6 @@ import {
 export default function AccountDetailsScreen() {
   const { session, signOut } = useAuth();
   const theme = useTheme<AppTheme>();
-
   const authUser = session?.user ?? null;
   const { user, setUser } = useAuth();
 
@@ -265,7 +264,7 @@ export default function AccountDetailsScreen() {
                 {
                   color: message.includes("success")
                     ? "green"
-                    : theme.colors.error,
+                    : "rgba(179, 38, 30, 1)",
                 },
               ]}
             >
@@ -287,7 +286,7 @@ export default function AccountDetailsScreen() {
               onPress={handleDelete}
               loading={deleting}
               disabled={deleting || saving}
-              buttonColor={theme.colors.error}
+              buttonColor="rgba(179, 38, 30, 1)"
             >
               Delete Account
             </Button>

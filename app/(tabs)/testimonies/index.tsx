@@ -15,6 +15,7 @@ import {
 import {
   ActivityIndicator,
   Button,
+  Icon,
   Surface,
   Text,
   useTheme,
@@ -74,14 +75,23 @@ export default function TestimoniesScreen() {
               },
             ]}
           >
-            <Text
-              style={[
-                styles.dateText,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              {dateLabel}
-            </Text>
+            <View style={styles.datePrivacy}>
+              <Text
+                style={[
+                  styles.dateText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {dateLabel}
+              </Text>
+              {item.is_private && (
+                <Icon
+                  source="lock"
+                  size={12}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              )}
+            </View>
 
             <Text style={[styles.text, { color: theme.colors.onSurface }]}>
               {item.text.trim()}
@@ -220,9 +230,14 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
   },
+  datePrivacy: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 6,
+  },
   dateText: {
     fontSize: 13,
-    marginBottom: 6,
     letterSpacing: 0.2,
   },
   text: {

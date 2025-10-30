@@ -198,6 +198,7 @@ export default function CreateTestimonyModal() {
           {/* Tag selection */}
           <View style={{ marginBottom: 8 }}>
             <TagMultiSelect
+              useModal={true}
               availableTags={availableTags}
               tags={tags}
               setTags={setTags}

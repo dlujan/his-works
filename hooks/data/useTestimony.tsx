@@ -15,6 +15,10 @@ const fetchData = async (id: string, appUserId?: string) => {
         name
       )
     ),
+     reminder (
+      uuid,
+      scheduled_for
+    ),
     user(avatar_url, full_name),
     testimony_like(*)
   `
@@ -35,6 +39,7 @@ const fetchData = async (id: string, appUserId?: string) => {
   return {
     ...data,
     tags: data.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
+    reminders: data.reminder?.map((rem: any) => rem),
     likes_count: likesCount,
     liked_by_user: likedByUser,
   };
