@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
 import { HomeFeedResult } from "../useHomeFeed";
 
 export const useLikeTestimony = () => {
@@ -16,6 +17,7 @@ export const useLikeTestimony = () => {
       userUuid: string;
       liked: boolean;
     }) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
       if (liked) {
         const { error } = await supabase
           .from("testimony_like")

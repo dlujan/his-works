@@ -22,7 +22,7 @@ const fetchFeed = async (
     .select("*, user(full_name, avatar_url),testimony_like(user_uuid)", {
       count: "exact",
     })
-    .or(`is_public.eq.true,user_uuid.eq.${userUuid}`)
+    .or(`user_uuid.eq.${userUuid},is_public.eq.true,is_private.eq.false`)
     .order("created_at", { ascending: false })
     .range(from, to);
 

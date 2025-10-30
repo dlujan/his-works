@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon2-1024x1024.png",
     "scheme": "hisworks",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,

@@ -197,25 +197,25 @@ export default function AccountDetailsScreen() {
             </Text>
           )}
 
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            loading={saving}
-            disabled={saving || deleting}
-            style={styles.saveButton}
-          >
-            Save Changes
-          </Button>
-          <Button
-            mode="contained"
-            onPress={handleDelete}
-            loading={deleting}
-            disabled={deleting || saving}
-            buttonColor="red"
-            style={styles.saveButton}
-          >
-            Delete Account
-          </Button>
+          <View style={styles.buttons}>
+            <Button
+              mode="contained"
+              onPress={handleSave}
+              loading={saving}
+              disabled={saving || deleting}
+            >
+              Save Changes
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleDelete}
+              loading={deleting}
+              disabled={deleting || saving}
+              buttonColor={theme.colors.error}
+            >
+              Delete Account
+            </Button>
+          </View>
         </ScrollView>
       </Surface>
     </KeyboardAvoidingView>
@@ -252,8 +252,9 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "transparent",
   },
-  saveButton: {
-    marginTop: 24,
+  buttons: {
+    marginTop: 10,
+    gap: 10,
   },
   message: {
     textAlign: "center",

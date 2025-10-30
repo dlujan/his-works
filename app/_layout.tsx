@@ -16,7 +16,6 @@ import { StatusBar } from "expo-status-bar";
 import { Text, TouchableOpacity } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
-const logo = require("../assets/images/icon-cropped-320x320.png");
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -30,7 +29,6 @@ export default function RootLayout() {
   const isDark = colorScheme === "dark";
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
   const navigationTheme = isDark ? navigationDarkTheme : navigationLightTheme;
-
   useNotificationNavigation();
 
   return (
@@ -91,7 +89,14 @@ export default function RootLayout() {
                   headerTitleStyle: { fontWeight: 600 },
                   headerLeft: () => (
                     <TouchableOpacity onPress={() => router.back()}>
-                      <Text style={{ fontSize: 16 }}>Cancel</Text>
+                      <Text
+                        style={{
+                          color: paperTheme.colors.onSurface,
+                          fontSize: 16,
+                        }}
+                      >
+                        Cancel
+                      </Text>
                     </TouchableOpacity>
                   ),
                 }}

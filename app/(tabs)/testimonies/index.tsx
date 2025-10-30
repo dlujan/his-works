@@ -1,11 +1,17 @@
-import type { AppTheme } from "@/constants/paper-theme";
+import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
 import { Testimony } from "@/lib/types";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -15,10 +21,12 @@ import {
 } from "react-native-paper";
 
 export default function TestimoniesScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const theme = useTheme<AppTheme>();
   const { session } = useAuth();
   const user = session?.user ?? null;
   const router = useRouter();
-  const theme = useTheme<AppTheme>();
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
     useUserTestimonies(user?.id || "");
 
@@ -59,9 +67,12 @@ export default function TestimoniesScreen() {
           <Surface
             style={[
               styles.card,
-              { backgroundColor: theme.colors.surfaceVariant + "20" },
+              {
+                backgroundColor: isDark
+                  ? theme.colors.inkMuted + "12"
+                  : theme.colors.surfaceVariant + "20",
+              },
             ]}
-            elevation={1}
           >
             <Text
               style={[

@@ -68,7 +68,10 @@ export default function HomeScreen() {
           <View
             style={[
               styles.postContainer,
-              { backgroundColor: theme.colors.background },
+              {
+                backgroundColor: theme.colors.background,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
             ]}
           >
             <Image
@@ -101,7 +104,7 @@ export default function HomeScreen() {
                 <View style={styles.likesRow}>
                   <IconButton
                     icon={liked ? "heart" : "heart-outline"}
-                    size={18}
+                    size={20}
                     iconColor={theme.colors.primary}
                     style={styles.iconButton}
                     onPress={() =>
@@ -179,12 +182,12 @@ const styles = StyleSheet.create({
   postContainer: {
     flexDirection: "row",
     gap: 12,
+    paddingTop: 2,
     paddingHorizontal: 16,
     paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.12)",
   },
-  avatar: { width: 42, height: 42, borderRadius: 21, marginTop: 4 },
+  avatar: { width: 42, height: 42, borderRadius: 21 },
   postBody: { flex: 1 },
   headerRow: { flexDirection: "row", alignItems: "baseline", marginBottom: 4 },
   nameText: { fontSize: 15, fontWeight: "600" },
@@ -192,11 +195,15 @@ const styles = StyleSheet.create({
   excerpt: { fontSize: 15, lineHeight: 22 },
   actionsRow: {
     flexDirection: "row",
-    marginTop: 6,
     alignItems: "center",
     justifyContent: "space-between",
   },
-  likesRow: { flexDirection: "row", alignItems: "center", gap: 2 },
+  likesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    left: -10,
+  },
   iconButton: { margin: 0 },
   likeCount: {
     fontSize: 13,

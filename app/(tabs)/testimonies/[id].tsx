@@ -2,16 +2,17 @@ import { TagMultiSelect } from "@/components/TagMultiSelect";
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
-import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
+import { useTestimony } from "@/hooks/data/useTestimony";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
 import { getNextReminder, getNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Keyboard, ScrollView, StyleSheet, View } from "react-native";
 import {
+  ActivityIndicator,
   Button,
   Icon,
   Surface,
@@ -28,15 +29,9 @@ export default function EditWorkScreen() {
   const theme = useTheme<AppTheme>();
   const { session, user } = useAuth();
   const authUser = session?.user ?? null;
-  const { testimonies } = useUserTestimonies(authUser?.id || "");
   const queryClient = useQueryClient();
   const { tags: availableTags } = useTags();
-
-  const testimony = useMemo(() => {
-    if (!id || typeof id !== "string") return undefined;
-    return testimonies.find((t) => t.uuid === id);
-  }, [testimonies, id]);
-
+  const { testimony, isLoading } = useTestimony(id || "");
   const [details, setDetails] = useState(testimony?.text ?? "");
   const [bibleVerse, setBibleVerse] = useState(testimony?.bible_verse ?? "");
   const [date, setDate] = useState(testimony?.date ?? "");
@@ -44,6 +39,7 @@ export default function EditWorkScreen() {
   const [isPublic, setIsPublic] = useState(testimony?.is_public);
   const [isPrivate, setIsPrivate] = useState(testimony?.is_private);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (testimony) {
@@ -56,10 +52,17 @@ export default function EditWorkScreen() {
     }
   }, [testimony]);
 
+  useEffect(() => {
+    if (isPrivate && isPublic) {
+      setIsPublic(false);
+    }
+  }, [isPrivate]);
+
   // ✅ Save / Update
   const handleSave = async () => {
     if (!id || !authUser) return;
     setLoading(true);
+    setMessage(null);
 
     try {
       // 1️⃣ Update the main testimony record
@@ -149,14 +152,13 @@ export default function EditWorkScreen() {
         }
       }
 
-      queryClient.invalidateQueries({ queryKey: ["user-testimonies"] });
+      queryClient.invalidateQueries({ queryKey: ["testimony", id] });
       if (dateChanged) {
-        Alert.alert(
-          "✅ Saved",
-          "Your testimony has been updated and your reminders have been rescheduled."
+        setMessage(
+          "Success! Your testimony has been updated and your reminders have been rescheduled."
         );
       } else {
-        Alert.alert("✅ Saved", "Your testimony has been updated.");
+        setMessage("Success! Your testimony has been updated.");
       }
     } catch (error: any) {
       console.error("Error updating testimony:", error);
@@ -206,7 +208,7 @@ export default function EditWorkScreen() {
     );
   };
 
-  if (!testimony) {
+  if (!testimony && !isLoading) {
     return (
       <Surface
         style={[styles.fallback, { backgroundColor: theme.colors.background }]}
@@ -216,7 +218,7 @@ export default function EditWorkScreen() {
         </Text>
         <Text
           variant="bodyMedium"
-          style={{ color: theme.colors.onSurfaceVariant }}
+          style={{ color: theme.colors.onSurfaceVariant, textAlign: "center" }}
         >
           It may have been removed or is no longer available.
         </Text>
@@ -235,129 +237,157 @@ export default function EditWorkScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      <ScrollView contentContainerStyle={styles.content}>
-        {nextReminderText && (
-          <View style={styles.reminderRow}>
-            <Icon
-              source="bell-outline"
-              size={16}
-              color={theme.colors.onSurfaceVariant}
-            />
-            <Text
-              variant="bodySmall"
-              style={{ color: theme.colors.onSurfaceVariant, marginLeft: 6 }}
-            >
-              Next reminder {nextReminderText}
-            </Text>
-          </View>
-        )}
-
-        <TextInput
-          label="My testimony"
-          mode="outlined"
-          value={details}
-          onChangeText={setDetails}
-          multiline
-          numberOfLines={8}
-          style={[styles.input, styles.multiline]}
-          returnKeyType="done"
-          submitBehavior="blurAndSubmit"
-          onSubmitEditing={Keyboard.dismiss}
-        />
-
-        <TextInput
-          label="Bible verse"
-          mode="outlined"
-          value={bibleVerse}
-          onChangeText={setBibleVerse}
-          placeholder="e.g. Psalms 23:1"
-          style={styles.input}
-          returnKeyType="done"
-          submitBehavior="blurAndSubmit"
-          onSubmitEditing={Keyboard.dismiss}
-        />
-
-        <DatePickerInput
-          locale="en"
-          label="Date"
-          placeholder="Date of event"
-          value={new Date(date)}
-          onChange={(d) => d && setDate(d as unknown as string)}
-          inputMode="start"
-          mode="outlined"
-          withDateFormatInLabel={false}
-          validRange={{ startDate: new Date(0), endDate: new Date() }}
-        />
-
-        {/* Tag selection */}
-        <View style={{ marginBottom: 8 }}>
-          <TagMultiSelect
-            availableTags={availableTags}
-            tags={tags}
-            setTags={setTags}
-          />
-
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text
-                variant="titleSmall"
-                style={{ color: theme.colors.onSurface }}
-              >
-                Make private
-              </Text>
+      {isLoading ? (
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <ActivityIndicator animating size="large" />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.content}>
+          {nextReminderText && (
+            <View style={styles.reminderRow}>
+              <Icon
+                source="bell-outline"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+              />
               <Text
                 variant="bodySmall"
-                style={{ color: theme.colors.onSurfaceVariant }}
+                style={{ color: theme.colors.onSurfaceVariant, marginLeft: 6 }}
               >
-                Keep this testimony private — only you can see it.
+                Next reminder {nextReminderText}
               </Text>
             </View>
-            <Switch value={isPrivate} onValueChange={setIsPrivate} />
-          </View>
+          )}
 
-          {!isPrivate && (
+          <TextInput
+            label="My testimony"
+            mode="outlined"
+            value={details}
+            onChangeText={setDetails}
+            multiline
+            numberOfLines={8}
+            style={[styles.input, styles.multiline]}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+
+          <TextInput
+            label="Bible verse"
+            mode="outlined"
+            value={bibleVerse}
+            onChangeText={setBibleVerse}
+            placeholder="e.g. Psalms 23:1"
+            style={styles.input}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+
+          <DatePickerInput
+            locale="en"
+            label="Date"
+            placeholder="Date of event"
+            value={date ? new Date(date) : undefined}
+            onChange={(d) => {
+              if (d) setDate((d as Date).toISOString());
+            }}
+            inputMode="start"
+            mode="outlined"
+            withDateFormatInLabel={false}
+            validRange={{ startDate: new Date(0), endDate: new Date() }}
+          />
+
+          {/* Tag selection */}
+          <View style={{ marginBottom: 8 }}>
+            <TagMultiSelect
+              availableTags={availableTags}
+              tags={tags}
+              setTags={setTags}
+            />
+
             <View style={styles.toggleRow}>
               <View style={{ flex: 1 }}>
                 <Text
                   variant="titleSmall"
                   style={{ color: theme.colors.onSurface }}
                 >
-                  Share publicly
+                  Make private
                 </Text>
                 <Text
                   variant="bodySmall"
                   style={{ color: theme.colors.onSurfaceVariant }}
                 >
-                  Share with everyone, not just your friends.
+                  Keep this testimony private — only you can see it.
                 </Text>
               </View>
-              <Switch value={isPublic} onValueChange={setIsPublic} />
+              <Switch value={isPrivate} onValueChange={setIsPrivate} />
             </View>
-          )}
-        </View>
 
-        <View style={styles.actions}>
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            loading={loading}
-            disabled={loading}
-          >
-            Save changes
-          </Button>
-          <Button onPress={() => router.push(`/testimony-display-modal/${id}`)}>
-            Preview
-          </Button>
-          <Button
-            mode="text"
-            textColor={theme.colors.error}
-            onPress={handleDelete}
-            disabled={loading}
-          >
-            Delete testimony
-          </Button>
-        </View>
-      </ScrollView>
+            {!isPrivate && (
+              <View style={styles.toggleRow}>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    variant="titleSmall"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    Share publicly
+                  </Text>
+                  <Text
+                    variant="bodySmall"
+                    style={{ color: theme.colors.onSurfaceVariant }}
+                  >
+                    Share with everyone, not just your friends.
+                  </Text>
+                </View>
+                <Switch value={isPublic} onValueChange={setIsPublic} />
+              </View>
+            )}
+          </View>
+
+          {message && (
+            <Text
+              variant="bodySmall"
+              style={[
+                styles.message,
+                {
+                  color: message.includes("Success")
+                    ? "green"
+                    : theme.colors.error,
+                },
+              ]}
+            >
+              {message}
+            </Text>
+          )}
+
+          <View style={styles.actions}>
+            <Button
+              mode="contained"
+              onPress={handleSave}
+              loading={loading}
+              disabled={loading}
+            >
+              Save changes
+            </Button>
+            <Button
+              onPress={() => router.push(`/testimony-display-modal/${id}`)}
+            >
+              Preview
+            </Button>
+            <Button
+              mode="text"
+              textColor={theme.colors.error}
+              onPress={handleDelete}
+              disabled={loading}
+            >
+              Delete testimony
+            </Button>
+          </View>
+        </ScrollView>
+      )}
     </Surface>
   );
 }
@@ -411,5 +441,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 6,
+  },
+  message: {
+    textAlign: "center",
+    marginTop: 4,
   },
 });

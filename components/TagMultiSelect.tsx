@@ -51,10 +51,17 @@ export function TagMultiSelect({
       </Text>
 
       <MultiSelect
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
+        style={[
+          styles.dropdown,
+          {
+            borderColor: theme.colors.onSurfaceVariant,
+          },
+        ]}
         inputSearchStyle={styles.inputSearchStyle}
+        itemTextStyle={{ color: theme.colors.onSurface }}
+        selectedTextStyle={{ color: theme.colors.primary }}
+        placeholderStyle={{ color: theme.colors.onSurfaceVariant }}
+        containerStyle={{ backgroundColor: "white" }}
         data={availableTags.map((tag) => ({ label: tag, value: tag }))}
         labelField="label"
         valueField="value"
@@ -63,7 +70,7 @@ export function TagMultiSelect({
         search
         searchPlaceholder="Search tags..."
         onChange={(items) => setTags(items)}
-        renderItem={renderItem} // ✅ Custom item renderer
+        renderItem={renderItem}
         renderSelectedItem={(item, unSelect) => (
           <TouchableOpacity
             key={item.value}
@@ -91,12 +98,10 @@ export function TagMultiSelect({
 
 const styles = StyleSheet.create({
   dropdown: {
-    backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
   },
   item: {
     paddingVertical: 10,
@@ -105,15 +110,10 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 16,
   },
-  placeholderStyle: {
-    color: "#999",
-  },
-  selectedTextStyle: {
-    color: "#000",
-  },
   inputSearchStyle: {
     height: 40,
     fontSize: 16,
+    backgroundColor: "transparent",
   },
   tagChip: {
     marginTop: 6,

@@ -117,7 +117,7 @@ const Post = () => {
           <View style={styles.likesRow}>
             <IconButton
               icon={liked ? "heart" : "heart-outline"}
-              size={18}
+              size={20}
               iconColor={theme.colors.primary}
               style={styles.iconButton}
               onPress={() =>
@@ -156,11 +156,11 @@ const styles = StyleSheet.create({
   postContainer: {
     flexDirection: "column",
     gap: 8,
-    paddingTop: 12,
+    paddingTop: 16,
     paddingHorizontal: 16,
+    paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(0,0,0,0.12)",
-    paddingBottom: 8,
   },
   headerRow: {
     flexDirection: "row",
@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    marginTop: 4,
   },
   nameText: {
     fontSize: 15,
@@ -202,6 +201,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
+    left: -8,
   },
   iconButton: {
     margin: 0,
@@ -230,7 +230,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 6,
     marginTop: 10,
-    // marginBottom: 8,
   },
   tagPill: {
     borderRadius: 20,

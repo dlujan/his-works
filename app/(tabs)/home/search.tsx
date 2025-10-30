@@ -90,7 +90,10 @@ export default function SearchScreen() {
         <View
           style={[
             styles.postContainer,
-            { backgroundColor: theme.colors.background },
+            {
+              backgroundColor: theme.colors.background,
+              borderBottomColor: theme.colors.outlineVariant,
+            },
           ]}
         >
           <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
@@ -219,7 +222,6 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    marginTop: 4,
   },
   postBody: {
     flex: 1,

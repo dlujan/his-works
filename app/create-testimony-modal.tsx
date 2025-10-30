@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -130,6 +130,12 @@ export default function CreateTestimonyModal() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isPrivate && isPublic) {
+      setIsPublic(false);
+    }
+  }, [isPrivate]);
 
   return (
     <KeyboardAvoidingView
