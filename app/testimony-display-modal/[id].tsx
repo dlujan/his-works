@@ -1,179 +1,223 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { supabase } from "@/lib/supabase";
-import { AppNotificationType, Testimony } from "@/lib/types";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
-import { Divider, Text, useTheme } from "react-native-paper";
+import { Testimony } from "@/lib/types";
+import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ImageBackground,
+  ScrollView,
+  Share,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  ActivityIndicator,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
 
 export default function TestimonyDisplayModal() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const router = useRouter();
   const theme = useTheme<AppTheme>();
-  const [testimony, setTestimony] = useState<Testimony>();
+  const [testimony, setTestimony] = useState<Testimony | null>(null);
   const [loading, setLoading] = useState(true);
+  const [img, setImg] = useState("");
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+
+  const imgOptions = [
+    "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070",
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
+  ];
+  const titleOptions = [
+    "See What God Has Done",
+    "A Work of God",
+    "Testimony of His Faithfulness",
+    "Give Thanks to God",
+  ];
+  const subtitlesOptions = [
+    "Take a moment to remember this work of God.",
+    "Pause and reflect on what He has done.",
+    "Remember the faithfulness of the Lord.",
+    "Let this remind you of His goodness.",
+    "See how God has worked in your story.",
+  ];
 
   useEffect(() => {
-    const fetchTestimony = async (id: string) => {
-      const { data, error } = await supabase
-        .from("testimony")
-        .select("*")
-        .eq("uuid", id)
-        .single();
+    const randomTitle =
+      titleOptions[Math.floor(Math.random() * titleOptions.length)];
+    setTitle(randomTitle);
 
-      if (error) {
-        Alert.alert("Error", error.message);
-      } else {
-        setTestimony(data);
-      }
-      setLoading(false);
-    };
+    const randomSubtitle =
+      subtitlesOptions[Math.floor(Math.random() * subtitlesOptions.length)];
+    setSubtitle(randomSubtitle);
+  }, []);
 
-    if (id) fetchTestimony(id);
+  const fetchTestimony = useCallback(async () => {
+    if (!id) return;
+    const { data, error } = await supabase
+      .from("testimony")
+      .select("*, user(full_name, avatar_url)")
+      .eq("uuid", id)
+      .single();
+
+    if (!error && data) setTestimony(data);
+    setLoading(false);
   }, [id]);
 
-  // Mark any reminder notifications for this testimony as read
   useEffect(() => {
-    const markAsRead = async () => {
-      const { error } = await supabase
-        .from("notification")
-        .update({ read: true })
-        .eq("data->>testimony_uuid", id)
-        .eq("type", AppNotificationType.REMINDER)
-        .eq("read", false);
+    fetchTestimony();
+  }, [fetchTestimony]);
 
-      if (error) {
-        console.log(error.message);
-      }
-
-      // TODO: Invalidate notifications query
-    };
-    if (testimony) {
-      markAsRead();
+  const handleShare = async () => {
+    if (!testimony) return;
+    try {
+      await Share.share({
+        title: "Shared testimony",
+        message: `${testimony.user.full_name} — ${testimony.text}`,
+      });
+    } catch (error) {
+      console.warn("Unable to share testimony", error);
     }
-  }, [testimony]);
+  };
 
-  if (loading) {
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const getRandomImg = () => {
+    return imgOptions[Math.floor(Math.random() * titleOptions.length)];
+  };
+
+  if (loading || !testimony) {
     return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <ActivityIndicator animating size="large" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator animating color={theme.colors.primary} />
       </View>
     );
   }
-
-  if (!testimony) {
-    return (
-      <View
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-          Couldn't find this testimony.
-        </Text>
-      </View>
-    );
-  }
-
-  const dateLabel = new Date(
-    testimony.date || testimony.created_at
-  ).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerSection}>
-        <Text
-          variant="headlineSmall"
-          style={[styles.title, { color: theme.colors.onSurface }]}
-        >
-          Revisit this moment
-        </Text>
+    <ImageBackground
+      source={{
+        uri: "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070",
+      }}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <LinearGradient
+        colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0.9)"]}
+        style={StyleSheet.absoluteFill}
+      />
 
-        {dateLabel && (
-          <Text
-            variant="labelMedium"
-            style={{ color: theme.colors.onSurfaceVariant }}
-          >
-            {dateLabel}
-          </Text>
-        )}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{title}</Text>
+        <Text style={styles.headerSubtitle}>{subtitle}</Text>
       </View>
 
-      <Divider style={{ marginVertical: 12 }} />
-
-      <Text
-        variant="bodyLarge"
-        style={[styles.body, { color: theme.colors.onSurface }]}
+      {/* Scrollable Content */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {testimony.text}
-      </Text>
+        <Text style={styles.text}>“{testimony.text}”</Text>
 
-      <Divider style={{ marginVertical: 24 }} />
+        {testimony.bible_verse && (
+          <Text style={styles.verse}>{testimony.bible_verse}</Text>
+        )}
 
-      {testimony.bible_verse && (
-        <Text
-          variant="bodyMedium"
-          style={[styles.footerText, { color: theme.colors.onSurfaceVariant }]}
-        >
-          - {testimony.bible_verse}
-        </Text>
-      )}
-    </View>
+        <Text style={styles.author}>— {testimony.user.full_name}</Text>
+
+        <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
+      </ScrollView>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <IconButton
+          icon="share-outline"
+          iconColor="#fff"
+          size={28}
+          onPress={handleShare}
+        />
+      </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "flex-start",
-    padding: 20,
-  },
-  headerBar: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    elevation: 0,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 48,
-  },
-  headerSection: {
-    marginBottom: 8,
-  },
-  title: {
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  body: {
-    lineHeight: 22,
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 16,
-  },
-  tagChip: {
-    borderRadius: 20,
-  },
-  footerText: {
-    alignSelf: "center",
-    fontStyle: "italic",
   },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  header: {
+    alignItems: "center",
+    paddingTop: 75,
+    paddingBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    color: "#fff",
+    opacity: 0.95,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    opacity: 0.85,
+    color: "#fff",
+    marginTop: 4,
+    textAlign: "center",
+    paddingHorizontal: 24,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 28,
+    paddingVertical: 60,
+  },
+  text: {
+    fontSize: 22,
+    lineHeight: 34,
+    fontWeight: "400",
+    color: "#fff",
+    textAlign: "center",
+  },
+  verse: {
+    fontSize: 16,
+    fontStyle: "italic",
+    color: "#fff",
+    marginTop: 16,
+    opacity: 0.9,
+  },
+  author: {
+    marginTop: 28,
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#fff",
+  },
+  date: {
+    fontSize: 14,
+    opacity: 0.8,
+    color: "#fff",
+    marginTop: 4,
+  },
+  footer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 30,
   },
 });
