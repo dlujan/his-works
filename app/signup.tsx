@@ -143,9 +143,8 @@ const styles = StyleSheet.create({
   },
   card: {
     marginTop: 32,
-    marginHorizontal: 20,
     paddingVertical: 32,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   title: {
     textAlign: "center",

@@ -2,6 +2,8 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { FunctionsHttpError } from "@supabase/supabase-js";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { useMemo, useState } from "react";
 import {
   Alert,
@@ -27,7 +29,7 @@ export default function AccountDetailsScreen() {
   const theme = useTheme<AppTheme>();
 
   const authUser = session?.user ?? null;
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   const [name, setName] = useState(user?.full_name ?? "");
   const [email, setEmail] = useState(authUser?.email ?? "");
@@ -52,7 +54,6 @@ export default function AccountDetailsScreen() {
         .from("user")
         .update({
           full_name: name,
-          avatar_url: avatarUrl,
         })
         .eq("uuid", authUser.id);
 
@@ -116,9 +117,84 @@ export default function AccountDetailsScreen() {
     );
   };
 
-  const handleChangePhoto = async () => {
-    // placeholder: integrate with expo-image-picker or file picker
-    console.log("Change photo pressed");
+  const handleChangePhoto = async (userId: string) => {
+    try {
+      // setUploading(true);
+
+      // 1️⃣ Pick an image
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // images only
+        allowsMultipleSelection: false,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        exif: false,
+      });
+
+      if (result.canceled || !result.assets?.length) {
+        console.log("User cancelled image picker.");
+        return;
+      }
+
+      const image = result.assets[0];
+      if (!image.uri) throw new Error("No image URI found!");
+
+      // 2️⃣ Compress and convert picked image to ArrayBuffer (binary)
+      const compressed = await ImageManipulator.manipulateAsync(
+        image.uri,
+        [{ resize: { width: 512 } }], // adjust size if desired
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      const arraybuffer = await fetch(compressed.uri).then((res) =>
+        res.arrayBuffer()
+      );
+
+      // 3️⃣ Generate consistent filename (overwrite old one)
+      const fileExt = image.uri.split(".").pop()?.toLowerCase() ?? "jpeg";
+      const filePath = `${userId}.${fileExt}`;
+
+      // 4️⃣ Upload to Supabase Storage (upsert replaces old)
+      const { data, error: uploadError } = await supabase.storage
+        .from("profile pics")
+        .upload(filePath, arraybuffer, {
+          contentType: image.mimeType ?? "image/jpeg",
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+      console.log("✅ Uploaded successfully:", data.path);
+
+      // 5️⃣ Get public URL
+      const { data: publicData } = supabase.storage
+        .from("profile pics")
+        .getPublicUrl(filePath);
+      const publicUrl = publicData.publicUrl;
+
+      // 6️⃣ Update the user's avatar in your DB
+      const { error: updateError } = await supabase
+        .from("user")
+        .update({ avatar_url: publicUrl })
+        .eq("uuid", userId);
+
+      if (updateError) throw updateError;
+
+      // For immediate change
+      const uncachedUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+      setAvatarUrl(uncachedUrl);
+      //@ts-ignore
+      setUser((prev) => ({ ...prev, avatar_url: uncachedUrl }));
+
+      Alert.alert("✅ Success", "Profile photo updated!");
+    } catch (error) {
+      console.error("Error uploading profile photo:", error);
+      Alert.alert(
+        "Error",
+        (error as Error).message || "Failed to upload image."
+      );
+    } finally {
+      // setUploading(false);
+    }
   };
 
   return (
@@ -145,7 +221,7 @@ export default function AccountDetailsScreen() {
                 color={theme.colors.onPrimaryContainer}
               />
             )}
-            <TouchableOpacity onPress={handleChangePhoto}>
+            <TouchableOpacity onPress={() => handleChangePhoto(user!.uuid)}>
               <Text
                 variant="labelLarge"
                 style={[styles.changePhoto, { color: theme.colors.primary }]}

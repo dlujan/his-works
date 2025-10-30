@@ -1,5 +1,3 @@
-import * as Notifications from "expo-notifications";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import {
@@ -16,7 +14,6 @@ import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 
 export default function ReminderSettingsScreen() {
-  const router = useRouter();
   const theme = useTheme<AppTheme>();
   const { session } = useAuth();
   const user = session?.user ?? null;
@@ -75,20 +72,6 @@ export default function ReminderSettingsScreen() {
       setMessage(err.message || "Failed to update reminder settings.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "✨ Reminder Preview",
-          body: "This is how your reminders will appear.",
-        },
-        trigger: null,
-      });
-    } catch (err) {
-      console.warn("Unable to send test notification:", err);
     }
   };
 
@@ -215,15 +198,6 @@ export default function ReminderSettingsScreen() {
           style={styles.saveButton}
         >
           Save Preferences
-        </Button>
-
-        <Button
-          mode="outlined"
-          onPress={handleTestNotification}
-          style={styles.testButton}
-          icon="bell-ring-outline"
-        >
-          Test Notification
         </Button>
       </ScrollView>
     </Surface>

@@ -137,7 +137,7 @@ export default function SearchScreen() {
           right={
             <TextInput.Icon
               icon="magnify"
-              onPress={handleSearch}
+              onPress={() => handleSearch}
               forceTextInputFocus={false}
             />
           }

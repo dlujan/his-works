@@ -14,6 +14,7 @@ type AuthContextValue = {
   session: Session | null;
   user: AppUser | null;
   loading: boolean;
+  setUser: (args: AppUser) => void;
   signInWithPassword: (args: SignInArgs) => Promise<void>;
   signUpWithEmail: (args: SignUpArgs) => Promise<void>;
   signOut: () => Promise<void>;
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       session,
       user,
       loading,
-
+      setUser,
       refreshUser: async () => {
         if (session?.user?.id) await fetchUser(session.user.id);
       },
