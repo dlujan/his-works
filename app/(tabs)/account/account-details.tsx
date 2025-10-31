@@ -52,7 +52,7 @@ export default function AccountDetailsScreen() {
       const { error: updateError } = await supabase
         .from("user")
         .update({
-          full_name: name,
+          full_name: name.trim(),
         })
         .eq("uuid", authUser.id);
 
@@ -62,6 +62,9 @@ export default function AccountDetailsScreen() {
         const { error } = await supabase.auth.updateUser({ email });
         if (error) throw error;
       }
+
+      //@ts-ignore
+      setUser((prev) => ({ ...prev, full_name: name.trim() }));
 
       setMessage("Profile updated successfully!");
     } catch (err: any) {
@@ -246,6 +249,7 @@ export default function AccountDetailsScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             style={styles.input}
+            disabled
           />
           {/* <TextInput
             label="Phone"
