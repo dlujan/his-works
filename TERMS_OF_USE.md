@@ -69,7 +69,7 @@ We may suspend or terminate access for users who violate these terms.
 
 ## 6. Intellectual Property
 
-All HisWorks branding, design, logos, and software are the property of **HisWorks** and its creator, **Daniel Lujan**.  
+All HisWorks branding, design, logos, and software are the property of **HisWorks** and its creator, **Frank D. Lujan**.  
 You may not copy, modify, or distribute any part of the App without prior permission.
 
 ---
@@ -105,7 +105,7 @@ Continued use of the App after changes take effect constitutes your acceptance o
 
 If you have questions about these Terms, please contact:
 
-**Frank Daniel Lujan**  
+**Frank D. Lujan**  
 📧 [daniel.lujan96@gmail.com](mailto:daniel.lujan96@gmail.com)
 
 ---

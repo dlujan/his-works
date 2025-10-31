@@ -95,7 +95,7 @@ If we make significant changes, we will notify you within the app or by other ap
 
 If you have any questions about this Privacy Policy, please contact:
 
-**Frank Daniel Lujan**  
+**Frank D. Lujan**  
 📧 [daniel.lujan96@gmail.com](mailto:daniel.lujan96@gmail.com)
 
 ---
