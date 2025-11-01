@@ -35,7 +35,7 @@ const fetchNotifications = async (
   };
 };
 
-export const useUserNotifications = (userUuid: string) => {
+export const useMyNotifications = (userUuid: string) => {
   return useInfiniteQuery<FetchResult>({
     queryKey: ["notifications", userUuid],
     queryFn: ({ pageParam }) =>

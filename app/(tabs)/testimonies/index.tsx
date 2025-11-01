@@ -1,6 +1,6 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
-import { useUserTestimonies } from "@/hooks/data/useUserTestimonies";
+import { useMyTestimonies } from "@/hooks/data/useMyTestimonies";
 import { Testimony } from "@/lib/types";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -29,7 +29,7 @@ export default function TestimoniesScreen() {
   const user = session?.user ?? null;
   const router = useRouter();
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useUserTestimonies(user?.id || "");
+    useMyTestimonies(user?.id || "");
 
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 

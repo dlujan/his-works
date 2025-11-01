@@ -1,6 +1,6 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
-import { useUserNotifications } from "@/hooks/data/useUserNotifications";
+import { useMyNotifications } from "@/hooks/data/useMyNotifications";
 import { AppNotification, AppNotificationType } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
@@ -33,7 +33,7 @@ export default function ActivityScreen() {
     hasNextPage,
     refetch,
     isRefetching,
-  } = useUserNotifications(session?.user?.id || "");
+  } = useMyNotifications(session?.user?.id || "");
 
   const notifications = data?.pages.flatMap((p) => p.notifications) ?? [];
 

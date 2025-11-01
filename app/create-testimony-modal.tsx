@@ -121,7 +121,7 @@ export default function CreateTestimonyModal() {
         console.error("Failed to create reminders:", reminderError);
       }
 
-      queryClient.invalidateQueries({ queryKey: ["user-testimonies"] });
+      queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
       router.back();
     } catch (error: any) {
       console.error("Error creating testimony:", error);
@@ -236,7 +236,7 @@ export default function CreateTestimonyModal() {
                   variant="bodySmall"
                   style={{ color: theme.colors.onSurfaceVariant }}
                 >
-                  Share with everyone, not just your friends.
+                  Share with everyone, not just followers.
                 </Text>
               </View>
               <Switch value={isPublic} onValueChange={setIsPublic} />

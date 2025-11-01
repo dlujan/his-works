@@ -1,73 +1,51 @@
+import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 const PAGE_SIZE = 10;
 
+export type UserProfileTestimony = Testimony & {
+  likes_count: number;
+  liked_by_user: boolean;
+  user_full_name: string;
+  user_avatar_url: string;
+};
 type FetchResult = {
-  testimonies: Testimony[];
+  testimonies: UserProfileTestimony[];
   nextPage: number;
   hasMore: boolean;
 };
 const fetchData = async (
-  userUuid: string,
+  targetUserUuid: string,
+  appUserUuid: string | undefined,
   page: number
 ): Promise<FetchResult> => {
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  const { data, error, count } = await supabase
-    .from("testimony")
-    .select(
-      `
-    *,
-    testimony_tag (
-      tag:tag_uuid (
-        uuid,
-        name
-      )
-    ),
-    reminder (
-      uuid,
-      scheduled_for
-    ),
-    testimony_like(*)
-  `,
-      { count: "exact" }
-    )
-    .eq("user_uuid", userUuid)
-    .order("date", { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    console.error("Error fetching testimonies:", error.message);
-    throw new Error(error.message);
-  }
-
-  // Flatten tags into a clean array of names
-  const testimonies = data?.map((t) => {
-    const likes = t.testimony_like || [];
-    const likesCount = likes.length;
-    return {
-      ...t,
-      tags: t.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
-      reminders: t.reminder?.map((rem: any) => rem),
-      likes_count: likesCount,
-    };
+  const { data, error } = await supabase.rpc("get_user_testimonies", {
+    input_viewer_uuid: appUserUuid,
+    input_target_uuid: targetUserUuid,
+    input_page: page,
+    input_page_size: 10,
   });
 
-  const hasMore = to + 1 < (count ?? 0);
+  if (error) throw new Error(error.message);
 
-  return { testimonies, nextPage: page + 1, hasMore };
+  return {
+    testimonies: data ?? [],
+    nextPage: page + 1,
+    hasMore: (data?.length ?? 0) === PAGE_SIZE,
+  };
 };
 
 export const useUserTestimonies = (userUuid: string) => {
+  const { user } = useAuth();
   return useInfiniteQuery<FetchResult>({
     queryKey: ["user-testimonies", userUuid],
-    queryFn: ({ pageParam }) => fetchData(userUuid, pageParam as number),
+    queryFn: ({ pageParam }) =>
+      fetchData(userUuid, user?.uuid, pageParam as number),
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextPage : undefined,
-    initialPageParam: 0, // ✅ required in React Query v5
+    initialPageParam: 0,
     enabled: !!userUuid,
   });
 };

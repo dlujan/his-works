@@ -154,7 +154,7 @@ export default function EditWorkScreen() {
 
       queryClient.invalidateQueries({ queryKey: ["testimony", id] });
       queryClient.invalidateQueries({
-        queryKey: ["user-testimonies", user!.uuid],
+        queryKey: ["my-testimonies", user!.uuid],
       });
       if (dateChanged) {
         setMessage(
@@ -193,7 +193,7 @@ export default function EditWorkScreen() {
                 .eq("user_uuid", authUser.id);
 
               if (error) throw error;
-              queryClient.invalidateQueries({ queryKey: ["user-testimonies"] });
+              queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
               Alert.alert("Deleted", "Your testimony has been removed.");
               router.back();
             } catch (error: any) {
@@ -342,7 +342,7 @@ export default function EditWorkScreen() {
                     variant="bodySmall"
                     style={{ color: theme.colors.onSurfaceVariant }}
                   >
-                    Share with everyone, not just your friends.
+                    Share with everyone, not just followers.
                   </Text>
                 </View>
                 <Switch value={isPublic} onValueChange={setIsPublic} />
