@@ -134,7 +134,7 @@ export default function HomeScreen() {
                     onPress={() =>
                       likeTestimony({
                         testimonyUuid: item.uuid,
-                        userUuid: user?.uuid!,
+                        viewerUuid: user?.uuid!,
                         liked: !liked,
                       })
                     }

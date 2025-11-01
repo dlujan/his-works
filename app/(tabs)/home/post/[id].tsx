@@ -132,7 +132,7 @@ const Post = () => {
               onPress={() =>
                 likeTestimony({
                   testimonyUuid: testimony.uuid,
-                  userUuid: user?.uuid!,
+                  viewerUuid: user?.uuid!,
                   liked: !liked,
                 })
               }

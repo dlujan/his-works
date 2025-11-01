@@ -11,7 +11,7 @@ export type UserProfileTestimony = Testimony & {
   user_full_name: string;
   user_avatar_url: string;
 };
-type FetchResult = {
+export type ProfileTestimoniesResult = {
   testimonies: UserProfileTestimony[];
   nextPage: number;
   hasMore: boolean;
@@ -20,7 +20,7 @@ const fetchData = async (
   targetUserUuid: string,
   appUserUuid: string | undefined,
   page: number
-): Promise<FetchResult> => {
+): Promise<ProfileTestimoniesResult> => {
   const { data, error } = await supabase.rpc("get_user_testimonies", {
     input_viewer_uuid: appUserUuid,
     input_target_uuid: targetUserUuid,
@@ -39,7 +39,7 @@ const fetchData = async (
 
 export const useUserTestimonies = (userUuid: string) => {
   const { user } = useAuth();
-  return useInfiniteQuery<FetchResult>({
+  return useInfiniteQuery<ProfileTestimoniesResult>({
     queryKey: ["user-testimonies", userUuid],
     queryFn: ({ pageParam }) =>
       fetchData(userUuid, user?.uuid, pageParam as number),

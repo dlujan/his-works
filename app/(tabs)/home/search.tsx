@@ -1,4 +1,5 @@
 import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
@@ -16,6 +17,7 @@ import {
 export default function SearchScreen() {
   const theme = useTheme<AppTheme>();
   const router = useRouter();
+  const { user } = useAuth();
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<Testimony[]>([]);
@@ -39,6 +41,7 @@ export default function SearchScreen() {
       const from = reset ? 0 : page * PAGE_SIZE;
       const { data, error } = await supabase.rpc("search_testimonies", {
         q: query.trim(),
+        input_user_uuid: user!.uuid,
         limit_count: PAGE_SIZE,
         offset_count: from,
       });
