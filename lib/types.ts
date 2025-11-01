@@ -11,6 +11,8 @@ export type User = {
     surprise: boolean;
     timeOfDay: "morning" | "evening";
   };
+  following: Follow[];
+  followers: Follow[];
 };
 export type Tag = {
   uuid: string;
@@ -66,4 +68,12 @@ export enum AppNotificationType {
 export type AppNotificationData = {
   reminder_uuid?: string;
   testimony_uuid?: string;
+};
+export type Follow = {
+  uuid: string;
+  created_at: string;
+  follower_uuid: string;
+  followed_uuid: string;
+  follower: User;
+  followed: User;
 };

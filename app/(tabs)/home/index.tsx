@@ -1,8 +1,7 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
-import { useHomeFeed } from "@/hooks/data/useHomeFeed";
-import { Testimony } from "@/lib/types";
+import { HomeFeedTestimony, useHomeFeed } from "@/hooks/data/useHomeFeed";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
@@ -17,6 +16,7 @@ import {
 } from "react-native";
 import {
   ActivityIndicator,
+  Button,
   IconButton,
   Surface,
   Text,
@@ -41,11 +41,11 @@ export default function HomeScreen() {
 
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 
-  const handleShare = useCallback(async (item: Testimony) => {
+  const handleShare = useCallback(async (item: HomeFeedTestimony) => {
     try {
       await Share.share({
         title: "Shared testimony",
-        message: `${item.user.full_name} — ${item.text}`,
+        message: `${item.user_full_name} — ${item.text}`,
       });
     } catch (error) {
       console.warn("Unable to share testimony", error);
@@ -57,7 +57,7 @@ export default function HomeScreen() {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: Testimony }) => {
+    ({ item }: { item: HomeFeedTestimony }) => {
       const liked = item.liked_by_user ?? false;
       const likesCount = item.likes_count ?? 0;
       return (
@@ -75,7 +75,7 @@ export default function HomeScreen() {
             ]}
           >
             <Image
-              source={{ uri: item.user.avatar_url }}
+              source={{ uri: item.user_avatar_url }}
               style={styles.avatar}
             />
 
@@ -84,7 +84,7 @@ export default function HomeScreen() {
                 <Text
                   style={[styles.nameText, { color: theme.colors.onSurface }]}
                 >
-                  {item.user.full_name}
+                  {item.user_full_name}
                 </Text>
                 <Text
                   style={[
@@ -94,6 +94,17 @@ export default function HomeScreen() {
                 >
                   {formatTimeSince(item.created_at)}
                 </Text>
+                {item.recommended && (
+                  <Text
+                    variant="bodySmall"
+                    style={{
+                      color: theme.colors.onSurfaceVariant,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    Recommended
+                  </Text>
+                )}
               </View>
 
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
@@ -170,6 +181,39 @@ export default function HomeScreen() {
               </View>
             ) : null
           }
+          ListEmptyComponent={
+            !isLoading && !isRefetching && !isFetchingNextPage ? (
+              <View style={styles.emptyState}>
+                <Text
+                  variant="titleMedium"
+                  style={{
+                    color: theme.colors.onSurface,
+                    textAlign: "center",
+                    marginBottom: 4,
+                  }}
+                >
+                  Your feed is quiet right now
+                </Text>
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    textAlign: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  We'll give you recommendations based on your testimonies. In
+                  the meantime, check out what others are posting.
+                </Text>
+                <Button
+                  mode="contained"
+                  onPress={() => router.push("/home/search")}
+                >
+                  Browse
+                </Button>
+              </View>
+            ) : null
+          }
         />
       )}
     </Surface>
@@ -189,7 +233,7 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 42, height: 42, borderRadius: 21 },
   postBody: { flex: 1 },
-  headerRow: { flexDirection: "row", alignItems: "baseline", marginBottom: 4 },
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
   nameText: { fontSize: 15, fontWeight: "600" },
   timestamp: { fontSize: 13, marginLeft: 6 },
   excerpt: { fontSize: 15, lineHeight: 22 },
@@ -212,4 +256,10 @@ const styles = StyleSheet.create({
     textRendering: "geometricPrecision",
   },
   separator: { height: 16 },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 64,
+    gap: 8,
+  },
 });

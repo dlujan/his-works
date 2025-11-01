@@ -4,8 +4,15 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 const PAGE_SIZE = 10;
 
+export type HomeFeedTestimony = Testimony & {
+  likes_count: number;
+  liked_by_user: boolean;
+  user_full_name: string;
+  user_avatar_url: string;
+  recommended: boolean;
+};
 export type HomeFeedResult = {
-  testimonies: Testimony[];
+  testimonies: HomeFeedTestimony[];
   nextPage: number;
   hasMore: boolean;
 };
@@ -14,35 +21,19 @@ const fetchFeed = async (
   userUuid: string,
   page: number
 ): Promise<HomeFeedResult> => {
-  const from = page * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
-
-  const { data, error, count } = await supabase
-    .from("testimony")
-    .select("*, user(full_name, avatar_url),testimony_like(user_uuid)", {
-      count: "exact",
-    })
-    .or(`user_uuid.eq.${userUuid},and(is_public.eq.true,is_private.eq.false)`)
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  const { data, error } = await supabase.rpc("get_home_feed", {
+    input_user_uuid: userUuid,
+    input_page: page,
+    input_page_size: PAGE_SIZE,
+  });
 
   if (error) throw new Error(error.message);
 
-  const testimonies =
-    data?.map((t) => {
-      const likes = t.testimony_like || [];
-      const likesCount = likes.length;
-      const likedByUser = likes.some((l: any) => l.user_uuid === userUuid);
-
-      return {
-        ...t,
-        likes_count: likesCount,
-        liked_by_user: likedByUser,
-      };
-    }) ?? [];
-  const hasMore = to + 1 < (count ?? 0);
-
-  return { testimonies, nextPage: page + 1, hasMore };
+  return {
+    testimonies: data ?? [],
+    nextPage: page + 1,
+    hasMore: (data?.length ?? 0) === PAGE_SIZE,
+  };
 };
 
 export const useHomeFeed = (userUuid: string) => {
@@ -51,7 +42,7 @@ export const useHomeFeed = (userUuid: string) => {
     queryFn: ({ pageParam }) => fetchFeed(userUuid, pageParam as number),
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextPage : undefined,
-    initialPageParam: 0, // ✅ required in React Query v5
+    initialPageParam: 0,
     enabled: !!userUuid,
   });
 };
