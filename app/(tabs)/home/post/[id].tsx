@@ -4,9 +4,9 @@ import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import { Image, Share, StyleSheet, View } from "react-native";
+import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   ActivityIndicator,
   IconButton,
@@ -16,6 +16,7 @@ import {
 const Post = () => {
   const theme = useTheme<AppTheme>();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { testimony, isFetching } = useTestimony(id || "");
   const { user } = useAuth();
   const { mutate: likeTestimony } = useLikeTestimony();
@@ -39,6 +40,14 @@ const Post = () => {
     );
   }
 
+  const openProfile = () => {
+    if (testimony.user_uuid === user?.uuid) {
+      router.push("/account");
+    } else {
+      router.push(`/home/profile/${testimony.user_uuid}`);
+    }
+  };
+
   const liked = testimony.liked_by_user ?? false;
   const likesCount = testimony.likes_count ?? 0;
 
@@ -49,7 +58,7 @@ const Post = () => {
         { backgroundColor: theme.colors.background },
       ]}
     >
-      <View style={styles.headerRow}>
+      <TouchableOpacity style={styles.headerRow} onPress={openProfile}>
         <Image
           source={{ uri: testimony.user.avatar_url }}
           style={styles.avatar}
@@ -62,7 +71,7 @@ const Post = () => {
         >
           {formatTimeSince(testimony.created_at)}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.postBody}>
         <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>

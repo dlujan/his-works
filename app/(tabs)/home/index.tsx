@@ -12,6 +12,7 @@ import {
   RefreshControl,
   Share,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -56,6 +57,14 @@ export default function HomeScreen() {
     if (hasNextPage) fetchNextPage();
   };
 
+  const openProfile = (userID: string) => {
+    if (userID === user?.uuid) {
+      router.push("/account");
+    } else {
+      router.push(`/home/profile/${userID}`);
+    }
+  };
+
   const renderItem = useCallback(
     ({ item }: { item: HomeFeedTestimony }) => {
       const liked = item.liked_by_user ?? false;
@@ -80,7 +89,11 @@ export default function HomeScreen() {
             />
 
             <View style={styles.postBody}>
-              <View style={styles.headerRow}>
+              <TouchableOpacity
+                style={styles.headerRow}
+                disabled={item.user_uuid === user!.uuid}
+                onPress={() => openProfile(item.user_uuid)}
+              >
                 <Text
                   style={[styles.nameText, { color: theme.colors.onSurface }]}
                 >
@@ -105,7 +118,7 @@ export default function HomeScreen() {
                     Recommended
                   </Text>
                 )}
-              </View>
+              </TouchableOpacity>
 
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
                 {item.text}

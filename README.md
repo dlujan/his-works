@@ -48,3 +48,7 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## React Native Paper Icon Names!
+
+https://gist.github.com/lydongcanh/4350326c44a7d60738dbf6c07b9b4d35
