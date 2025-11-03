@@ -8,6 +8,7 @@ import { IconButton, useTheme } from "react-native-paper";
 export default function AccountStackLayout() {
   const { signOut } = useAuth();
   const theme = useTheme<AppTheme>();
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -67,6 +68,15 @@ export default function AccountStackLayout() {
         options={{
           title: "Legal",
           headerBackTitle: "Account",
+          headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
+      <Stack.Screen
+        name="my-followers-modal"
+        options={{
+          presentation: "modal",
+          headerShown: true,
+          title: "Followers",
           headerTitleStyle: { fontWeight: 600 },
         }}
       />

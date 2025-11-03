@@ -1,18 +1,18 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
+import { useMyFollowers } from "@/hooks/data/useMyFollowers";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { useMemo } from "react";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, List, Surface, Text, useTheme } from "react-native-paper";
 
 export default function AccountScreen() {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
   const theme = useTheme<AppTheme>();
   const router = useRouter();
   const { user } = useAuth();
-
-  const [loading, setLoading] = useState(false);
-  const [signOutError, setSignOutError] = useState<string | null>(null);
+  const { data: followersData } = useMyFollowers(user?.uuid || "");
+  const followersCount = followersData?.pages?.[0]?.totalCount ?? 0;
 
   const authUser = session?.user ?? null;
   const email = authUser?.email ?? "Not provided";
@@ -30,22 +30,6 @@ export default function AccountScreen() {
     }
   }, [authUser?.created_at]);
 
-  const handleSignOut = async () => {
-    setSignOutError(null);
-    setLoading(true);
-    try {
-      await signOut();
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Unable to log out. Please try again.";
-      setSignOutError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
@@ -53,19 +37,6 @@ export default function AccountScreen() {
       <View style={styles.container}>
         {/* Profile header */}
         <View style={styles.profileHeader}>
-          {user?.avatar_url ? (
-            <Image
-              source={{ uri: user.avatar_url }}
-              style={styles.avatarImage}
-            />
-          ) : (
-            <Avatar.Icon
-              icon="account"
-              size={72}
-              style={{ backgroundColor: theme.colors.primaryContainer }}
-              color={theme.colors.onPrimaryContainer}
-            />
-          )}
           <View style={styles.profileText}>
             <Text variant="headlineSmall" style={{ fontWeight: "600" }}>
               {user?.full_name ?? "Your Account"}
@@ -82,7 +53,36 @@ export default function AccountScreen() {
             >
               Joined {joined}
             </Text>
+            <View style={styles.profileFooter}>
+              <TouchableOpacity
+                onPress={() => router.push("/account/my-followers-modal")}
+              >
+                <Text
+                  variant="bodySmall"
+                  style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}
+                >
+                  {followersCount}{" "}
+                  {followersCount === 1 ? "follower" : "followers"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
+          {user?.avatar_url ? (
+            <Image
+              source={{ uri: user.avatar_url }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Avatar.Icon
+              icon="account"
+              size={72}
+              style={{
+                backgroundColor: theme.colors.primaryContainer,
+                top: -8,
+              }}
+              color={theme.colors.onPrimaryContainer}
+            />
+          )}
         </View>
 
         {/* List of navigation items */}
@@ -109,15 +109,6 @@ export default function AccountScreen() {
             onPress={() => router.push("/account/legal")}
           />
         </List.Section>
-
-        {signOutError && (
-          <Text
-            variant="bodySmall"
-            style={[styles.errorText, { color: theme.colors.error }]}
-          >
-            {signOutError}
-          </Text>
-        )}
       </View>
     </Surface>
   );
@@ -138,17 +129,21 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 32,
+    alignItems: "flex-start",
+    marginBottom: 20,
     gap: 16,
   },
   avatarImage: {
     width: 72,
     height: 72,
     borderRadius: 48,
+    top: -8,
   },
   profileText: {
     flex: 1,
+  },
+  profileFooter: {
+    marginTop: 10,
   },
   errorText: {
     textAlign: "center",

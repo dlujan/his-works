@@ -2,13 +2,16 @@ import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { useTestimony } from "@/hooks/data/useTestimony";
+import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   ActivityIndicator,
+  Button,
   IconButton,
   Text,
   useTheme,
@@ -17,9 +20,12 @@ const Post = () => {
   const theme = useTheme<AppTheme>();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { testimony, isFetching } = useTestimony(id || "");
   const { user } = useAuth();
   const { mutate: likeTestimony } = useLikeTestimony();
+
+  const [creatingFollow, setCreatingFollow] = useState(false);
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
@@ -48,8 +54,28 @@ const Post = () => {
     }
   };
 
+  const followUser = async () => {
+    setCreatingFollow(true);
+    try {
+      const { error } = await supabase.from("follow").insert({
+        follower_uuid: user!.uuid,
+        followed_uuid: testimony.user_uuid,
+      });
+
+      if (error) {
+        console.error("Error following:", error.message);
+      }
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ["testimony", id] });
+      queryClient.invalidateQueries({
+        queryKey: ["profile", testimony.user_uuid],
+      });
+      setCreatingFollow(false);
+    }
+  };
   const liked = testimony.liked_by_user ?? false;
   const likesCount = testimony.likes_count ?? 0;
+  const following = testimony.followed_by_user ?? false;
 
   return (
     <View
@@ -59,18 +85,33 @@ const Post = () => {
       ]}
     >
       <TouchableOpacity style={styles.headerRow} onPress={openProfile}>
-        <Image
-          source={{ uri: testimony.user.avatar_url }}
-          style={styles.avatar}
-        />
-        <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
-          {testimony.user.full_name}
-        </Text>
-        <Text
-          style={[styles.timestamp, { color: theme.colors.onSurfaceVariant }]}
-        >
-          {formatTimeSince(testimony.created_at)}
-        </Text>
+        <View style={styles.headerInfo}>
+          <Image
+            source={{ uri: testimony.user.avatar_url }}
+            style={styles.avatar}
+          />
+          <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
+            {testimony.user.full_name}
+          </Text>
+          <Text
+            style={[styles.timestamp, { color: theme.colors.onSurfaceVariant }]}
+          >
+            {formatTimeSince(testimony.created_at)}
+          </Text>
+        </View>
+        {!following && (
+          <Button
+            mode="text"
+            style={{ borderRadius: 12 }}
+            labelStyle={{ fontSize: 13 }}
+            compact
+            loading={creatingFollow}
+            disabled={creatingFollow}
+            onPress={() => followUser()}
+          >
+            Follow
+          </Button>
+        )}
       </TouchableOpacity>
 
       <View style={styles.postBody}>
@@ -172,6 +213,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "rgba(0,0,0,0.12)",
   },
   headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  headerInfo: {
     flexDirection: "row",
     alignItems: "center",
   },

@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
+type FetchResult = Testimony & { followed_by_user: boolean };
 const fetchData = async (id: string, appUserId?: string) => {
   const { data, error } = await supabase
     .from("testimony")
@@ -36,18 +37,35 @@ const fetchData = async (id: string, appUserId?: string) => {
   const likedByUser =
     appUserId && likes.some((l: any) => l.user_uuid === appUserId);
 
+  let followedByUser = false;
+  if (appUserId && data.user_uuid && appUserId !== data.user_uuid) {
+    const { data: followRows, error: followError } = await supabase
+      .from("follow")
+      .select("follower_uuid")
+      .eq("follower_uuid", appUserId)
+      .eq("followed_uuid", data.user_uuid)
+      .limit(1)
+      .maybeSingle();
+    if (followError) {
+      console.error("Error checking follow:", followError.message);
+    } else {
+      followedByUser = !!followRows;
+    }
+  }
+
   return {
     ...data,
     tags: data.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
     reminders: data.reminder?.map((rem: any) => rem),
     likes_count: likesCount,
     liked_by_user: likedByUser,
+    followed_by_user: followedByUser,
   };
 };
 
 export const useTestimony = (id: string) => {
   const { user } = useAuth();
-  const query = useQuery<Testimony>({
+  const query = useQuery<FetchResult>({
     queryKey: ["testimony", id],
     queryFn: () => fetchData(id, user?.uuid),
     staleTime: 1000 * 60 * 10, // 10 minutes
@@ -55,7 +73,7 @@ export const useTestimony = (id: string) => {
   });
 
   return {
-    testimony: query.data || ({} as Testimony),
+    testimony: query.data || ({} as FetchResult),
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error,

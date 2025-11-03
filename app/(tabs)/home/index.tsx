@@ -176,8 +176,6 @@ export default function HomeScreen() {
           data={testimonies}
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -235,18 +233,21 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  listContent: { paddingVertical: 16 },
   postContainer: {
     flexDirection: "row",
     gap: 12,
-    paddingTop: 2,
+    paddingTop: 12,
     paddingHorizontal: 16,
     paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   avatar: { width: 42, height: 42, borderRadius: 21 },
   postBody: { flex: 1 },
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   nameText: { fontSize: 15, fontWeight: "600" },
   timestamp: { fontSize: 13, marginLeft: 6 },
   excerpt: { fontSize: 15, lineHeight: 22 },
@@ -268,7 +269,6 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
     textRendering: "geometricPrecision",
   },
-  separator: { height: 16 },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
