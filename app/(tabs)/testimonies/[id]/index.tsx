@@ -10,7 +10,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Keyboard, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -23,7 +30,7 @@ import {
 } from "react-native-paper";
 import { DatePickerInput } from "react-native-paper-dates";
 
-export default function EditWorkScreen() {
+export default function EditTestimonyScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const router = useRouter();
   const theme = useTheme<AppTheme>();
@@ -249,7 +256,10 @@ export default function EditWorkScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           {nextReminderText && (
-            <View style={styles.reminderRow}>
+            <TouchableOpacity
+              style={styles.reminderRow}
+              onPress={() => router.push(`/testimonies/${id}/reminders`)}
+            >
               <Icon
                 source="bell-outline"
                 size={16}
@@ -261,7 +271,7 @@ export default function EditWorkScreen() {
               >
                 Next reminder {nextReminderText}
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
 
           <TextInput

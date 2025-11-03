@@ -43,6 +43,12 @@ export default function CreateTestimonyModal() {
   const [tags, setTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [yearlyReminder, setYearlyReminder] = useState(
+    user?.reminder_settings.yearly
+  );
+  const [quarterlyReminder, setQuarterlyReminder] = useState(
+    user?.reminder_settings.quarterly
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -96,7 +102,7 @@ export default function CreateTestimonyModal() {
       const now = dayjs();
       const testimonyDate = date ? dayjs(date) : now;
 
-      if (user?.reminder_settings?.yearly) {
+      if (yearlyReminder) {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
@@ -105,7 +111,7 @@ export default function CreateTestimonyModal() {
         });
       }
 
-      if (user?.reminder_settings?.quarterly) {
+      if (quarterlyReminder) {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
@@ -243,6 +249,44 @@ export default function CreateTestimonyModal() {
             </View>
           )}
 
+          {/* <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text
+                variant="titleSmall"
+                style={{ color: theme.colors.onSurface }}
+              >
+                Yearly Reminder
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
+                Receive an annual reminder for this testimony.
+              </Text>
+            </View>
+            <Switch value={yearlyReminder} onValueChange={setYearlyReminder} />
+          </View>
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1 }}>
+              <Text
+                variant="titleSmall"
+                style={{ color: theme.colors.onSurface }}
+              >
+                3-Month Reminder
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={{ color: theme.colors.onSurfaceVariant }}
+              >
+                Receive a reminder every 3 months
+              </Text>
+            </View>
+            <Switch
+              value={quarterlyReminder}
+              onValueChange={setQuarterlyReminder}
+            />
+          </View> */}
+
           {message && (
             <Text
               variant="bodySmall"
@@ -285,7 +329,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   form: {
-    paddingTop: 16,
     paddingBottom: 48,
     gap: 12,
   },
@@ -308,7 +351,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   message: {
     textAlign: "center",

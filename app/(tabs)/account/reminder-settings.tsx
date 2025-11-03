@@ -80,14 +80,8 @@ export default function ReminderSettingsScreen() {
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text
-          variant="bodyMedium"
-          style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
-        >
-          Choose how and when you'd like to be reminded of your testimonies.
-        </Text>
-
         <List.Section style={styles.listSection}>
+          <List.Subheader>Default Reminder Settings</List.Subheader>
           <List.Item
             title="Yearly Reminder"
             description="Get a reminder on each testimony's one-year anniversary."
@@ -110,7 +104,7 @@ export default function ReminderSettingsScreen() {
               />
             )}
           />
-          <List.Item
+          {/* <List.Item
             title="Surprise Reminders"
             description="Occasionally get a random reminder for a past testimony."
             left={(props) => <List.Icon {...props} icon="gift-outline" />}
@@ -120,7 +114,7 @@ export default function ReminderSettingsScreen() {
                 onValueChange={() => handleToggle("surprise")}
               />
             )}
-          />
+          /> */}
         </List.Section>
 
         {/* Time of Day Preference */}
@@ -211,10 +205,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-  },
-  subtitle: {
-    marginBottom: 20,
-    textAlign: "center",
   },
   listSection: {
     marginBottom: 16,

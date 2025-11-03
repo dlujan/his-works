@@ -12,10 +12,18 @@ export default function TestimoniesStackLayout() {
         }}
       />
       <Stack.Screen
-        name="[id]"
+        name="[id]/index"
         options={{
           title: "Edit",
           headerBackTitle: "My Testimonies",
+          headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
+      <Stack.Screen
+        name="[id]/reminders"
+        options={{
+          presentation: "modal",
+          title: "Reminders",
           headerTitleStyle: { fontWeight: 600 },
         }}
       />
