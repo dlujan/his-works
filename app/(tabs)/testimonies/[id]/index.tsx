@@ -240,7 +240,7 @@ export default function EditTestimonyScreen() {
   }
   const nextReminderText = testimony?.reminders
     ? getNextReminder(testimony.reminders)
-    : null;
+    : "Reminder settings";
 
   return (
     <Surface
