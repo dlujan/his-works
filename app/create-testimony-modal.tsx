@@ -23,7 +23,7 @@ import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
-import { getNextReminderDate } from "@/utils/reminders";
+import { setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { DatePickerInput } from "react-native-paper-dates";
@@ -106,7 +106,7 @@ export default function CreateTestimonyModal() {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
-          scheduled_for: getNextReminderDate(testimonyDate, "year"),
+          scheduled_for: setNextReminderDate(testimonyDate, "year"),
           type: ReminderType.YEARLY,
         });
       }
@@ -115,7 +115,7 @@ export default function CreateTestimonyModal() {
         reminders.push({
           user_uuid: authUser.id,
           testimony_uuid: testimony.uuid,
-          scheduled_for: getNextReminderDate(testimonyDate, "quarter"),
+          scheduled_for: setNextReminderDate(testimonyDate, "quarter"),
           type: ReminderType.QUARTERLY,
         });
       }
@@ -197,6 +197,7 @@ export default function CreateTestimonyModal() {
             onChange={(d) => d && setDate(d)}
             inputMode="start"
             mode="outlined"
+            saveLabel="Done"
             withDateFormatInLabel={false}
             validRange={{ startDate: new Date(0), endDate: new Date() }}
           />

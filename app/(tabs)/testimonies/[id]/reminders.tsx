@@ -1,13 +1,21 @@
+import ReminderRow from "@/components/testimonies/ReminderRow";
+import { useAuth } from "@/context/auth-context";
 import { useTestimony } from "@/hooks/data/useTestimony";
+import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { ActivityIndicator, Divider, Text, useTheme } from "react-native-paper";
+import { useState } from "react";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
 
 export default function TestimonyRemindersModal() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const { user } = useAuth();
   const { testimony, isLoading } = useTestimony(id || "");
   const theme = useTheme();
+  const queryClient = useQueryClient();
+  const [creating, setCreating] = useState(false);
 
   if (isLoading) {
     return (
@@ -17,14 +25,24 @@ export default function TestimonyRemindersModal() {
     );
   }
 
-  const getDaysUntil = (date: string) => {
-    const now = dayjs();
-    const scheduled = dayjs(date);
-    const daysAway = scheduled.diff(now, "day");
-
-    if (daysAway <= 0) return "Today 🎉";
-    if (daysAway === 1) return "Tomorrow";
-    return `in ${daysAway} days`;
+  const createReminder = async () => {
+    setCreating(true);
+    try {
+      const { error } = await supabase.from("reminder").insert({
+        user_uuid: user!.uuid,
+        testimony_uuid: testimony.uuid,
+        scheduled_for: dayjs().add(2, "week").toISOString(),
+        type: "custom",
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to create reminder.");
+    } finally {
+      setCreating(false);
+      queryClient.invalidateQueries({
+        queryKey: ["testimony", testimony.uuid],
+      });
+    }
   };
 
   const reminders = testimony?.reminders ?? [];
@@ -34,9 +52,21 @@ export default function TestimonyRemindersModal() {
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
       <View style={styles.content}>
-        <Text style={[styles.header, { color: theme.colors.onSurface }]}>
-          Scheduled Reminders
-        </Text>
+        <View style={styles.header}>
+          <Text style={{ color: theme.colors.onSurface, fontWeight: "600" }}>
+            Scheduled Reminders
+          </Text>
+          <Button
+            mode="contained"
+            icon={"plus"}
+            loading={creating}
+            disabled={creating}
+            compact
+            onPress={createReminder}
+          >
+            Create
+          </Button>
+        </View>
 
         {reminders.length === 0 ? (
           <Text
@@ -57,36 +87,13 @@ export default function TestimonyRemindersModal() {
                 new Date(a.scheduled_for).getTime() -
                 new Date(b.scheduled_for).getTime()
             )
-            .map((reminder, i) => {
-              const date = new Date(reminder.scheduled_for).toLocaleDateString(
-                undefined,
-                {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              );
-
+            .map((reminder) => {
               return (
-                <View key={reminder.uuid}>
-                  <View style={styles.reminderRow}>
-                    <Text
-                      variant="bodyLarge"
-                      style={{ color: theme.colors.onSurface }}
-                    >
-                      {date}
-                    </Text>
-                    <Text
-                      variant="bodySmall"
-                      style={{ color: theme.colors.onSurfaceVariant }}
-                    >
-                      {getDaysUntil(reminder.scheduled_for)}
-                    </Text>
-                  </View>
-                  {i !== reminders.length - 1 && (
-                    <Divider style={styles.divider} />
-                  )}
-                </View>
+                <ReminderRow
+                  key={reminder.uuid}
+                  reminder={reminder}
+                  testimonyId={testimony.uuid}
+                />
               );
             })
         )}
@@ -99,10 +106,16 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 },
-  header: { marginBottom: 16 },
-  reminderRow: {
+  header: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    gap: 8,
   },
 });

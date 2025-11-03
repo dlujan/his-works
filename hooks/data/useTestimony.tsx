@@ -18,7 +18,8 @@ const fetchData = async (id: string, appUserId?: string) => {
     ),
      reminder (
       uuid,
-      scheduled_for
+      scheduled_for,
+      type
     ),
     user(avatar_url, full_name),
     testimony_like(*)

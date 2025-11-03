@@ -5,7 +5,7 @@ import { useTags } from "@/hooks/data/useTags";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
-import { getNextReminder, getNextReminderDate } from "@/utils/reminders";
+import { getNextReminder, setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -137,7 +137,7 @@ export default function EditTestimonyScreen() {
           newReminders.push({
             user_uuid: user.uuid,
             testimony_uuid: id,
-            scheduled_for: getNextReminderDate(testimonyDate, "year"),
+            scheduled_for: setNextReminderDate(testimonyDate, "year"),
             type: ReminderType.YEARLY,
           });
         }
@@ -146,7 +146,7 @@ export default function EditTestimonyScreen() {
           newReminders.push({
             user_uuid: user.uuid,
             testimony_uuid: id,
-            scheduled_for: getNextReminderDate(testimonyDate, "quarter"),
+            scheduled_for: setNextReminderDate(testimonyDate, "quarter"),
             type: ReminderType.QUARTERLY,
           });
         }
@@ -238,7 +238,7 @@ export default function EditTestimonyScreen() {
       </Surface>
     );
   }
-
+  console.log(testimony.reminders);
   const nextReminderText = testimony?.reminders
     ? getNextReminder(testimony.reminders)
     : null;
@@ -309,6 +309,7 @@ export default function EditTestimonyScreen() {
             }}
             inputMode="start"
             mode="outlined"
+            saveLabel="Done"
             withDateFormatInLabel={false}
             validRange={{ startDate: new Date(0), endDate: new Date() }}
           />

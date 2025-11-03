@@ -81,7 +81,9 @@ export default function ReminderSettingsScreen() {
     >
       <ScrollView contentContainerStyle={styles.container}>
         <List.Section style={styles.listSection}>
-          <List.Subheader>Default Reminder Settings</List.Subheader>
+          <List.Subheader>
+            Default Reminder Settings (Auto-Renewing)
+          </List.Subheader>
           <List.Item
             title="Yearly Reminder"
             description="Get a reminder on each testimony's one-year anniversary."

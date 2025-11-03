@@ -4,25 +4,26 @@ import dayjs, { Dayjs } from "dayjs";
 export function getNextReminder(reminders: Reminder[]) {
   if (!reminders?.length) return null;
 
-  const now = dayjs();
+  const today = dayjs().startOf("day");
+
   const upcoming = reminders
     .map((r) => dayjs(r.scheduled_for))
-    .filter((d) => d.isAfter(now))
+    .filter((d) => d.isSame(today, "day") || d.isAfter(today)) // 👈 keep today too
     .sort((a, b) => a.valueOf() - b.valueOf());
 
   if (upcoming.length === 0) return null;
 
   const next = upcoming[0];
-  const daysAway = next.diff(now, "day");
+  const daysAway = next.startOf("day").diff(today, "day"); // 👈 compare by day only
 
   if (daysAway <= 0) return "Today 🎉";
   if (daysAway === 1) return "Tomorrow";
   return `in ${daysAway} days`;
 }
 
-export function getNextReminderDate(
+export function setNextReminderDate(
   baseDate: Dayjs,
-  interval: "year" | "quarter"
+  interval: "year" | "quarter",
 ) {
   const now = dayjs();
   const start = baseDate;
