@@ -1,7 +1,7 @@
 import { AppTheme } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
-import { useMyFollowers } from "@/hooks/data/useMyFollowers";
+import { useUserFollowers } from "@/hooks/data/useUserFollowers";
 import { User } from "@/lib/types";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback } from "react";
 import {
   ActivityIndicator,
@@ -14,7 +14,7 @@ import {
 import { Text, useTheme } from "react-native-paper";
 
 export default function MyFollowersModal() {
-  const { user } = useAuth();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme<AppTheme>();
   const {
     data: followersData,
@@ -22,7 +22,7 @@ export default function MyFollowersModal() {
     isFetchingNextPage: isFetchingNextFollowersPage,
     fetchNextPage: fetchNextFollowersPage,
     hasNextPage: hasNextFollowersPage,
-  } = useMyFollowers(user?.uuid || "");
+  } = useUserFollowers(id || "");
   const followers = followersData?.pages.flatMap((p) => p.followers) ?? [];
   const followersCount = followersData?.pages?.[0]?.totalCount ?? 0;
 
@@ -59,7 +59,7 @@ export default function MyFollowersModal() {
         </Pressable>
       );
     },
-    [theme.colors, user?.uuid]
+    [theme.colors, id]
   );
   return (
     <View style={styles.screen}>

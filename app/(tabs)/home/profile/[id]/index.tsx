@@ -20,6 +20,7 @@ import {
   RefreshControl,
   Share,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -239,14 +240,22 @@ const Profile = () => {
               {profile.full_name}
             </Text>
 
-            <Text
-              style={[
-                styles.followerText,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/home/profile/${profile.uuid}/user-followers-modal`
+                )
+              }
             >
-              {followerCount} {followerCount === 1 ? "follower" : "followers"}
-            </Text>
+              <Text
+                style={[
+                  styles.followerText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                {followerCount} {followerCount === 1 ? "follower" : "followers"}
+              </Text>
+            </TouchableOpacity>
 
             <Button
               mode={isFollowing ? "outlined" : "contained"}

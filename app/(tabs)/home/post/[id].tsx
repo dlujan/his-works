@@ -76,6 +76,7 @@ const Post = () => {
   const liked = testimony.liked_by_user ?? false;
   const likesCount = testimony.likes_count ?? 0;
   const following = testimony.followed_by_user ?? false;
+  const showFollowBtn = !following && testimony.user_uuid !== user?.uuid;
 
   return (
     <View
@@ -99,7 +100,7 @@ const Post = () => {
             {formatTimeSince(testimony.created_at)}
           </Text>
         </View>
-        {!following && (
+        {showFollowBtn && (
           <Button
             mode="text"
             style={{ borderRadius: 12 }}

@@ -53,7 +53,7 @@ export default function HomeStackLayout() {
         }}
       />
       <Stack.Screen
-        name="profile/[id]"
+        name="profile/[id]/index"
         options={{
           title: "",
           headerBackTitle: "Back",
@@ -66,15 +66,24 @@ export default function HomeStackLayout() {
                 marginRight: 4,
               }}
             >
-              <IconButton
+              {/* <IconButton
                 icon="dots-horizontal"
                 size={26}
                 iconColor={theme.colors.onSurface}
                 // onPress={() => router.push("/home/search")}
                 style={{ margin: 0 }}
-              />
+              /> */}
             </View>
           ),
+        }}
+      />
+      <Stack.Screen
+        name="profile/[id]/user-followers-modal"
+        options={{
+          presentation: "modal",
+          headerShown: true,
+          title: "Followers",
+          headerTitleStyle: { fontWeight: 600 },
         }}
       />
     </Stack>
