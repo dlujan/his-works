@@ -240,7 +240,7 @@ export default function EditTestimonyScreen() {
   }
   const nextReminderText = testimony?.reminders
     ? getNextReminder(testimony.reminders)
-    : "Reminder settings";
+    : null;
 
   return (
     <Surface
@@ -254,24 +254,38 @@ export default function EditTestimonyScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          {nextReminderText && (
-            <TouchableOpacity
-              style={styles.reminderRow}
-              onPress={() => router.push(`/testimonies/${id}/reminders`)}
-            >
-              <Icon
-                source="bell-outline"
-                size={16}
-                color={theme.colors.onSurfaceVariant}
-              />
+          <TouchableOpacity
+            style={styles.reminderRow}
+            onPress={() => router.push(`/testimonies/${id}/reminders`)}
+          >
+            <Icon
+              source="bell-outline"
+              size={16}
+              color={theme.colors.onSurfaceVariant}
+            />
+            {nextReminderText ? (
               <Text
                 variant="bodySmall"
-                style={{ color: theme.colors.onSurfaceVariant, marginLeft: 6 }}
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  marginLeft: 6,
+                }}
               >
                 Next reminder {nextReminderText}
               </Text>
-            </TouchableOpacity>
-          )}
+            ) : (
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  marginLeft: 6,
+                  textDecorationLine: "underline",
+                }}
+              >
+                Reminder settings
+              </Text>
+            )}
+          </TouchableOpacity>
 
           <TextInput
             label="My testimony"
