@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Image } from "react-native";
 
 const IMAGE_URLS = [
+    "https://images.pexels.com/photos/1105389/pexels-photo-1105389.jpeg",
     "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1600&q=80",
     "https://images.pexels.com/photos/1126380/pexels-photo-1126380.jpeg",
     "https://images.pexels.com/photos/1165981/pexels-photo-1165981.jpeg",
