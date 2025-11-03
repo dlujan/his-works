@@ -21,6 +21,7 @@ import { TagMultiSelect } from "@/components/TagMultiSelect";
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
+import { useRandomBackgroundImage } from "@/hooks/useRandomBackgroundImage";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
 import { setNextReminderDate } from "@/utils/reminders";
@@ -52,6 +53,9 @@ export default function CreateTestimonyModal() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+  const imageUrl = useRandomBackgroundImage();
+  console.log({ imageUrl });
+
   const handleSubmit = async () => {
     const trimmedDetails = details.trim();
     if (!trimmedDetails || !authUser) return;
@@ -70,6 +74,7 @@ export default function CreateTestimonyModal() {
           date: date,
           is_public: isPrivate ? false : isPublic,
           is_private: isPrivate,
+          image_url: imageUrl,
         })
         .select("uuid")
         .single();

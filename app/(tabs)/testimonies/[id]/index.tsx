@@ -238,7 +238,6 @@ export default function EditTestimonyScreen() {
       </Surface>
     );
   }
-  console.log(testimony.reminders);
   const nextReminderText = testimony?.reminders
     ? getNextReminder(testimony.reminders)
     : null;

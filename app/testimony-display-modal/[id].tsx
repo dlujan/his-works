@@ -27,10 +27,6 @@ export default function TestimonyDisplayModal() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
-  const imgOptions = [
-    "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
-  ];
   const titleOptions = [
     "See What God Has Done",
     "A Work of God",
@@ -92,10 +88,6 @@ export default function TestimonyDisplayModal() {
     });
   };
 
-  const getRandomImg = () => {
-    return imgOptions[Math.floor(Math.random() * titleOptions.length)];
-  };
-
   if (loading || !testimony) {
     return (
       <View style={styles.loadingContainer}>
@@ -107,7 +99,9 @@ export default function TestimonyDisplayModal() {
   return (
     <ImageBackground
       source={{
-        uri: "https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070",
+        uri:
+          testimony.image_url ||
+          "https://images.pexels.com/photos/1105389/pexels-photo-1105389.jpeg",
       }}
       style={styles.background}
       resizeMode="cover"
