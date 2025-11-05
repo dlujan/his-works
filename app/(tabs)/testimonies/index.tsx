@@ -2,6 +2,7 @@ import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useMyTestimonies } from "@/hooks/data/useMyTestimonies";
 import { Testimony } from "@/lib/types";
+import { truncate } from "@/utils/strings";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
@@ -94,7 +95,7 @@ export default function TestimoniesScreen() {
             </View>
 
             <Text style={[styles.text, { color: theme.colors.onSurface }]}>
-              {item.text.trim()}
+              {truncate(item.text.trim(), 160)}
             </Text>
 
             {/* Bible verse reference */}

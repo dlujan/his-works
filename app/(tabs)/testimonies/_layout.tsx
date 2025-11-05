@@ -27,6 +27,13 @@ export default function TestimoniesStackLayout() {
           headerTitleStyle: { fontWeight: 600 },
         }}
       />
+      <Stack.Screen
+        name="[id]/post"
+        options={{
+          title: "Testimony",
+          headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
     </Stack>
   );
 }

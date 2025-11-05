@@ -8,7 +8,7 @@ import { ReminderType } from "@/lib/types";
 import { getNextReminder, setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -255,36 +255,46 @@ export default function EditTestimonyScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <TouchableOpacity
-            style={styles.reminderRow}
+            style={styles.topRow}
             onPress={() => router.push(`/testimonies/${id}/reminders`)}
           >
-            <Icon
-              source="bell-outline"
-              size={16}
-              color={theme.colors.onSurfaceVariant}
-            />
-            {nextReminderText ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Icon
+                source="bell-outline"
+                size={16}
+                color={theme.colors.onSurfaceVariant}
+              />
+              {nextReminderText ? (
+                <Text
+                  variant="bodySmall"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    marginLeft: 6,
+                  }}
+                >
+                  Next reminder {nextReminderText}
+                </Text>
+              ) : (
+                <Text
+                  variant="bodySmall"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    marginLeft: 6,
+                    textDecorationLine: "underline",
+                  }}
+                >
+                  Reminder settings
+                </Text>
+              )}
+            </View>
+            <Link href={`/testimonies/${id}/post`}>
               <Text
                 variant="bodySmall"
-                style={{
-                  color: theme.colors.onSurfaceVariant,
-                  marginLeft: 6,
-                }}
+                style={{ color: theme.colors.onSurfaceVariant }}
               >
-                Next reminder {nextReminderText}
+                View Post
               </Text>
-            ) : (
-              <Text
-                variant="bodySmall"
-                style={{
-                  color: theme.colors.onSurfaceVariant,
-                  marginLeft: 6,
-                  textDecorationLine: "underline",
-                }}
-              >
-                Reminder settings
-              </Text>
-            )}
+            </Link>
           </TouchableOpacity>
 
           <TextInput
@@ -464,8 +474,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
   },
-  reminderRow: {
+  topRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 6,
   },
