@@ -316,6 +316,7 @@ export default function EditTestimonyScreen() {
             value={bibleVerse}
             onChangeText={setBibleVerse}
             placeholder="e.g. Psalms 23:1"
+            maxLength={44}
             style={styles.input}
             returnKeyType="done"
             submitBehavior="blurAndSubmit"

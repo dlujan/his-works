@@ -11,33 +11,43 @@ type FetchResult = {
 };
 const fetchData = async (
   userUuid: string,
-  page: number
+  page: number,
+  searchQuery?: string
 ): Promise<FetchResult> => {
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from("testimony")
     .select(
       `
-    *,
-    testimony_tag (
-      tag:tag_uuid (
+      *,
+      testimony_tag (
+        tag:tag_uuid (
+          uuid,
+          name
+        )
+      ),
+      reminder (
         uuid,
-        name
-      )
-    ),
-    reminder (
-      uuid,
-      scheduled_for
-    ),
-    testimony_like(*)
-  `,
+        scheduled_for
+      ),
+      testimony_like(*)
+    `,
       { count: "exact" }
     )
     .eq("user_uuid", userUuid)
     .order("date", { ascending: false })
     .range(from, to);
+
+  // 🔍 If search text is provided, filter by text or tag name
+  if (searchQuery && searchQuery.trim() !== "") {
+    query = query.or(
+      `text.ilike.%${searchQuery}%,bible_verse.ilike.%${searchQuery}%`
+    );
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("Error fetching testimonies:", error.message);
@@ -61,10 +71,11 @@ const fetchData = async (
   return { testimonies, nextPage: page + 1, hasMore };
 };
 
-export const useMyTestimonies = (userUuid: string) => {
+export const useMyTestimonies = (userUuid: string, searchQuery?: string) => {
   return useInfiniteQuery<FetchResult>({
-    queryKey: ["my-testimonies", userUuid],
-    queryFn: ({ pageParam }) => fetchData(userUuid, pageParam as number),
+    queryKey: ["my-testimonies", userUuid, searchQuery],
+    queryFn: ({ pageParam }) =>
+      fetchData(userUuid, pageParam as number, searchQuery),
     getNextPageParam: (lastPage) =>
       lastPage.hasMore ? lastPage.nextPage : undefined,
     initialPageParam: 0, // ✅ required in React Query v5

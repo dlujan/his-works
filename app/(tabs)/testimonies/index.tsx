@@ -5,7 +5,7 @@ import { Testimony } from "@/lib/types";
 import { truncate } from "@/utils/strings";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -19,6 +19,7 @@ import {
   Icon,
   Surface,
   Text,
+  TextInput,
   useTheme,
 } from "react-native-paper";
 
@@ -29,14 +30,31 @@ export default function TestimoniesScreen() {
   const { session } = useAuth();
   const user = session?.user ?? null;
   const router = useRouter();
+
+  const [searchString, setSearchString] = useState("");
+  const [queryString, setQueryString] = useState("");
   const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } =
-    useMyTestimonies(user?.id || "");
+    useMyTestimonies(user?.id || "", queryString);
 
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 
   const handleLoadMore = () => {
     if (hasNextPage) fetchNextPage();
   };
+
+  // 🔍 Debounced search when typing
+  useEffect(() => {
+    if (!searchString.trim()) {
+      setQueryString("");
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setQueryString(searchString);
+    }, 600); // delay in ms (adjust as needed)
+
+    return () => clearTimeout(timeout); // cleanup on re-type
+  }, [searchString]);
 
   const handleOpenTestimony = useCallback(
     (id: string) => {
@@ -152,58 +170,91 @@ export default function TestimoniesScreen() {
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
+      <View style={styles.searchBarContainer}>
+        <TextInput
+          placeholder="Search"
+          mode="outlined"
+          value={searchString}
+          onChangeText={setSearchString}
+          style={styles.searchInput}
+          outlineStyle={{
+            borderRadius: 20,
+          }}
+          right={<TextInput.Icon icon="magnify" forceTextInputFocus={false} />}
+          returnKeyType="search"
+          dense
+        />
+      </View>
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator animating={true} color={theme.colors.primary} />
         </View>
       ) : (
-        <FlatList
-          data={testimonies}
-          keyExtractor={(item) => item.uuid}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            isFetchingNextPage ? (
-              <View style={{ paddingVertical: 16 }}>
-                <ActivityIndicator animating color={theme.colors.primary} />
-              </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            !isLoading && (
-              <View style={styles.emptyState}>
-                <Text
-                  variant="titleMedium"
-                  style={{ color: theme.colors.onSurface }}
-                >
-                  No testimonies yet
-                </Text>
-                <Text
-                  variant="bodyMedium"
-                  style={{
-                    color: theme.colors.onSurfaceVariant,
-                    textAlign: "center",
-                    marginBottom: 10,
-                  }}
-                >
-                  Add your first testimony! Big or small, it's worth
-                  remembering.
-                </Text>
-                <Button
-                  mode="contained"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    router.push("/create-testimony-modal");
-                  }}
-                >
-                  Add Testimony
-                </Button>
-              </View>
-            )
-          }
-        />
+        <>
+          <FlatList
+            data={testimonies}
+            keyExtractor={(item) => item.uuid}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <View style={{ paddingVertical: 16 }}>
+                  <ActivityIndicator animating color={theme.colors.primary} />
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={
+              <>
+                {!isLoading && !searchString.length ? (
+                  <View style={styles.emptyState}>
+                    <Text
+                      variant="titleMedium"
+                      style={{ color: theme.colors.onSurface }}
+                    >
+                      No testimonies yet
+                    </Text>
+                    <Text
+                      variant="bodyMedium"
+                      style={{
+                        color: theme.colors.onSurfaceVariant,
+                        textAlign: "center",
+                        marginBottom: 10,
+                      }}
+                    >
+                      Add your first testimony! Big or small, it's worth
+                      remembering.
+                    </Text>
+                    <Button
+                      mode="contained"
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        router.push("/create-testimony-modal");
+                      }}
+                    >
+                      Add Testimony
+                    </Button>
+                  </View>
+                ) : null}
+                {!isLoading && searchString.length ? (
+                  <View style={styles.emptyState}>
+                    <Text
+                      variant="bodyMedium"
+                      style={{
+                        color: theme.colors.onSurfaceVariant,
+                        textAlign: "center",
+                        marginBottom: 10,
+                      }}
+                    >
+                      No results.
+                    </Text>
+                  </View>
+                ) : null}
+              </>
+            }
+          />
+        </>
       )}
     </Surface>
   );
@@ -213,9 +264,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  headerBar: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    elevation: 0,
+  searchBarContainer: {
+    padding: 10,
+  },
+  searchInput: {
+    backgroundColor: "transparent",
+    height: 35,
   },
   listContent: {
     paddingHorizontal: 20,

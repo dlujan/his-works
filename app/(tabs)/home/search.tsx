@@ -2,6 +2,7 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
+import { truncate } from "@/utils/strings";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -118,7 +119,7 @@ export default function SearchScreen() {
             </View>
 
             <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-              {item.text}
+              {truncate(item.text, 100)}
             </Text>
           </View>
         </View>
@@ -145,7 +146,11 @@ export default function SearchScreen() {
             />
           }
           style={styles.searchInput}
+          outlineStyle={{
+            borderRadius: 20,
+          }}
           returnKeyType="search"
+          dense
         />
       </View>
 
@@ -198,12 +203,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchBarContainer: {
-    padding: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.12)",
+    padding: 10,
   },
   searchInput: {
     backgroundColor: "transparent",
+    height: 40,
   },
   loadingContainer: {
     flex: 1,

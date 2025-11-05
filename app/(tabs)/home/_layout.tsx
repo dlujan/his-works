@@ -28,7 +28,7 @@ export default function HomeStackLayout() {
               <IconButton
                 icon="magnify"
                 size={26}
-                iconColor={theme.colors.onSurface}
+                iconColor={theme.colors.onSurfaceVariant}
                 onPress={() => router.push("/home/search")}
                 style={{ margin: 0 }}
               />

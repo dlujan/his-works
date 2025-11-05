@@ -2,6 +2,7 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { HomeFeedTestimony, useHomeFeed } from "@/hooks/data/useHomeFeed";
+import { truncate } from "@/utils/strings";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
@@ -121,7 +122,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
 
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-                {item.text}
+                {truncate(item.text, 300)}
               </Text>
 
               <View style={styles.actionsRow}>

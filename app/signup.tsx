@@ -85,6 +85,7 @@ export default function SignupScreen() {
             autoCorrect={false}
             onChangeText={setName}
             mode="outlined"
+            maxLength={42}
             disabled={loading}
             style={styles.input}
             returnKeyType="done"
