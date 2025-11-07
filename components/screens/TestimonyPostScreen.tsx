@@ -1,5 +1,8 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
+import { useAddComment } from "@/hooks/data/mutations/useAddComment";
+import { useDeleteComment } from "@/hooks/data/mutations/useDeleteComment";
+import { useLikeComment } from "@/hooks/data/mutations/useLikeComment";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import {
@@ -12,8 +15,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Share,
@@ -39,6 +44,9 @@ const TestimonyPostScreen = () => {
   const { testimony, isFetching } = useTestimony(id || "");
   const { user } = useAuth();
   const { mutate: likeTestimony } = useLikeTestimony();
+  const { mutate: addComment } = useAddComment();
+  const { mutate: deleteComment, isPending } = useDeleteComment();
+  const { mutate: likeComment } = useLikeComment();
 
   // 🧠 Comments
   const {
@@ -78,10 +86,35 @@ const TestimonyPostScreen = () => {
     }
   }, []);
 
-  const handleComment = async () => {
+  const handleAddComment = () => {
     if (!newComment.trim()) return;
-    // TODO: post comment via mutation
+    addComment({
+      user_uuid: user!.uuid,
+      testimony_uuid: id,
+      text: newComment.trim(),
+    });
     setNewComment("");
+    Keyboard.dismiss();
+  };
+
+  const handleDeleteComment = (commentUuid: string) => {
+    Alert.alert(
+      "Delete comment",
+      "Are you sure you want to delete this comment?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            deleteComment({
+              comment_uuid: commentUuid,
+              viewer_uuid: user!.uuid,
+              testimony_uuid: id,
+            }),
+        },
+      ]
+    );
   };
 
   const openProfile = (uuid: string) => {
@@ -110,6 +143,7 @@ const TestimonyPostScreen = () => {
   // 🧠 Renderers
   const renderComment = useCallback(
     ({ item }: { item: TestimonyComment }) => {
+      const likesCount = item.likes_count ?? 0;
       const liked = item.liked_by_user ?? false;
       return (
         <View
@@ -123,40 +157,68 @@ const TestimonyPostScreen = () => {
         >
           <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
           <View style={styles.commentBody}>
-            <TouchableOpacity
-              style={styles.headerRow}
-              disabled={item.user_uuid === user?.uuid}
-              onPress={() => openProfile(item.user_uuid)}
-            >
-              <Text
-                style={[styles.nameText, { color: theme.colors.onSurface }]}
+            <View style={styles.commentHeader}>
+              <TouchableOpacity
+                style={styles.commentHeaderProfile}
+                disabled={item.user_uuid === user?.uuid}
+                onPress={() => openProfile(item.user_uuid)}
               >
-                {item.user.full_name}
-              </Text>
-              <Text
-                style={[
-                  styles.timestamp,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
+                <Text
+                  style={[styles.nameText, { color: theme.colors.onSurface }]}
+                >
+                  {item.user.full_name}
+                </Text>
+                <Text
+                  style={[
+                    styles.timestamp,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
+                  {formatTimeSince(item.created_at)}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ marginRight: 10 }}
+                // onPress={() => setVisible(true)}
               >
-                {formatTimeSince(item.created_at)}
-              </Text>
-            </TouchableOpacity>
+                <Icon
+                  source="dots-horizontal"
+                  size={18}
+                  color={theme.colors.onSurfaceVariant}
+                />
+              </TouchableOpacity>
+            </View>
+
             <Text
               style={[styles.commentText, { color: theme.colors.onSurface }]}
             >
               {item.text}
             </Text>
             <View style={styles.actionsRow}>
-              <IconButton
-                icon={liked ? "heart" : "heart-outline"}
-                size={18}
-                iconColor={theme.colors.primary}
-                style={styles.iconButton}
-              />
+              <View style={[styles.likesRow, { left: -10 }]}>
+                <IconButton
+                  icon={liked ? "heart" : "heart-outline"}
+                  size={20}
+                  iconColor={theme.colors.primary}
+                  style={styles.iconButton}
+                  onPress={() =>
+                    likeComment({
+                      commentUuid: item.uuid,
+                      testimonyUuid: id,
+                      viewerUuid: user!.uuid,
+                      liked: !item.liked_by_user,
+                    })
+                  }
+                />
+                <Text
+                  style={[styles.likeCount, { color: theme.colors.primary }]}
+                >
+                  {likesCount}
+                </Text>
+              </View>
               <IconButton
                 icon="share-outline"
-                size={18}
+                size={20}
                 onPress={() => handleShareComment(item)}
                 iconColor={theme.colors.onSurfaceVariant}
                 style={styles.iconButton}
@@ -339,7 +401,7 @@ const TestimonyPostScreen = () => {
                   marginTop: 40,
                 }}
               >
-                No comments yet
+                No comments yet.
               </Text>
             ) : null
           }
@@ -372,9 +434,10 @@ const TestimonyPostScreen = () => {
             right={
               newComment.length > 0 && (
                 <TextInput.Icon
-                  icon="send"
-                  onPress={handleComment}
+                  icon="arrow-up-circle"
+                  onPress={handleAddComment}
                   forceTextInputFocus={false}
+                  color={theme.colors.primary}
                 />
               )
             }
@@ -434,7 +497,20 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  commentBody: { flex: 1 },
+  commentBody: {
+    flex: 1,
+    position: "relative",
+  },
+  commentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  commentHeaderProfile: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   commentText: { fontSize: 15, lineHeight: 21 },
   addComment: {
     position: "absolute",
