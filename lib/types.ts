@@ -77,3 +77,11 @@ export type Follow = {
   follower: User;
   followed: User;
 };
+export type Comment = {
+  uuid: string;
+  created_at: string;
+  user_uuid: string;
+  testimony_uuid: string;
+  text: string;
+  user: User;
+};
