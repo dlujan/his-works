@@ -185,7 +185,7 @@ const TestimonyPostScreen = () => {
               >
                 <Icon
                   source="dots-horizontal"
-                  size={18}
+                  size={20}
                   color={theme.colors.onSurfaceVariant}
                 />
               </TouchableOpacity>

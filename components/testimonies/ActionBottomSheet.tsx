@@ -191,46 +191,53 @@ export const ActionBottomSheet = ({
             </Text>
           )}
 
-          {actions.map((action, i) => (
-            <Button
-              key={i}
-              onPress={() => {
-                action.onPress();
-                onDismiss();
-              }}
-              textColor={action.color || theme.colors.onSurface}
-              style={{
-                justifyContent: "flex-start",
-                marginBottom: 4,
-              }}
-            >
-              <View
+          <View
+          // style={{
+          //   backgroundColor: "white",
+          //   borderRadius: 14,
+          // }}
+          >
+            {actions.map((action, i) => (
+              <Button
+                key={i}
+                onPress={() => {
+                  action.onPress();
+                  onDismiss();
+                }}
+                textColor={action.color || theme.colors.onSurface}
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
+                  justifyContent: "flex-start",
+                  marginBottom: 4,
                 }}
               >
-                <Text
-                  variant="bodyLarge"
+                <View
                   style={{
-                    color: action.color || theme.colors.onSurface,
-                    fontWeight: "600",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
                   }}
                 >
-                  {action.label}
-                </Text>
-                {action.icon && (
-                  <Icon
-                    source={action.icon}
-                    size={22}
-                    color={action.color || theme.colors.onSurfaceVariant}
-                  />
-                )}
-              </View>
-            </Button>
-          ))}
+                  <Text
+                    variant="bodyLarge"
+                    style={{
+                      color: action.color || theme.colors.onSurface,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {action.label}
+                  </Text>
+                  {action.icon && (
+                    <Icon
+                      source={action.icon}
+                      size={22}
+                      color={action.color || theme.colors.onSurfaceVariant}
+                    />
+                  )}
+                </View>
+              </Button>
+            ))}
+          </View>
         </Animated.View>
       </View>
     </Portal>
