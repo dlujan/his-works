@@ -35,6 +35,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
+import { ActionBottomSheet } from "../testimonies/ActionBottomSheet";
 
 const TestimonyPostScreen = () => {
   const theme = useTheme<AppTheme>();
@@ -63,6 +64,7 @@ const TestimonyPostScreen = () => {
   const [newComment, setNewComment] = useState("");
   const [inputHeight, setInputHeight] = useState(40);
   const [creatingFollow, setCreatingFollow] = useState(false);
+  const [selectedComment, setSelectedComment] = useState<TestimonyComment>();
 
   // 🧠 Actions
   const handleShareTestimony = useCallback(async (item: any) => {
@@ -179,7 +181,7 @@ const TestimonyPostScreen = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ marginRight: 10 }}
-                // onPress={() => setVisible(true)}
+                onPress={() => setSelectedComment(item)}
               >
                 <Icon
                   source="dots-horizontal"
@@ -443,6 +445,46 @@ const TestimonyPostScreen = () => {
             }
           />
         </View>
+
+        <ActionBottomSheet
+          visible={!!selectedComment}
+          onDismiss={() => setSelectedComment(undefined)}
+          actions={[
+            // 🟢 If the comment belongs to the current user
+            ...(selectedComment?.user_uuid === user?.uuid
+              ? [
+                  {
+                    label: "Delete",
+                    icon: "delete-outline",
+                    color: "red",
+                    onPress: () =>
+                      selectedComment &&
+                      handleDeleteComment(selectedComment.uuid),
+                  },
+                ]
+              : []),
+
+            // 🔵 If the comment does NOT belong to the current user
+            ...(selectedComment?.user_uuid &&
+            selectedComment.user_uuid !== user?.uuid
+              ? [
+                  {
+                    label: "Report",
+                    icon: "flag-outline",
+                    color: "red",
+                    onPress: () => Alert.alert("Coming soon"),
+                  },
+                ]
+              : []),
+
+            // ⚪ Always include (everyone sees this)
+            // {
+            //   label: "Copy link",
+            //   icon: "link-variant",
+            //   onPress: () => console.log("Copy link pressed"),
+            // },
+          ]}
+        />
       </View>
     </KeyboardAvoidingView>
   );
