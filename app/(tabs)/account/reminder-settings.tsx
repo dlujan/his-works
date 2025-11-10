@@ -21,7 +21,6 @@ export default function ReminderSettingsScreen() {
   const [settings, setSettings] = useState({
     yearly: true,
     quarterly: true,
-    surprise: true,
     timeOfDay: "morning" as "morning" | "evening",
   });
   const [loading, setLoading] = useState(false);

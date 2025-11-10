@@ -8,9 +8,9 @@ export type User = {
   reminder_settings: {
     yearly: boolean;
     quarterly: boolean;
-    surprise: boolean;
     timeOfDay: "morning" | "evening";
   };
+  is_suspended: boolean;
   following: Follow[];
   followers: Follow[];
 };
