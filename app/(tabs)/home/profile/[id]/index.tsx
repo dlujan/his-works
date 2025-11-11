@@ -1,3 +1,6 @@
+import { ActionBottomSheet } from "@/components/ui/ActionBottomSheet";
+import { BlockUserModal } from "@/components/ui/BlockUserModal";
+import { BottomSheetModal } from "@/components/ui/BottomSheetModal";
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
@@ -10,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -38,6 +41,7 @@ const Profile = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
+  const navigation = useNavigation();
   const { profile, isLoading: isLoadingProfile } = useProfile(id || "");
   const {
     data,
@@ -50,6 +54,11 @@ const Profile = () => {
   } = useUserTestimonies(id || "");
   const { mutate: likeTestimony } = useLikeTestimony();
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
+
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [showReportMenu, setShowReportMenu] = useState(false);
+  const [showBlockMenu, setShowBlockMenu] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
@@ -67,6 +76,47 @@ const Profile = () => {
   };
 
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    checkIfBlocked();
+  }, []);
+  const checkIfBlocked = async () => {
+    const { data } = await supabase
+      .from("user_block")
+      .select("uuid")
+      .eq("blocker_uuid", user?.uuid)
+      .eq("blocked_uuid", profile.uuid)
+      .maybeSingle();
+
+    if (data) {
+      setIsBlocked(true);
+    }
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: "",
+      headerBackTitle: "Back",
+      headerRight: () => (
+        <View
+          style={{
+            height: 40,
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 4,
+          }}
+        >
+          <IconButton
+            icon="dots-horizontal"
+            size={26}
+            iconColor={theme.colors.onSurfaceVariant}
+            onPress={() => setShowActionsMenu(true)}
+            style={{ margin: 0 }}
+          />
+        </View>
+      ),
+    });
+  }, [navigation, id, theme]);
 
   useEffect(() => {
     if (id === user!.uuid) {
@@ -130,6 +180,27 @@ const Profile = () => {
         queryClient.invalidateQueries({ queryKey: ["profile", id] });
       }
     }
+  };
+
+  const handleBlockUser = async (
+    id: string,
+    alreadyBlocked: boolean = false
+  ) => {
+    if (alreadyBlocked) {
+      await supabase
+        .from("user_block")
+        .delete()
+        .eq("blocked_uuid", id)
+        .eq("blocker_uuid", user?.uuid);
+      Alert.alert(`${profile.full_name} is unblocked`);
+    } else {
+      await supabase.from("user_block").insert({
+        blocker_uuid: user?.uuid,
+        blocked_uuid: id,
+      });
+      Alert.alert(`${profile.full_name} is blocked`);
+    }
+    checkIfBlocked();
   };
 
   const renderItem = useCallback(
@@ -337,6 +408,56 @@ const Profile = () => {
           }
         />
       )}
+      <ActionBottomSheet
+        visible={showActionsMenu}
+        onDismiss={() => setShowActionsMenu(false)}
+        actions={[
+          {
+            label: isBlocked ? "Unblock" : "Block",
+            icon: "block-helper",
+            color: "red",
+            onPress: () => {
+              setShowActionsMenu(false);
+              setShowBlockMenu(true);
+            },
+          },
+          {
+            label: "Report",
+            icon: "flag-outline",
+            color: "red",
+            onPress: () => {
+              setShowActionsMenu(false);
+              setShowReportMenu(true);
+            },
+          },
+        ]}
+      />
+      <BlockUserModal
+        visible={showBlockMenu}
+        isBlocked={isBlocked}
+        onDismiss={() => setShowBlockMenu(false)}
+        profile={profile}
+        onBlock={(uuid, isBlocked) => handleBlockUser(uuid, isBlocked)}
+      />
+
+      <BottomSheetModal
+        visible={showReportMenu}
+        onDismiss={() => setShowReportMenu(false)}
+        title="Report Profile"
+        subtitle="Your report is anonymous. If someone is in immediate danger, call the local emergency services - don't wait."
+      >
+        <View style={{ gap: 8 }}>
+          <Button>Bullying or unwanted contact</Button>
+          <Button>Suicide, self-injury or eating disorders</Button>
+          <Button>Violence, hate, or exploitation</Button>
+          <Button>Selling or promoting restricted items</Button>
+          <Button>Nudity or sexual activity</Button>
+          <Button>Inappropriate conduct involving a minor</Button>
+          <Button>Scam, fraid, or spam</Button>
+          <Button>Intellectual property</Button>
+          <Button>I just don't like it</Button>
+        </View>
+      </BottomSheetModal>
     </Surface>
   );
 };

@@ -66,13 +66,13 @@ export default function HomeStackLayout() {
                 marginRight: 4,
               }}
             >
-              {/* <IconButton
+              <IconButton
                 icon="dots-horizontal"
                 size={26}
-                iconColor={theme.colors.onSurface}
+                iconColor={theme.colors.onSurfaceVariant}
                 // onPress={() => router.push("/home/search")}
                 style={{ margin: 0 }}
-              /> */}
+              />
             </View>
           ),
         }}

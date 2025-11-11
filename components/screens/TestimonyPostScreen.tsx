@@ -35,7 +35,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
-import { ActionBottomSheet } from "../testimonies/ActionBottomSheet";
+import { ActionBottomSheet } from "../ui/ActionBottomSheet";
 
 const TestimonyPostScreen = () => {
   const theme = useTheme<AppTheme>();
