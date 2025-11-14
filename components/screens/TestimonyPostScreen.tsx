@@ -36,6 +36,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { ActionBottomSheet } from "../ui/ActionBottomSheet";
+import ReportModal from "../ui/ReportModal";
 
 const TestimonyPostScreen = () => {
   const theme = useTheme<AppTheme>();
@@ -65,6 +66,8 @@ const TestimonyPostScreen = () => {
   const [inputHeight, setInputHeight] = useState(40);
   const [creatingFollow, setCreatingFollow] = useState(false);
   const [selectedComment, setSelectedComment] = useState<TestimonyComment>();
+  const [reportMenuComment, setReportMenuComment] =
+    useState<TestimonyComment>();
 
   // 🧠 Actions
   const handleShareTestimony = useCallback(async (item: any) => {
@@ -139,6 +142,38 @@ const TestimonyPostScreen = () => {
         queryKey: ["profile", testimony.user_uuid],
       });
       setCreatingFollow(false);
+    }
+  };
+
+  const handleReportComment = async (reason: string) => {
+    if (!reportMenuComment) return;
+
+    // Check if report exists for this profile and user reporting it
+    const { data: existingReport } = await supabase
+      .from("report")
+      .select("*")
+      .eq("reporter_uuid", user?.uuid)
+      .eq("entity_type", "comment")
+      .eq("entity_uuid", reportMenuComment.uuid)
+      .eq("reason", reason)
+      .maybeSingle();
+
+    if (existingReport) {
+      Alert.alert(
+        "Report Already Submitted",
+        "You have already issued a report for this comment. It is currently under review."
+      );
+    } else {
+      await supabase.from("report").insert({
+        reporter_uuid: user?.uuid,
+        entity_type: "comment",
+        entity_uuid: reportMenuComment.uuid,
+        reason: reason,
+      });
+      Alert.alert(
+        "Report Submitted",
+        "Thank you for submitting this report. We will review it and take any necessary action."
+      );
     }
   };
 
@@ -472,7 +507,9 @@ const TestimonyPostScreen = () => {
                     label: "Report",
                     icon: "flag-outline",
                     color: "red",
-                    onPress: () => Alert.alert("Coming soon"),
+                    onPress: () => {
+                      setReportMenuComment(selectedComment);
+                    },
                   },
                 ]
               : []),
@@ -484,6 +521,12 @@ const TestimonyPostScreen = () => {
             //   onPress: () => console.log("Copy link pressed"),
             // },
           ]}
+        />
+        <ReportModal
+          visible={!!reportMenuComment}
+          title="Report Comment"
+          onDismiss={() => setReportMenuComment(undefined)}
+          onReport={(reason) => handleReportComment(reason)}
         />
       </View>
     </KeyboardAvoidingView>
