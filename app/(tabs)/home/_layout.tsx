@@ -50,6 +50,24 @@ export default function HomeStackLayout() {
           title: "Testimony",
           headerBackTitle: "Back",
           headerTitleStyle: { fontWeight: 600 },
+          headerRight: () => (
+            <View
+              style={{
+                height: 40,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 4,
+              }}
+            >
+              <IconButton
+                icon="dots-horizontal"
+                size={26}
+                iconColor={theme.colors.onSurfaceVariant}
+                // onPress={() => router.push("/home/search")}
+                style={{ margin: 0 }}
+              />
+            </View>
+          ),
         }}
       />
       <Stack.Screen

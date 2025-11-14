@@ -12,8 +12,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -58,6 +58,7 @@ const TestimonyPostScreen = () => {
     isFetchingNextPage,
     isLoading: isLoadingComments,
   } = useTestimonyComments(id || "");
+  const navigation = useNavigation();
 
   const comments = data?.pages.flatMap((p) => p.comments) ?? [];
 
@@ -65,9 +66,36 @@ const TestimonyPostScreen = () => {
   const [newComment, setNewComment] = useState("");
   const [inputHeight, setInputHeight] = useState(40);
   const [creatingFollow, setCreatingFollow] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
+  const [showTestimonyReportMenu, setShowTestimonyReportMenu] = useState(false);
   const [selectedComment, setSelectedComment] = useState<TestimonyComment>();
   const [reportMenuComment, setReportMenuComment] =
     useState<TestimonyComment>();
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: "Testimony",
+      headerBackTitle: "Back",
+      headerRight: () => (
+        <View
+          style={{
+            height: 40,
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 4,
+          }}
+        >
+          <IconButton
+            icon="dots-horizontal"
+            size={26}
+            iconColor={theme.colors.onSurfaceVariant}
+            onPress={() => setShowActionsMenu(true)}
+            style={{ margin: 0 }}
+          />
+        </View>
+      ),
+    });
+  }, [navigation, id, theme]);
 
   // 🧠 Actions
   const handleShareTestimony = useCallback(async (item: any) => {
@@ -142,6 +170,36 @@ const TestimonyPostScreen = () => {
         queryKey: ["profile", testimony.user_uuid],
       });
       setCreatingFollow(false);
+    }
+  };
+
+  const handleReportTestimony = async (reason: string) => {
+    // Check if report exists for this profile and user reporting it
+    const { data: existingReport } = await supabase
+      .from("report")
+      .select("*")
+      .eq("reporter_uuid", user?.uuid)
+      .eq("entity_type", "testimony")
+      .eq("entity_uuid", testimony.uuid)
+      .eq("reason", reason)
+      .maybeSingle();
+
+    if (existingReport) {
+      Alert.alert(
+        "Report Already Submitted",
+        "You have already issued a report for this testimony. It is currently under review."
+      );
+    } else {
+      await supabase.from("report").insert({
+        reporter_uuid: user?.uuid,
+        entity_type: "testimony",
+        entity_uuid: testimony.uuid,
+        reason: reason,
+      });
+      Alert.alert(
+        "Report Submitted",
+        "Thank you for submitting this report. We will review it and take any necessary action."
+      );
     }
   };
 
@@ -481,6 +539,50 @@ const TestimonyPostScreen = () => {
           />
         </View>
 
+        <ActionBottomSheet
+          visible={showActionsMenu}
+          onDismiss={() => setShowActionsMenu(false)}
+          actions={[
+            // 🟢 If the testimony belongs to the current user
+            ...(testimony?.user_uuid === user?.uuid
+              ? [
+                  {
+                    label: "Edit",
+                    icon: "pencil-outline",
+                    onPress: () =>
+                      router.push(`/testimonies/${testimony.uuid}`),
+                  },
+                ]
+              : []),
+
+            // 🔵 If the testimony does NOT belong to the current user
+            ...(testimony?.user_uuid && testimony.user_uuid !== user?.uuid
+              ? [
+                  {
+                    label: "Report",
+                    icon: "flag-outline",
+                    color: "red",
+                    onPress: () => {
+                      setShowTestimonyReportMenu(true);
+                    },
+                  },
+                ]
+              : []),
+
+            // ⚪ Always include (everyone sees this)
+            // {
+            //   label: "Copy link",
+            //   icon: "link-variant",
+            //   onPress: () => console.log("Copy link pressed"),
+            // },
+          ]}
+        />
+        <ReportModal
+          visible={showTestimonyReportMenu}
+          title="Report Profile"
+          onDismiss={() => setShowTestimonyReportMenu(false)}
+          onReport={(reason) => handleReportTestimony(reason)}
+        />
         <ActionBottomSheet
           visible={!!selectedComment}
           onDismiss={() => setSelectedComment(undefined)}
