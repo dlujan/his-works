@@ -4,6 +4,7 @@ import { useAddComment } from "@/hooks/data/mutations/useAddComment";
 import { useDeleteComment } from "@/hooks/data/mutations/useDeleteComment";
 import { useLikeComment } from "@/hooks/data/mutations/useLikeComment";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
+import { useReportTestimony } from "@/hooks/data/mutations/useReportTestimony";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import {
   TestimonyComment,
@@ -59,6 +60,7 @@ const TestimonyPostScreen = () => {
     isLoading: isLoadingComments,
   } = useTestimonyComments(id || "");
   const navigation = useNavigation();
+  const { mutate: reportTestimony } = useReportTestimony();
 
   const comments = data?.pages.flatMap((p) => p.comments) ?? [];
 
@@ -174,39 +176,18 @@ const TestimonyPostScreen = () => {
   };
 
   const handleReportTestimony = async (reason: string) => {
-    // Check if report exists for this profile and user reporting it
-    const { data: existingReport } = await supabase
-      .from("report")
-      .select("*")
-      .eq("reporter_uuid", user?.uuid)
-      .eq("entity_type", "testimony")
-      .eq("entity_uuid", testimony.uuid)
-      .eq("reason", reason)
-      .maybeSingle();
-
-    if (existingReport) {
-      Alert.alert(
-        "Report Already Submitted",
-        "You have already issued a report for this testimony. It is currently under review."
-      );
-    } else {
-      await supabase.from("report").insert({
-        reporter_uuid: user?.uuid,
-        entity_type: "testimony",
-        entity_uuid: testimony.uuid,
-        reason: reason,
-      });
-      Alert.alert(
-        "Report Submitted",
-        "Thank you for submitting this report. We will review it and take any necessary action."
-      );
-    }
+    if (!user?.uuid || !testimony?.uuid) return;
+    reportTestimony({
+      reporter_uuid: user.uuid,
+      entity_uuid: testimony.uuid,
+      reason,
+    });
   };
 
   const handleReportComment = async (reason: string) => {
     if (!reportMenuComment) return;
 
-    // Check if report exists for this profile and user reporting it
+    // Check if report exists for this comment and user reporting it
     const { data: existingReport } = await supabase
       .from("report")
       .select("*")
@@ -579,7 +560,7 @@ const TestimonyPostScreen = () => {
         />
         <ReportModal
           visible={showTestimonyReportMenu}
-          title="Report Profile"
+          title="Report Testimony"
           onDismiss={() => setShowTestimonyReportMenu(false)}
           onReport={(reason) => handleReportTestimony(reason)}
         />

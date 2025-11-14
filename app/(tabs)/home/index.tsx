@@ -1,11 +1,14 @@
+import { ActionBottomSheet } from "@/components/ui/ActionBottomSheet";
+import ReportModal from "@/components/ui/ReportModal";
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
+import { useReportTestimony } from "@/hooks/data/mutations/useReportTestimony";
 import { HomeFeedTestimony, useHomeFeed } from "@/hooks/data/useHomeFeed";
 import { truncate } from "@/utils/strings";
 import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Image,
@@ -19,6 +22,7 @@ import {
 import {
   ActivityIndicator,
   Button,
+  Icon,
   IconButton,
   Surface,
   Text,
@@ -40,6 +44,12 @@ export default function HomeScreen() {
     isRefetching,
   } = useHomeFeed(user?.uuid || "");
   const { mutate: likeTestimony } = useLikeTestimony();
+  const { mutate: reportTestimony } = useReportTestimony();
+
+  const [selectedTestimony, setSelectedTestimony] =
+    useState<HomeFeedTestimony>();
+  const [reportMenuTestimony, setReportMenuTestimony] =
+    useState<HomeFeedTestimony>();
 
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 
@@ -53,6 +63,15 @@ export default function HomeScreen() {
       console.warn("Unable to share testimony", error);
     }
   }, []);
+
+  const handleReportTestimony = async (reason: string) => {
+    if (!user?.uuid || !reportMenuTestimony?.uuid) return;
+    reportTestimony({
+      reporter_uuid: user.uuid,
+      entity_uuid: reportMenuTestimony.uuid,
+      reason,
+    });
+  };
 
   const handleLoadMore = () => {
     if (hasNextPage) fetchNextPage();
@@ -90,36 +109,47 @@ export default function HomeScreen() {
             />
 
             <View style={styles.postBody}>
-              <TouchableOpacity
-                style={styles.headerRow}
-                disabled={item.user_uuid === user!.uuid}
-                onPress={() => openProfile(item.user_uuid)}
-              >
+              {item.recommended && (
                 <Text
-                  style={[styles.nameText, { color: theme.colors.onSurface }]}
+                  variant="bodySmall"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                  }}
                 >
-                  {item.user_full_name}
+                  Recommended
                 </Text>
-                <Text
-                  style={[
-                    styles.timestamp,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
+              )}
+              <View style={styles.headerRow}>
+                <TouchableOpacity
+                  style={styles.headerProfileRow}
+                  disabled={item.user_uuid === user!.uuid}
+                  onPress={() => openProfile(item.user_uuid)}
                 >
-                  {formatTimeSince(item.created_at)}
-                </Text>
-                {item.recommended && (
                   <Text
-                    variant="bodySmall"
-                    style={{
-                      color: theme.colors.onSurfaceVariant,
-                      marginLeft: "auto",
-                    }}
+                    style={[styles.nameText, { color: theme.colors.onSurface }]}
                   >
-                    Recommended
+                    {item.user_full_name}
                   </Text>
-                )}
-              </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.timestamp,
+                      { color: theme.colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {formatTimeSince(item.created_at)}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{ marginRight: 10 }}
+                  onPress={() => setSelectedTestimony(item)}
+                >
+                  <Icon
+                    source="dots-horizontal"
+                    size={20}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </TouchableOpacity>
+              </View>
 
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
                 {truncate(item.text, 300)}
@@ -228,6 +258,51 @@ export default function HomeScreen() {
           }
         />
       )}
+      <ActionBottomSheet
+        visible={!!selectedTestimony}
+        onDismiss={() => setSelectedTestimony(undefined)}
+        actions={[
+          // 🟢 If the testimony belongs to the current user
+          ...(selectedTestimony?.user_uuid === user?.uuid
+            ? [
+                {
+                  label: "Edit",
+                  icon: "pencil-outline",
+                  onPress: () =>
+                    router.push(`/testimonies/${selectedTestimony?.uuid}`),
+                },
+              ]
+            : []),
+
+          // 🔵 If the comment does NOT belong to the current user
+          ...(selectedTestimony?.user_uuid &&
+          selectedTestimony.user_uuid !== user?.uuid
+            ? [
+                {
+                  label: "Report",
+                  icon: "flag-outline",
+                  color: "red",
+                  onPress: () => {
+                    setReportMenuTestimony(selectedTestimony);
+                  },
+                },
+              ]
+            : []),
+
+          // ⚪ Always include (everyone sees this)
+          // {
+          //   label: "Copy link",
+          //   icon: "link-variant",
+          //   onPress: () => console.log("Copy link pressed"),
+          // },
+        ]}
+      />
+      <ReportModal
+        visible={!!reportMenuTestimony}
+        title="Report Testimony"
+        onDismiss={() => setReportMenuTestimony(undefined)}
+        onReport={(reason) => handleReportTestimony(reason)}
+      />
     </Surface>
   );
 }
@@ -247,7 +322,12 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 4,
+  },
+  headerProfileRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   nameText: { fontSize: 15, fontWeight: "600" },
   timestamp: { fontSize: 13, marginLeft: 6 },

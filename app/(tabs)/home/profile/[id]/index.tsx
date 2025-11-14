@@ -4,6 +4,7 @@ import ReportModal from "@/components/ui/ReportModal";
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
+import { useReportTestimony } from "@/hooks/data/mutations/useReportTestimony";
 import { useProfile } from "@/hooks/data/useProfile";
 import {
   UserProfileTestimony,
@@ -29,6 +30,7 @@ import {
 import {
   ActivityIndicator,
   Button,
+  Icon,
   IconButton,
   Surface,
   Text,
@@ -53,12 +55,18 @@ const Profile = () => {
     isRefetching,
   } = useUserTestimonies(id || "");
   const { mutate: likeTestimony } = useLikeTestimony();
+  const { mutate: reportTestimony } = useReportTestimony();
+
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 
   const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [showBlockMenu, setShowBlockMenu] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [selectedTestimony, setSelectedTestimony] =
+    useState<UserProfileTestimony>();
+  const [reportMenuTestimony, setReportMenuTestimony] =
+    useState<UserProfileTestimony>();
 
   const handleShare = useCallback(async (item: Testimony) => {
     try {
@@ -230,6 +238,15 @@ const Profile = () => {
     }
   };
 
+  const handleReportTestimony = async (reason: string) => {
+    if (!user?.uuid || !reportMenuTestimony?.uuid) return;
+    reportTestimony({
+      reporter_uuid: user.uuid,
+      entity_uuid: reportMenuTestimony.uuid,
+      reason,
+    });
+  };
+
   const renderItem = useCallback(
     ({ item }: { item: UserProfileTestimony }) => {
       const liked = item.liked_by_user ?? false;
@@ -255,19 +272,31 @@ const Profile = () => {
 
             <View style={styles.postBody}>
               <View style={styles.headerRow}>
-                <Text
-                  style={[styles.nameText, { color: theme.colors.onSurface }]}
+                <View style={styles.headerRowProfile}>
+                  <Text
+                    style={[styles.nameText, { color: theme.colors.onSurface }]}
+                  >
+                    {item.user_full_name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.timestamp,
+                      { color: theme.colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {formatTimeSince(item.created_at)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={{ marginRight: 10 }}
+                  onPress={() => setSelectedTestimony(item)}
                 >
-                  {item.user_full_name}
-                </Text>
-                <Text
-                  style={[
-                    styles.timestamp,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {formatTimeSince(item.created_at)}
-                </Text>
+                  <Icon
+                    source="dots-horizontal"
+                    size={20}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                </TouchableOpacity>
               </View>
 
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
@@ -473,6 +502,52 @@ const Profile = () => {
         onDismiss={() => setShowReportMenu(false)}
         onReport={(reason) => handleReportUser(reason)}
       />
+
+      <ActionBottomSheet
+        visible={!!selectedTestimony}
+        onDismiss={() => setSelectedTestimony(undefined)}
+        actions={[
+          // 🟢 If the testimony belongs to the current user
+          ...(selectedTestimony?.user_uuid === user?.uuid
+            ? [
+                {
+                  label: "Edit",
+                  icon: "pencil-outline",
+                  onPress: () =>
+                    router.push(`/testimonies/${selectedTestimony?.uuid}`),
+                },
+              ]
+            : []),
+
+          // 🔵 If the comment does NOT belong to the current user
+          ...(selectedTestimony?.user_uuid &&
+          selectedTestimony.user_uuid !== user?.uuid
+            ? [
+                {
+                  label: "Report",
+                  icon: "flag-outline",
+                  color: "red",
+                  onPress: () => {
+                    setReportMenuTestimony(selectedTestimony);
+                  },
+                },
+              ]
+            : []),
+
+          // ⚪ Always include (everyone sees this)
+          // {
+          //   label: "Copy link",
+          //   icon: "link-variant",
+          //   onPress: () => console.log("Copy link pressed"),
+          // },
+        ]}
+      />
+      <ReportModal
+        visible={!!reportMenuTestimony}
+        title="Report Testimony"
+        onDismiss={() => setReportMenuTestimony(undefined)}
+        onReport={(reason) => handleReportTestimony(reason)}
+      />
     </Surface>
   );
 };
@@ -528,7 +603,16 @@ const styles = StyleSheet.create({
   },
   avatar: { width: 42, height: 42, borderRadius: 21 },
   postBody: { flex: 1 },
-  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  headerRowProfile: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   nameText: { fontSize: 15, fontWeight: "600" },
   timestamp: { fontSize: 13, marginLeft: 6 },
   excerpt: { fontSize: 15, lineHeight: 22 },
