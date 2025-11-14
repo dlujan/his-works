@@ -1,6 +1,6 @@
 import { ActionBottomSheet } from "@/components/ui/ActionBottomSheet";
 import { BlockUserModal } from "@/components/ui/BlockUserModal";
-import { BottomSheetModal } from "@/components/ui/BottomSheetModal";
+import ReportModal from "@/components/ui/ReportModal";
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
@@ -182,25 +182,52 @@ const Profile = () => {
     }
   };
 
-  const handleBlockUser = async (
-    id: string,
-    alreadyBlocked: boolean = false
-  ) => {
+  const handleBlockUser = async (alreadyBlocked: boolean = false) => {
     if (alreadyBlocked) {
       await supabase
         .from("user_block")
         .delete()
-        .eq("blocked_uuid", id)
+        .eq("blocked_uuid", profile.uuid)
         .eq("blocker_uuid", user?.uuid);
       Alert.alert(`${profile.full_name} is unblocked`);
     } else {
       await supabase.from("user_block").insert({
         blocker_uuid: user?.uuid,
-        blocked_uuid: id,
+        blocked_uuid: profile.uuid,
       });
       Alert.alert(`${profile.full_name} is blocked`);
     }
     checkIfBlocked();
+  };
+
+  const handleReportUser = async (reason: string) => {
+    // Check if report exists for this profile and user reporting it
+    const { data: existingReport } = await supabase
+      .from("report")
+      .select("*")
+      .eq("reporter_uuid", user?.uuid)
+      .eq("entity_type", "user")
+      .eq("entity_uuid", profile.uuid)
+      .eq("reason", reason)
+      .maybeSingle();
+
+    if (existingReport) {
+      Alert.alert(
+        "Report Already Submitted",
+        "You have already issued a report for this profile. It is currently under review."
+      );
+    } else {
+      await supabase.from("report").insert({
+        reporter_uuid: user?.uuid,
+        entity_type: "user",
+        entity_uuid: profile.uuid,
+        reason: reason,
+      });
+      Alert.alert(
+        "Report Submitted",
+        "Thank you for submitting this report. We will review it and take any necessary action."
+      );
+    }
   };
 
   const renderItem = useCallback(
@@ -437,27 +464,15 @@ const Profile = () => {
         isBlocked={isBlocked}
         onDismiss={() => setShowBlockMenu(false)}
         profile={profile}
-        onBlock={(uuid, isBlocked) => handleBlockUser(uuid, isBlocked)}
+        onBlock={(isBlocked) => handleBlockUser(isBlocked)}
       />
 
-      <BottomSheetModal
+      <ReportModal
         visible={showReportMenu}
-        onDismiss={() => setShowReportMenu(false)}
         title="Report Profile"
-        subtitle="Your report is anonymous. If someone is in immediate danger, call the local emergency services - don't wait."
-      >
-        <View style={{ gap: 8 }}>
-          <Button>Bullying or unwanted contact</Button>
-          <Button>Suicide, self-injury or eating disorders</Button>
-          <Button>Violence, hate, or exploitation</Button>
-          <Button>Selling or promoting restricted items</Button>
-          <Button>Nudity or sexual activity</Button>
-          <Button>Inappropriate conduct involving a minor</Button>
-          <Button>Scam, fraid, or spam</Button>
-          <Button>Intellectual property</Button>
-          <Button>I just don't like it</Button>
-        </View>
-      </BottomSheetModal>
+        onDismiss={() => setShowReportMenu(false)}
+        onReport={(reason) => handleReportUser(reason)}
+      />
     </Surface>
   );
 };

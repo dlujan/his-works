@@ -1,5 +1,5 @@
 import { TagMultiSelect } from "@/components/TagMultiSelect";
-import type { AppTheme } from "@/constants/paper-theme";
+import { type AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
 import { useTestimony } from "@/hooks/data/useTestimony";
@@ -22,6 +22,7 @@ import {
   ActivityIndicator,
   Button,
   Icon,
+  PaperProvider,
   Surface,
   Switch,
   Text,
@@ -47,6 +48,15 @@ export default function EditTestimonyScreen() {
   const [isPrivate, setIsPrivate] = useState(testimony?.is_private);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const dateModalTheme = {
+    ...theme,
+    colors: {
+      ...theme.colors,
+      surface: theme.colors.background, // modal background
+      onSurface: theme.colors.onSurface, // modal text
+    },
+  };
 
   useEffect(() => {
     if (testimony) {
@@ -304,10 +314,8 @@ export default function EditTestimonyScreen() {
             onChangeText={setDetails}
             multiline
             numberOfLines={8}
+            maxLength={1000}
             style={[styles.input, styles.multiline]}
-            returnKeyType="done"
-            submitBehavior="blurAndSubmit"
-            onSubmitEditing={Keyboard.dismiss}
           />
 
           <TextInput
@@ -323,20 +331,22 @@ export default function EditTestimonyScreen() {
             onSubmitEditing={Keyboard.dismiss}
           />
 
-          <DatePickerInput
-            locale="en"
-            label="Date"
-            placeholder="Date of event"
-            value={date ? new Date(date) : undefined}
-            onChange={(d) => {
-              if (d) setDate((d as Date).toISOString());
-            }}
-            inputMode="start"
-            mode="outlined"
-            saveLabel="Done"
-            withDateFormatInLabel={false}
-            validRange={{ startDate: new Date(0), endDate: new Date() }}
-          />
+          <PaperProvider theme={dateModalTheme}>
+            <DatePickerInput
+              locale="en"
+              label="Date"
+              placeholder="Date of event"
+              value={date ? new Date(date) : undefined}
+              onChange={(d) => {
+                if (d) setDate((d as Date).toISOString());
+              }}
+              inputMode="start"
+              mode="outlined"
+              saveLabel="Done"
+              withDateFormatInLabel={false}
+              validRange={{ startDate: new Date(0), endDate: new Date() }}
+            />
+          </PaperProvider>
 
           {/* Tag selection */}
           <View style={{ marginBottom: 8 }}>

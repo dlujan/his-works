@@ -14,7 +14,7 @@ export function BlockUserModal({
   isBlocked: boolean;
   onDismiss: () => void;
   profile: { uuid: string; full_name: string };
-  onBlock: (uuid: string, isBlocked: boolean) => void;
+  onBlock: (isBlocked: boolean) => void;
 }) {
   const theme = useTheme();
 
@@ -86,7 +86,7 @@ export function BlockUserModal({
           buttonColor={theme.colors.error}
           textColor="white"
           onPress={() => {
-            onBlock(profile.uuid, isBlocked);
+            onBlock(isBlocked);
             onDismiss();
           }}
           style={{ marginTop: 12 }}

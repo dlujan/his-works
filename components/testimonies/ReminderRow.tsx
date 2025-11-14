@@ -1,10 +1,11 @@
+import { AppTheme } from "@/constants/paper-theme";
 import { supabase } from "@/lib/supabase";
 import { Reminder } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import { Button, List } from "react-native-paper";
+import { Button, List, PaperProvider, useTheme } from "react-native-paper";
 import { DatePickerInput } from "react-native-paper-dates";
 
 export default function ReminderRow({
@@ -14,10 +15,20 @@ export default function ReminderRow({
   reminder: Reminder;
   testimonyId: string;
 }) {
+  const theme = useTheme<AppTheme>();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(reminder.scheduled_for ?? "");
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  const dateModalTheme = {
+    ...theme,
+    colors: {
+      ...theme.colors,
+      surface: theme.colors.background, // modal background
+      onSurface: theme.colors.onSurface, // modal text
+    },
+  };
 
   const getDaysUntil = (date: string) => {
     const today = dayjs().startOf("day");
@@ -100,20 +111,22 @@ export default function ReminderRow({
         <List.Icon {...props} icon={expanded ? "chevron-up" : "chevron-down"} />
       )}
     >
-      <DatePickerInput
-        locale="en"
-        label="Date"
-        placeholder="Scheduled for"
-        value={date ? new Date(date) : undefined}
-        onChange={(d) => {
-          if (d) setDate((d as Date).toISOString());
-        }}
-        inputMode="start"
-        mode="outlined"
-        saveLabel="Done"
-        withDateFormatInLabel={false}
-        validRange={{ startDate: new Date() }}
-      />
+      <PaperProvider theme={dateModalTheme}>
+        <DatePickerInput
+          locale="en"
+          label="Date"
+          placeholder="Scheduled for"
+          value={date ? new Date(date) : undefined}
+          onChange={(d) => {
+            if (d) setDate((d as Date).toISOString());
+          }}
+          inputMode="start"
+          mode="outlined"
+          saveLabel="Done"
+          withDateFormatInLabel={false}
+          validRange={{ startDate: new Date() }}
+        />
+      </PaperProvider>
       <View style={styles.actions}>
         <Button
           mode="contained"

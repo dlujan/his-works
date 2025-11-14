@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import {
   Button,
+  PaperProvider,
   Surface,
   Switch,
   Text,
@@ -54,7 +55,15 @@ export default function CreateTestimonyModal() {
   const [message, setMessage] = useState<string | null>(null);
 
   const imageUrl = useRandomBackgroundImage();
-  console.log({ imageUrl });
+
+  const dateModalTheme = {
+    ...theme,
+    colors: {
+      ...theme.colors,
+      surface: theme.colors.background, // modal background
+      onSurface: theme.colors.onSurface, // modal text
+    },
+  };
 
   const handleSubmit = async () => {
     const trimmedDetails = details.trim();
@@ -176,10 +185,8 @@ export default function CreateTestimonyModal() {
             onChangeText={setDetails}
             multiline
             numberOfLines={6}
+            maxLength={1000}
             style={[styles.input, styles.multiline]}
-            returnKeyType="done"
-            submitBehavior="blurAndSubmit"
-            onSubmitEditing={Keyboard.dismiss}
           />
 
           <TextInput
@@ -195,18 +202,20 @@ export default function CreateTestimonyModal() {
             onSubmitEditing={Keyboard.dismiss}
           />
 
-          <DatePickerInput
-            locale="en"
-            label="Date"
-            placeholder="Date of event"
-            value={date}
-            onChange={(d) => d && setDate(d)}
-            inputMode="start"
-            mode="outlined"
-            saveLabel="Done"
-            withDateFormatInLabel={false}
-            validRange={{ startDate: new Date(0), endDate: new Date() }}
-          />
+          <PaperProvider theme={dateModalTheme}>
+            <DatePickerInput
+              locale="en"
+              label="Date"
+              placeholder="Date of event"
+              value={date}
+              onChange={(d) => d && setDate(d)}
+              inputMode="start"
+              mode="outlined"
+              saveLabel="Done"
+              withDateFormatInLabel={false}
+              validRange={{ startDate: new Date(0), endDate: new Date() }}
+            />
+          </PaperProvider>
 
           {/* Tag selection */}
           <View style={{ marginBottom: 8 }}>
