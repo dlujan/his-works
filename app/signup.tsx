@@ -1,5 +1,6 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -39,6 +40,18 @@ export default function SignupScreen() {
     try {
       setLoading(true);
       setError(null);
+
+      // Check for banned email
+      const { data } = await supabase
+        .from("banned_email")
+        .select("*")
+        .eq("email", email.trim())
+        .maybeSingle();
+      if (data) {
+        setError("Sorry, that email has been banned from using this service.");
+        return;
+      }
+
       await signUpWithEmail({
         email: email.trim(),
         password,
