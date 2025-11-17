@@ -87,15 +87,16 @@ const Profile = () => {
 
   useEffect(() => {
     checkIfBlocked();
-  }, []);
+  }, [user, profile]);
   const checkIfBlocked = async () => {
+    console.log("check if blocked");
     const { data } = await supabase
       .from("user_block")
-      .select("uuid")
+      .select("*")
       .eq("blocker_uuid", user?.uuid)
       .eq("blocked_uuid", profile.uuid)
       .maybeSingle();
-
+    console.log(data);
     if (data) {
       setIsBlocked(true);
     }
@@ -204,8 +205,9 @@ const Profile = () => {
         blocked_uuid: profile.uuid,
       });
       Alert.alert(`${profile.full_name} is blocked`);
+      queryClient.invalidateQueries({ queryKey: ["home-feed", user?.uuid] });
     }
-    checkIfBlocked();
+    await checkIfBlocked();
   };
 
   const handleReportUser = async (reason: string) => {

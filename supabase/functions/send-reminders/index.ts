@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
         testimony(*)
       `,
       )
+      .eq("user.is_suspended", false)
       .is("sent_at", null)
       .gte("scheduled_for", startOfDay)
       .lte("scheduled_for", endOfDay);

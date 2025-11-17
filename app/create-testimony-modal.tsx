@@ -96,7 +96,7 @@ export default function CreateTestimonyModal() {
       for (const tagName of tags) {
         const { data: existingTag, error: tagError } = await supabase
           .from("tag")
-          .select("uuid")
+          .select("*")
           .eq("name", tagName)
           .single();
 

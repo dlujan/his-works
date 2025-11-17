@@ -110,7 +110,7 @@ export default function EditTestimonyScreen() {
         // Find or create the tag
         const { data: existingTag, error: tagFetchError } = await supabase
           .from("tag")
-          .select("uuid")
+          .select("*")
           .eq("name", tagName)
           .single();
 
