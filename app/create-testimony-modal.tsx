@@ -25,6 +25,7 @@ import { useTags } from "@/hooks/data/useTags";
 import { useRandomBackgroundImage } from "@/hooks/useRandomBackgroundImage";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
+import { filterProfanity } from "@/utils/filterProfanity";
 import { setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -66,11 +67,15 @@ export default function CreateTestimonyModal() {
   };
 
   const handleSubmit = async () => {
-    const trimmedDetails = details.trim();
-    if (!trimmedDetails || !authUser) return;
+    if (!details || !authUser) return;
 
     setLoading(true);
     setMessage(null);
+
+    const moderatedText = filterProfanity(details.trim());
+    const moderatedBibleVerse = bibleVerse.trim()
+      ? filterProfanity(bibleVerse.trim())
+      : null;
 
     try {
       // 1️⃣ Create the testimony
@@ -78,8 +83,8 @@ export default function CreateTestimonyModal() {
         .from("testimony")
         .insert({
           user_uuid: authUser.id,
-          text: trimmedDetails,
-          bible_verse: bibleVerse.trim() || null,
+          text: moderatedText,
+          bible_verse: moderatedBibleVerse,
           date: date,
           is_public: isPrivate ? false : isPublic,
           is_private: isPrivate,

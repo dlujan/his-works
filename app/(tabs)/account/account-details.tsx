@@ -1,6 +1,7 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import { filterProfanity } from "@/utils/filterProfanity";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -48,11 +49,13 @@ export default function AccountDetailsScreen() {
 
     setMessage(null);
     setSaving(true);
+
+    const moderatedName = filterProfanity(name.trim());
     try {
       const { error: updateError } = await supabase
         .from("user")
         .update({
-          full_name: name.trim(),
+          full_name: moderatedName,
         })
         .eq("uuid", authUser.id);
 
@@ -64,7 +67,8 @@ export default function AccountDetailsScreen() {
       }
 
       //@ts-ignore
-      setUser((prev) => ({ ...prev, full_name: name.trim() }));
+      setUser((prev) => ({ ...prev, full_name: moderatedName }));
+      setName(moderatedName);
 
       setMessage("Profile updated successfully!");
     } catch (err: any) {

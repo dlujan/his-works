@@ -11,6 +11,7 @@ import {
   useTestimonyComments,
 } from "@/hooks/data/useTestimonyComments";
 import { supabase } from "@/lib/supabase";
+import { filterProfanity } from "@/utils/filterProfanity";
 import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
@@ -126,7 +127,7 @@ const TestimonyPostScreen = () => {
     addComment({
       user_uuid: user!.uuid,
       testimony_uuid: id,
-      text: newComment.trim(),
+      text: filterProfanity(newComment.trim()),
     });
     setNewComment("");
     Keyboard.dismiss();

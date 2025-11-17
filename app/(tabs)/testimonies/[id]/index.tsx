@@ -5,6 +5,7 @@ import { useTags } from "@/hooks/data/useTags";
 import { useTestimony } from "@/hooks/data/useTestimony";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
+import { filterProfanity } from "@/utils/filterProfanity";
 import { getNextReminder, setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -81,13 +82,18 @@ export default function EditTestimonyScreen() {
     setLoading(true);
     setMessage(null);
 
+    const moderatedText = filterProfanity(details.trim());
+    const moderatedBibleVerse = bibleVerse.trim()
+      ? filterProfanity(bibleVerse.trim())
+      : null;
+
     try {
       // 1️⃣ Update the main testimony record
       const { error: updateError } = await supabase
         .from("testimony")
         .update({
-          text: details.trim(),
-          bible_verse: bibleVerse.trim(),
+          text: moderatedText,
+          bible_verse: moderatedBibleVerse,
           date: date || testimony?.created_at,
           is_public: isPublic,
           is_private: isPrivate,
