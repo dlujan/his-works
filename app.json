@@ -41,7 +41,8 @@
             "backgroundColor": "#0A0A0A"
           }
         }
-      ]
+      ],
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true,

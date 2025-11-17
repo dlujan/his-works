@@ -1,5 +1,6 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
+import * as MailComposer from "expo-mail-composer";
 import {
   openBrowserAsync,
   WebBrowserPresentationStyle,
@@ -77,6 +78,17 @@ export default function LegalScreen() {
                     }
                   );
                 }
+              }}
+            />
+            <List.Item
+              title="Contact Support"
+              left={(props) => <List.Icon {...props} icon="email-outline" />}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={async () => {
+                MailComposer.composeAsync({
+                  recipients: ["daniel.lujan96@gmail.com"],
+                  subject: "Support Request",
+                });
               }}
             />
           </List.Section>
