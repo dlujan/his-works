@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import {
+  ActivityIndicator,
   Avatar,
   Button,
   Surface,
@@ -38,6 +39,7 @@ export default function AccountDetailsScreen() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const initials = useMemo(() => {
     if (!name) return "?";
@@ -125,7 +127,7 @@ export default function AccountDetailsScreen() {
 
   const handleChangePhoto = async (userId: string) => {
     try {
-      // setUploading(true);
+      setUploading(true);
 
       // 1️⃣ Pick an image
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -160,6 +162,30 @@ export default function AccountDetailsScreen() {
       const fileExt = image.uri.split(".").pop()?.toLowerCase() ?? "jpeg";
       const filePath = `${userId}.${fileExt}`;
 
+      // 3a Check for illicit image
+      const base64 = await fetch(compressed.uri)
+        .then((res) => res.blob())
+        .then(
+          (blob) =>
+            new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            })
+        );
+      const { flagged, categories } = await moderateImage(base64 as string);
+
+      if (flagged) {
+        Alert.alert(
+          "Inappropriate Content",
+          `That image cannot be uploaded for these reasons: ${categories.join(
+            ", "
+          )}. Please refrain from uploading illicit images.`
+        );
+        return;
+      }
+
       // 4️⃣ Upload to Supabase Storage (upsert replaces old)
       const { data, error: uploadError } = await supabase.storage
         .from("profile pics")
@@ -191,7 +217,7 @@ export default function AccountDetailsScreen() {
       //@ts-ignore
       setUser((prev) => ({ ...prev, avatar_url: uncachedUrl }));
 
-      Alert.alert("✅ Success", "Profile photo updated!");
+      setMessage("Profile pic updated successfully!");
     } catch (error) {
       console.error("Error uploading profile photo:", error);
       Alert.alert(
@@ -199,8 +225,26 @@ export default function AccountDetailsScreen() {
         (error as Error).message || "Failed to upload image."
       );
     } finally {
-      // setUploading(false);
+      setUploading(false);
     }
+  };
+
+  const moderateImage = async (url: string) => {
+    const { data, error } = await supabase.functions.invoke("moderate-image", {
+      body: {
+        image_url: url,
+      },
+    });
+    if (error && error instanceof FunctionsHttpError) {
+      const errorMessage = await error.context.json();
+      Alert.alert(errorMessage.error.message);
+      setDeleting(false);
+      return {};
+    }
+    return {
+      flagged: data.flagged,
+      categories: data.categories,
+    };
   };
 
   return (
@@ -228,12 +272,16 @@ export default function AccountDetailsScreen() {
               />
             )}
             <TouchableOpacity onPress={() => handleChangePhoto(user!.uuid)}>
-              <Text
-                variant="labelLarge"
-                style={[styles.changePhoto, { color: theme.colors.primary }]}
-              >
-                Change Photo
-              </Text>
+              {uploading ? (
+                <ActivityIndicator />
+              ) : (
+                <Text
+                  variant="labelLarge"
+                  style={[styles.changePhoto, { color: theme.colors.primary }]}
+                >
+                  Change Photo
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
 
