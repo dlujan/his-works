@@ -150,7 +150,7 @@ export const ActionBottomSheet = ({
             position: "absolute",
             bottom: 0,
             width: "100%",
-            backgroundColor: theme.colors.surface,
+            backgroundColor: theme.colors.background,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             paddingBottom: 32,
@@ -165,7 +165,7 @@ export const ActionBottomSheet = ({
               width: 40,
               height: 4,
               borderRadius: 2,
-              backgroundColor: theme.colors.outlineVariant,
+              backgroundColor: theme.colors.backdrop,
               marginBottom: 12,
             }}
           />
@@ -184,7 +184,7 @@ export const ActionBottomSheet = ({
               style={{
                 textAlign: "center",
                 marginBottom: 16,
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
               }}
             >
               {description}

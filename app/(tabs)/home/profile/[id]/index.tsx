@@ -89,7 +89,6 @@ const Profile = () => {
     checkIfBlocked();
   }, [user, profile]);
   const checkIfBlocked = async () => {
-    console.log("check if blocked");
     const { data } = await supabase
       .from("user_block")
       .select("*")

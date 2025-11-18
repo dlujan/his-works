@@ -29,7 +29,7 @@ export function BlockUserModal({
           <View style={{ gap: 6 }}>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -37,7 +37,7 @@ export function BlockUserModal({
             </Text>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -45,7 +45,7 @@ export function BlockUserModal({
             </Text>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -56,7 +56,7 @@ export function BlockUserModal({
           <View style={{ gap: 6 }}>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -64,7 +64,7 @@ export function BlockUserModal({
             </Text>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -72,7 +72,7 @@ export function BlockUserModal({
             </Text>
             <Text
               style={{
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
                 lineHeight: 20,
               }}
             >
@@ -83,7 +83,7 @@ export function BlockUserModal({
 
         <Button
           mode="contained"
-          buttonColor={theme.colors.error}
+          buttonColor="rgba(179, 38, 30, 1)"
           textColor="white"
           onPress={() => {
             onBlock(isBlocked);

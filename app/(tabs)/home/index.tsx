@@ -268,6 +268,7 @@ export default function HomeScreen() {
                 {
                   label: "Edit",
                   icon: "pencil-outline",
+                  color: theme.colors.onSurface,
                   onPress: () =>
                     router.push(`/testimonies/${selectedTestimony?.uuid}`),
                 },

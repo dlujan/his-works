@@ -53,7 +53,7 @@ const ReportModal = ({
         >
           Inappropriate conduct involving a minor
         </Button>
-        <Button onPress={() => handleReport("Scam, fraid, or spam")}>
+        <Button onPress={() => handleReport("Scam, fraud, or spam")}>
           Scam, fraud, or spam
         </Button>
         <Button onPress={() => handleReport("Intellectual property")}>

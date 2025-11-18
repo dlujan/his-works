@@ -111,7 +111,7 @@ export const BottomSheetModal = ({
             position: "absolute",
             bottom: 0,
             width: "100%",
-            backgroundColor: theme.colors.surface,
+            backgroundColor: theme.colors.background,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             paddingTop: 8,
@@ -127,7 +127,7 @@ export const BottomSheetModal = ({
               width: 40,
               height: 4,
               borderRadius: 2,
-              backgroundColor: theme.colors.outlineVariant,
+              backgroundColor: theme.colors.backdrop,
               marginBottom: 12,
             }}
           />
@@ -151,7 +151,7 @@ export const BottomSheetModal = ({
             <View style={{ alignItems: "center", marginBottom: 12 }}>
               <Animated.Text
                 style={{
-                  color: theme.colors.onSurfaceVariant,
+                  color: theme.colors.onSurface,
                   textAlign: "center",
                 }}
               >
