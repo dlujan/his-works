@@ -23,7 +23,7 @@ export default function SignupScreen() {
   const theme = useTheme<AppTheme>();
   const router = useRouter();
 
-  const [name, setName] = useState("");
+  // const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export default function SignupScreen() {
   const canSubmit =
     email.trim().length > 0 &&
     password.length > 0 &&
-    name.trim().length > 0 &&
+    // name.trim().length > 0 &&
     !loading;
 
   const handleSubmit = async () => {
@@ -55,7 +55,7 @@ export default function SignupScreen() {
       await signUpWithEmail({
         email: email.trim(),
         password,
-        name: name.trim(),
+        // name: name.trim(),
       });
     } catch (authError) {
       const message =
@@ -90,7 +90,7 @@ export default function SignupScreen() {
         </Text>
 
         <View style={styles.form}>
-          <TextInput
+          {/* <TextInput`
             label="Full Name"
             value={name}
             keyboardType="default"
@@ -104,7 +104,7 @@ export default function SignupScreen() {
             returnKeyType="done"
             submitBehavior="blurAndSubmit"
             onSubmitEditing={Keyboard.dismiss}
-          />
+          /> */}
 
           <TextInput
             label="Email"

@@ -75,6 +75,24 @@ export default function RootLayout() {
                   headerTitleStyle: { fontWeight: 600 },
                 }}
               />
+              <Stack.Screen
+                name="confirm-notice"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="confirm-email"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="post-confirmation"
+                options={{
+                  headerShown: false,
+                }}
+              />
 
               {/* Authenticated tabs area */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

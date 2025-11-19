@@ -4,11 +4,10 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { User as AppUser } from "@/lib/types";
-import registerForPushNotificationsAsync from "@/utils/registerForPushNotificationsAsync";
 import { useRouter } from "expo-router";
 
 type SignInArgs = { email: string; password: string };
-type SignUpArgs = { email: string; password: string; name: string };
+type SignUpArgs = { email: string; password: string };
 
 type AuthContextValue = {
   session: Session | null;
@@ -107,33 +106,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
         router.replace("/(tabs)");
       },
 
-      signUpWithEmail: async ({ email, password, name }) => {
+      signUpWithEmail: async ({ email, password }) => {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
 
-        const authUser = data.user;
-        if (!authUser) return;
-
-        router.replace("/(tabs)");
-
-        // ✅ Register for push notifications
-        const expoPushToken = await registerForPushNotificationsAsync();
-        if (expoPushToken) {
-          await supabase
-            .from("user")
-            .update({ expo_push_token: expoPushToken, full_name: name })
-            .eq("uuid", authUser.id);
-        } else {
-          await supabase
-            .from("user")
-            .update({ full_name: name })
-            .eq("uuid", authUser.id);
+        if (data.user && !data.session) {
+          router.replace("/confirm-notice");
         }
-
-        await fetchUser(authUser.id);
       },
 
       signOut: async () => {
