@@ -38,7 +38,11 @@ import {
   useTheme,
 } from "react-native-paper";
 
-const UserProfileScreen = () => {
+const UserProfileScreen = ({
+  shouldUsePortal,
+}: {
+  shouldUsePortal?: boolean;
+}) => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme<AppTheme>();
   const { user } = useAuth();
@@ -350,8 +354,10 @@ const UserProfileScreen = () => {
     );
   }
 
+  const Wrapper = shouldUsePortal ? Portal.Host : React.Fragment;
+
   return (
-    <Portal.Host>
+    <Wrapper>
       <Surface
         style={[styles.screen, { backgroundColor: theme.colors.background }]}
       >
@@ -434,9 +440,7 @@ const UserProfileScreen = () => {
               ) : null
             }
             ListEmptyComponent={
-              !isLoadingTestimonies &&
-              !isRefetching &&
-              !isFetchingNextPage ? (
+              !isLoadingTestimonies && !isRefetching && !isFetchingNextPage ? (
                 <View style={styles.emptyState}>
                   <Text
                     variant="titleMedium"
@@ -548,7 +552,7 @@ const UserProfileScreen = () => {
           onReport={(reason) => handleReportTestimony(reason)}
         />
       </Surface>
-    </Portal.Host>
+    </Wrapper>
   );
 };
 
