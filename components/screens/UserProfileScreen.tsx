@@ -32,17 +32,12 @@ import {
   Button,
   Icon,
   IconButton,
-  Portal,
   Surface,
   Text,
   useTheme,
 } from "react-native-paper";
 
-const UserProfileScreen = ({
-  shouldUsePortal,
-}: {
-  shouldUsePortal?: boolean;
-}) => {
+const UserProfileScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme<AppTheme>();
   const { user } = useAuth();
@@ -368,205 +363,200 @@ const UserProfileScreen = ({
     );
   }
 
-  const Wrapper = shouldUsePortal ? Portal.Host : React.Fragment;
-
   return (
-    <Wrapper>
-      <Surface
-        style={[styles.screen, { backgroundColor: theme.colors.background }]}
+    <Surface
+      style={[styles.screen, { backgroundColor: theme.colors.background }]}
+    >
+      <View
+        style={[
+          styles.profileContainer,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
-        <View
-          style={[
-            styles.profileContainer,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
-          <View style={styles.profileDetails}>
-            <View style={styles.profileTextContainer}>
+        <View style={styles.profileDetails}>
+          <View style={styles.profileTextContainer}>
+            <Text
+              style={[styles.profileName, { color: theme.colors.onSurface }]}
+              numberOfLines={1}
+            >
+              {profile.full_name}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() =>
+                router.push(
+                  `/home/profile/${profile.uuid}/user-followers-modal`
+                )
+              }
+            >
               <Text
-                style={[styles.profileName, { color: theme.colors.onSurface }]}
-                numberOfLines={1}
+                style={[
+                  styles.followerText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
               >
-                {profile.full_name}
+                {followerCount} {followerCount === 1 ? "follower" : "followers"}
               </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() =>
-                  router.push(
-                    `/home/profile/${profile.uuid}/user-followers-modal`
-                  )
-                }
-              >
-                <Text
-                  style={[
-                    styles.followerText,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
-                  {followerCount}{" "}
-                  {followerCount === 1 ? "follower" : "followers"}
-                </Text>
-              </TouchableOpacity>
-
-              <Button
-                mode={isFollowing ? "outlined" : "contained"}
-                loading={isUpdating}
-                onPress={handleFollowToggle}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </Button>
-            </View>
-
-            <Image
-              source={{ uri: profile.avatar_url }}
-              style={styles.profileAvatar}
-              resizeMode="cover"
-            />
+            <Button
+              mode={isFollowing ? "outlined" : "contained"}
+              loading={isUpdating}
+              onPress={handleFollowToggle}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </Button>
           </View>
-        </View>
-        {isLoadingTestimonies ? (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <ActivityIndicator animating size="large" />
-          </View>
-        ) : (
-          <FlatList
-            data={testimonies}
-            keyExtractor={(item) => item.uuid}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                onRefresh={refetch}
-                tintColor={theme.colors.primary}
-              />
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isFetchingNextPage ? (
-                <View style={{ paddingVertical: 16 }}>
-                  <ActivityIndicator animating color={theme.colors.primary} />
-                </View>
-              ) : null
-            }
-            ListEmptyComponent={
-              !isLoadingTestimonies && !isRefetching && !isFetchingNextPage ? (
-                <View style={styles.emptyState}>
-                  <Text
-                    variant="titleMedium"
-                    style={{
-                      color: theme.colors.onSurface,
-                      textAlign: "center",
-                      marginBottom: 4,
-                    }}
-                  >
-                    No activity
-                  </Text>
-                  <Text
-                    variant="bodyMedium"
-                    style={{
-                      color: theme.colors.onSurfaceVariant,
-                      textAlign: "center",
-                      marginBottom: 16,
-                    }}
-                  >
-                    Come back later
-                  </Text>
-                </View>
-              ) : null
-            }
+
+          <Image
+            source={{ uri: profile.avatar_url }}
+            style={styles.profileAvatar}
+            resizeMode="cover"
           />
-        )}
-        <ActionBottomSheet
-          visible={showActionsMenu}
-          onDismiss={() => setShowActionsMenu(false)}
-          actions={[
-            {
-              label: isBlocked ? "Unblock" : "Block",
-              icon: "block-helper",
-              color: "red",
-              onPress: () => {
-                setShowActionsMenu(false);
-                setShowBlockMenu(true);
-              },
+        </View>
+      </View>
+      {isLoadingTestimonies ? (
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <ActivityIndicator animating size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={testimonies}
+          keyExtractor={(item) => item.uuid}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={theme.colors.primary}
+            />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: 16 }}>
+                <ActivityIndicator animating color={theme.colors.primary} />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            !isLoadingTestimonies && !isRefetching && !isFetchingNextPage ? (
+              <View style={styles.emptyState}>
+                <Text
+                  variant="titleMedium"
+                  style={{
+                    color: theme.colors.onSurface,
+                    textAlign: "center",
+                    marginBottom: 4,
+                  }}
+                >
+                  No activity
+                </Text>
+                <Text
+                  variant="bodyMedium"
+                  style={{
+                    color: theme.colors.onSurfaceVariant,
+                    textAlign: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  Come back later
+                </Text>
+              </View>
+            ) : null
+          }
+        />
+      )}
+      <ActionBottomSheet
+        visible={showActionsMenu}
+        onDismiss={() => setShowActionsMenu(false)}
+        actions={[
+          {
+            label: isBlocked ? "Unblock" : "Block",
+            icon: "block-helper",
+            color: "red",
+            onPress: () => {
+              setShowActionsMenu(false);
+              setShowBlockMenu(true);
             },
-            {
-              label: "Report",
-              icon: "flag-outline",
-              color: "red",
-              onPress: () => {
-                setShowActionsMenu(false);
-                setShowReportMenu(true);
-              },
+          },
+          {
+            label: "Report",
+            icon: "flag-outline",
+            color: "red",
+            onPress: () => {
+              setShowActionsMenu(false);
+              setShowReportMenu(true);
             },
-          ]}
-        />
-        <BlockUserModal
-          visible={showBlockMenu}
-          isBlocked={isBlocked}
-          onDismiss={() => setShowBlockMenu(false)}
-          profile={profile}
-          onBlock={(isBlocked) => handleBlockUser(isBlocked)}
-        />
+          },
+        ]}
+      />
+      <BlockUserModal
+        visible={showBlockMenu}
+        isBlocked={isBlocked}
+        onDismiss={() => setShowBlockMenu(false)}
+        profile={profile}
+        onBlock={(isBlocked) => handleBlockUser(isBlocked)}
+      />
 
-        <ReportModal
-          visible={showReportMenu}
-          title="Report Profile"
-          onDismiss={() => setShowReportMenu(false)}
-          onReport={(reason) => handleReportUser(reason)}
-        />
+      <ReportModal
+        visible={showReportMenu}
+        title="Report Profile"
+        onDismiss={() => setShowReportMenu(false)}
+        onReport={(reason) => handleReportUser(reason)}
+      />
 
-        <ActionBottomSheet
-          visible={!!selectedTestimony}
-          onDismiss={() => setSelectedTestimony(undefined)}
-          actions={[
-            // 🟢 If the testimony belongs to the current user
-            ...(selectedTestimony?.user_uuid === user?.uuid
-              ? [
-                  {
-                    label: "Edit",
-                    icon: "pencil-outline",
-                    onPress: () =>
-                      router.push(`/testimonies/${selectedTestimony?.uuid}`),
+      <ActionBottomSheet
+        visible={!!selectedTestimony}
+        onDismiss={() => setSelectedTestimony(undefined)}
+        actions={[
+          // 🟢 If the testimony belongs to the current user
+          ...(selectedTestimony?.user_uuid === user?.uuid
+            ? [
+                {
+                  label: "Edit",
+                  icon: "pencil-outline",
+                  onPress: () =>
+                    router.push(`/testimonies/${selectedTestimony?.uuid}`),
+                },
+              ]
+            : []),
+
+          // 🔵 If the comment does NOT belong to the current user
+          ...(selectedTestimony?.user_uuid &&
+          selectedTestimony.user_uuid !== user?.uuid
+            ? [
+                {
+                  label: "Report",
+                  icon: "flag-outline",
+                  color: "red",
+                  onPress: () => {
+                    setReportMenuTestimony(selectedTestimony);
                   },
-                ]
-              : []),
+                },
+              ]
+            : []),
 
-            // 🔵 If the comment does NOT belong to the current user
-            ...(selectedTestimony?.user_uuid &&
-            selectedTestimony.user_uuid !== user?.uuid
-              ? [
-                  {
-                    label: "Report",
-                    icon: "flag-outline",
-                    color: "red",
-                    onPress: () => {
-                      setReportMenuTestimony(selectedTestimony);
-                    },
-                  },
-                ]
-              : []),
-
-            // ⚪ Always include (everyone sees this)
-            // {
-            //   label: "Copy link",
-            //   icon: "link-variant",
-            //   onPress: () => console.log("Copy link pressed"),
-            // },
-          ]}
-        />
-        <ReportModal
-          visible={!!reportMenuTestimony}
-          title="Report Testimony"
-          onDismiss={() => setReportMenuTestimony(undefined)}
-          onReport={(reason) => handleReportTestimony(reason)}
-        />
-      </Surface>
-    </Wrapper>
+          // ⚪ Always include (everyone sees this)
+          // {
+          //   label: "Copy link",
+          //   icon: "link-variant",
+          //   onPress: () => console.log("Copy link pressed"),
+          // },
+        ]}
+      />
+      <ReportModal
+        visible={!!reportMenuTestimony}
+        title="Report Testimony"
+        onDismiss={() => setReportMenuTestimony(undefined)}
+        onReport={(reason) => handleReportTestimony(reason)}
+      />
+    </Surface>
   );
 };
 

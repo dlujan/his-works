@@ -2,7 +2,7 @@ import UserProfileScreen from "@/components/screens/UserProfileScreen";
 import React from "react";
 
 const Profile = () => {
-  return <UserProfileScreen shouldUsePortal={false} />;
+  return <UserProfileScreen />;
 };
 
 export default Profile;

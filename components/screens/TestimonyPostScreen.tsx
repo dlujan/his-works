@@ -320,6 +320,7 @@ const TestimonyPostScreen = () => {
 
     const liked = testimony.liked_by_user ?? false;
     const likesCount = testimony.likes_count ?? 0;
+    const commentsCount = testimony.comments_count ?? 0;
     const following = testimony.followed_by_user ?? false;
     const showFollowBtn = !following && testimony.user_uuid !== user?.uuid;
 
@@ -431,6 +432,15 @@ const TestimonyPostScreen = () => {
             />
             <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
               {likesCount}
+            </Text>
+            <IconButton
+              icon={"comment-outline"}
+              size={20}
+              iconColor={theme.colors.primary}
+              style={styles.iconButton}
+            />
+            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
+              {commentsCount}
             </Text>
           </View>
           <IconButton

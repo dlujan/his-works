@@ -3,7 +3,12 @@ import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
-type FetchResult = Testimony & { followed_by_user: boolean };
+type FetchResult = Testimony & {
+  followed_by_user: boolean;
+  likes_count: number;
+  liked_by_user: boolean;
+  comments_count: number;
+};
 const fetchData = async (id: string, appUserId?: string) => {
   const { data, error } = await supabase
     .from("testimony")
@@ -16,13 +21,14 @@ const fetchData = async (id: string, appUserId?: string) => {
         name
       )
     ),
-     reminder (
+    reminder (
       uuid,
       scheduled_for,
       type
     ),
     user(avatar_url, full_name),
-    testimony_like(*)
+    testimony_like(user_uuid),
+    comment(uuid)
   `
     )
     .eq("uuid", id)
@@ -33,6 +39,8 @@ const fetchData = async (id: string, appUserId?: string) => {
     throw new Error(error.message);
   }
 
+  const comments = data.comment || [];
+  const commentsCount = comments.length;
   const likes = data.testimony_like || [];
   const likesCount = likes.length;
   const likedByUser =
@@ -60,6 +68,7 @@ const fetchData = async (id: string, appUserId?: string) => {
     reminders: data.reminder?.map((rem: any) => rem),
     likes_count: likesCount,
     liked_by_user: likedByUser,
+    comments_count: commentsCount,
     followed_by_user: followedByUser,
   };
 };
