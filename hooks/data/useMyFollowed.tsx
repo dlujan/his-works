@@ -8,6 +8,7 @@ type FetchResult = {
   followed: Partial<User>[];
   nextPage: number;
   hasMore: boolean;
+  totalCount: number;
 };
 
 const fetchData = async (
@@ -19,7 +20,17 @@ const fetchData = async (
 
   const { data, error, count } = await supabase
     .from("follow")
-    .select("*,user(uuid,full_name,avatar_url)", { count: "exact" })
+    .select(
+      `
+    *,
+    followed:user!follow_followed_uuid_fkey (
+      uuid,
+      full_name,
+      avatar_url
+    )
+    `,
+      { count: "exact" }
+    )
     .eq("follower_uuid", userUuid)
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -29,9 +40,10 @@ const fetchData = async (
   const hasMore = to + 1 < (count ?? 0);
 
   return {
-    followed: data ?? [],
+    followed: data.map((follow) => follow.followed) ?? [],
     nextPage: page + 1,
     hasMore,
+    totalCount: count ?? 0,
   };
 };
 

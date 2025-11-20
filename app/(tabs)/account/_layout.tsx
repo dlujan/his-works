@@ -76,8 +76,33 @@ export default function AccountStackLayout() {
         options={{
           presentation: "modal",
           headerShown: true,
-          title: "Followers",
+          title: "",
           headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
+      <Stack.Screen
+        name="profile/[id]/index"
+        options={{
+          title: "",
+          headerBackTitle: "Back",
+          headerRight: () => (
+            <View
+              style={{
+                height: 40,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 4,
+              }}
+            >
+              <IconButton
+                icon="dots-horizontal"
+                size={26}
+                iconColor={theme.colors.onSurfaceVariant}
+                // onPress={() => router.push("/home/search")}
+                style={{ margin: 0 }}
+              />
+            </View>
+          ),
         }}
       />
     </Stack>
