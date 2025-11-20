@@ -72,67 +72,66 @@ Deno.serve(async (req) => {
 
     function getReminderTimePhrase(reminder: any) {
       const now = dayjs();
-      const testimonyDate = dayjs(reminder.testimony?.date);
-      if (!testimonyDate.isValid()) return null;
+      const date = dayjs(reminder.testimony?.date);
 
-      // YEARLY REMINDERS → Simple, elegant
-      if (reminder.type === "yearly") {
-        const years = now.diff(testimonyDate, "year");
+      if (!date.isValid()) return null;
 
-        const isAnniversary = now.month() === testimonyDate.month() &&
-          now.date() === testimonyDate.date();
+      const years = now.diff(date, "year");
+      const months = now.diff(date, "month");
+      const weeks = now.diff(date, "week");
+      const days = now.diff(date, "day");
+      const hours = now.diff(date, "hour");
 
-        if (years === 1 && isAnniversary) return "1 year ago today";
-        if (years === 1) return "1 year ago";
-        return `${years} years ago`;
+      // Same day
+      if (days === 0) {
+        if (hours < 1) return "just now";
+        if (hours === 1) return "1 hour ago";
+        return `${hours} hours ago`;
       }
 
-      // QUARTERLY REMINDERS → Humanized
-      if (reminder.type === "quarterly") {
-        const months = now.diff(testimonyDate, "month");
+      // Under a week
+      if (days < 7) {
+        if (days === 1) return "1 day ago";
+        return `${days} days ago`;
+      }
 
-        // 🌟 Exact multiples of 12 → turn into beautiful year phrasing
-        if (months % 12 === 0) {
-          const years = months / 12;
-          if (years === 1) {
-            const isAnniversary = now.month() === testimonyDate.month() &&
-              now.date() === testimonyDate.date();
-            return isAnniversary ? "1 year ago today" : "1 year ago";
-          }
-          return `${years} years ago`;
-        }
+      // Under a month
+      if (weeks < 4) {
+        if (weeks === 1) return "1 week ago";
+        return `${weeks} weeks ago`;
+      }
 
-        // 🌈 Humanized ranges
-        const years = Math.floor(months / 12);
-        const leftover = months % 12;
-
-        // 1 year + X months
-        if (years === 1) {
-          if (leftover <= 3) return "just over 1 year ago";
-          if (leftover <= 6) return "almost 2 years ago";
-          return "nearly 2 years ago";
-        }
-
-        // 2 years + X months
-        if (years === 2) {
-          if (leftover <= 3) return "just over 2 years ago";
-          if (leftover <= 6) return "almost 3 years ago";
-          return "nearly 3 years ago";
-        }
-
-        // 3+ years → simplify but still sound good
-        if (years >= 3) {
-          if (leftover <= 3) return `just over ${years} years ago`;
-          if (leftover <= 6) return `almost ${years + 1} years ago`;
-          return `nearly ${years + 1} years ago`;
-        }
-
-        // Under 1 year → normal clean phrasing
+      // Under 1 year → month logic
+      if (months < 12) {
         if (months === 1) return "1 month ago";
+
+        // Humanize edges
+        if (months >= 10) return "almost 1 year ago";
+        if (months >= 7) return "nearly 1 year ago";
         return `${months} months ago`;
       }
 
-      // CUSTOM REMINDERS → generic text
+      // Year logic
+      if (years >= 1) {
+        // Anniversary?
+        const isAnniversary = now.isSame(date, "day") &&
+          now.isSame(date, "month");
+
+        if (years === 1) {
+          return isAnniversary ? "1 year ago today" : "1 year ago";
+        }
+
+        // Humanize years
+        const leftoverMonths = months % 12;
+
+        if (leftoverMonths <= 2) return `just over ${years} years ago`;
+        if (leftoverMonths >= 10) return `almost ${years + 1} years ago`;
+        if (leftoverMonths >= 7) return `nearly ${years + 1} years ago`;
+
+        return `${years} years ago`;
+      }
+
+      // Fallback (should never hit)
       return null;
     }
 
