@@ -100,7 +100,6 @@ const UserProfileScreen = ({
       .eq("blocker_uuid", user?.uuid)
       .eq("blocked_uuid", profile.uuid)
       .maybeSingle();
-    console.log(data);
     if (data) {
       setIsBlocked(true);
     }
@@ -260,6 +259,7 @@ const UserProfileScreen = ({
     ({ item }: { item: UserProfileTestimony }) => {
       const liked = item.liked_by_user ?? false;
       const likesCount = item.likes_count ?? 0;
+      const commentsCount = item.comments_count ?? 0;
       return (
         <Pressable
           onPress={() => router.push(`/home/post/${item.uuid}`)}
@@ -331,6 +331,17 @@ const UserProfileScreen = ({
                     style={[styles.likeCount, { color: theme.colors.primary }]}
                   >
                     {likesCount}
+                  </Text>
+                  <IconButton
+                    icon={"comment-outline"}
+                    size={20}
+                    iconColor={theme.colors.primary}
+                    style={styles.iconButton}
+                  />
+                  <Text
+                    style={[styles.likeCount, { color: theme.colors.primary }]}
+                  >
+                    {commentsCount}
                   </Text>
                 </View>
                 <IconButton

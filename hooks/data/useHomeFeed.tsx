@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 const PAGE_SIZE = 10;
 
 export type HomeFeedTestimony = Testimony & {
+  comments_count: number;
   likes_count: number;
   liked_by_user: boolean;
   user_full_name: string;

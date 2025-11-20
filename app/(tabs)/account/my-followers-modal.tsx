@@ -66,7 +66,12 @@ export default function MyFollowersModal() {
     ({ item }: { item: Partial<User> }) => {
       return (
         <Pressable
-          onPress={() => router.push(`/account/profile/${item.uuid}`)}
+          onPress={() => {
+            router.dismiss();
+            setTimeout(() => {
+              router.push(`/home/profile/${item.uuid}`);
+            }, 10);
+          }}
           style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
         >
           <View
