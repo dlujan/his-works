@@ -1,8 +1,10 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useMyNotifications } from "@/hooks/data/useMyNotifications";
+import { supabase } from "@/lib/supabase";
 import { AppNotification, AppNotificationType } from "@/lib/types";
 import { formatTimeSince } from "@/utils/time";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import {
@@ -22,8 +24,9 @@ import {
 
 export default function ActivityScreen() {
   const theme = useTheme<AppTheme>();
-  const { session } = useAuth();
+  const { session, user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     data,
@@ -41,11 +44,26 @@ export default function ActivityScreen() {
     if (hasNextPage) fetchNextPage();
   };
 
-  const handleOpenItem = (notification: AppNotification) => {
-    const { type, data } = notification;
+  const handleOpenItem = async (notification: AppNotification) => {
+    const { uuid, type, data } = notification;
     if (type === AppNotificationType.REMINDER && data.testimony_uuid) {
       router.push(`/testimony-display-modal/${data.testimony_uuid}`);
+      await markerNotificationAsRead(uuid);
     }
+  };
+
+  const markerNotificationAsRead = async (id: string) => {
+    const { error } = await supabase
+      .from("notification")
+      .update({ read: true })
+      .eq("uuid", id);
+
+    if (error) {
+      console.log(error.message);
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["notifications", user?.uuid] });
   };
 
   const getIconSlug = (notification: AppNotification) => {
