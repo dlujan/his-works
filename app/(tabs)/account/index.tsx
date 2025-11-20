@@ -86,27 +86,36 @@ export default function AccountScreen() {
         </View>
 
         {/* List of navigation items */}
-        <List.Section>
+        <List.Section style={{ marginHorizontal: -20 }}>
           <List.Item
             title="Account"
-            description="Edit your profile information"
+            // description="Edit your profile information"
             left={(props) => <List.Icon {...props} icon="account-outline" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/account-details")}
           />
           <List.Item
             title="Reminders"
-            description="Manage your notification preferences"
+            // description="Manage your notification preferences"
             left={(props) => <List.Icon {...props} icon="bell-outline" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/reminder-settings")}
           />
           <List.Item
             title="Legal"
-            description="Legal documents and such"
+            // description="Legal documents and such"
             left={(props) => <List.Icon {...props} icon="scale-balance" />}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/legal")}
+          />
+          <List.Item
+            title="Blocked Accounts"
+            // description="Legal documents and such"
+            left={(props) => (
+              <List.Icon {...props} icon="account-off-outline" />
+            )}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => router.push("/account/blocked-accounts")}
           />
         </List.Section>
       </View>

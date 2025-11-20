@@ -211,6 +211,9 @@ const UserProfileScreen = ({
       Alert.alert(`${profile.full_name} is blocked`);
       queryClient.invalidateQueries({ queryKey: ["home-feed", user?.uuid] });
     }
+    queryClient.invalidateQueries({
+      queryKey: ["my-blocked-accounts", user?.uuid],
+    });
     await checkIfBlocked();
   };
 

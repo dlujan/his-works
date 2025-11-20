@@ -72,6 +72,14 @@ export default function AccountStackLayout() {
         }}
       />
       <Stack.Screen
+        name="blocked-accounts"
+        options={{
+          title: "Blocked Accounts",
+          headerBackTitle: "Account",
+          headerTitleStyle: { fontWeight: 600 },
+        }}
+      />
+      <Stack.Screen
         name="my-followers-modal"
         options={{
           presentation: "modal",
