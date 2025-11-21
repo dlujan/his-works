@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
   try {
     // Figure out if this is the morning or evening run
-    const hour = dayjs().hour();
+    const hour = dayjs().hour() - 6; // fix GMT tz offset
     const currentPeriod = hour < 12 ? "morning" : "evening";
     const now = dayjs();
     const startOfDay = now.startOf("day").toISOString();
