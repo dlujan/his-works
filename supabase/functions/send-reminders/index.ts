@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.0";
 import dayjs from "https://esm.sh/dayjs@1.11.10";
+import timezone from "https://esm.sh/dayjs@1.11.10/plugin/timezone";
+import utc from "https://esm.sh/dayjs@1.11.10/plugin/utc";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {
   isExpoPushToken,
@@ -21,11 +23,14 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+
   try {
     // Figure out if this is the morning or evening run
-    const hour = dayjs().hour() - 6; // fix GMT tz offset
+    const hour = dayjs().tz("America/Chicago").hour();
     const currentPeriod = hour < 12 ? "morning" : "evening";
-    const now = dayjs();
+    const now = dayjs().tz("America/Chicago");
     const startOfDay = now.startOf("day").toISOString();
     const endOfDay = now.endOf("day").toISOString();
 
@@ -71,8 +76,8 @@ Deno.serve(async (req) => {
     }
 
     function getReminderTimePhrase(reminder: any) {
-      const now = dayjs();
-      const date = dayjs(reminder.testimony?.date);
+      const now = dayjs().tz("America/Chicago");
+      const date = dayjs(reminder.testimony?.date).tz("America/Chicago");
 
       if (!date.isValid()) return null;
 
@@ -255,7 +260,7 @@ Deno.serve(async (req) => {
       // Skip if no type (e.g., surprise reminders & other)
       if (!reminder.type) continue;
 
-      const current = dayjs(reminder.scheduled_for);
+      const current = dayjs(reminder.scheduled_for).tz("America/Chicago");
       let next: string | null = null;
 
       if (reminder.type === "yearly") {

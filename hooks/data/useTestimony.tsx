@@ -24,6 +24,7 @@ const fetchData = async (id: string, appUserId?: string) => {
     reminder (
       uuid,
       scheduled_for,
+      sent_at,
       type
     ),
     user(avatar_url, full_name),
@@ -32,6 +33,7 @@ const fetchData = async (id: string, appUserId?: string) => {
   `
     )
     .eq("uuid", id)
+    .is("reminder.sent_at", null)
     .single();
 
   if (error) {
