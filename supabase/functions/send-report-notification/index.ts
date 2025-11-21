@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       "Authorization": `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: "HisWorks Moderation <info@littlelakewebdesigns.com>",
+      from: "HisWorks Moderation <info@hisworks.io>",
       to: [adminEmail],
       subject: "⚠️ New Content Report Submitted",
       html: `<h2>New Report Submitted</h2>
