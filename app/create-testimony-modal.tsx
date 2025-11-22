@@ -148,6 +148,9 @@ export default function CreateTestimonyModal() {
 
       queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
       router.back();
+      setTimeout(() => {
+        router.push(`/testimonies/${testimony.uuid}`);
+      }, 500);
     } catch (error: any) {
       console.error("Error creating testimony:", error);
       setMessage(error.message || "Failed to save testimony.");
