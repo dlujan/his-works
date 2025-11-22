@@ -267,6 +267,8 @@ Deno.serve(async (req) => {
         next = current.add(1, "year").toISOString();
       } else if (reminder.type === "quarterly") {
         next = current.add(3, "month").toISOString();
+      } else if (reminder.type === "monthly") {
+        next = current.add(1, "month").toISOString();
       } else if (reminder.type === "bi-weekly") {
         next = current.add(2, "week").toISOString();
       }

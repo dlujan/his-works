@@ -114,9 +114,7 @@ export default function ReminderRow({
     <List.Accordion
       key={reminder.uuid}
       title={title}
-      description={`${reminder.type} • ${getDaysUntil(
-        reminder.scheduled_for
-      )} ${reminder.type !== ReminderType.ONE_TIME ? "(recurring)" : ""}`}
+      description={`${reminder.type} • ${getDaysUntil(reminder.scheduled_for)}`}
       expanded={expanded}
       onPress={() => setExpanded(!expanded)}
       right={(props) => (
@@ -155,7 +153,7 @@ export default function ReminderRow({
           value={recurring}
           onValueChange={(value) => {
             setRecurring(value);
-            if (value) setInterval("quarterly");
+            if (value) setInterval(ReminderType.MONTHLY);
             else setInterval("one-time");
           }}
         />
@@ -174,6 +172,12 @@ export default function ReminderRow({
             selected={interval === ReminderType.BI_WEEKLY}
             onPress={() => setInterval(ReminderType.BI_WEEKLY)}
             label="Bi-Weekly"
+            color={theme.colors.primary}
+          />
+          <CustomRadioButton
+            selected={interval === ReminderType.MONTHLY}
+            onPress={() => setInterval(ReminderType.MONTHLY)}
+            label="Monthly"
             color={theme.colors.primary}
           />
           <CustomRadioButton

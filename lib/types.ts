@@ -48,6 +48,7 @@ export enum ReminderType {
   ONE_TIME = "one-time",
   YEARLY = "yearly",
   QUARTERLY = "quarterly",
+  MONTHLY = "monthly",
   BI_WEEKLY = "bi-weekly",
 }
 export type AppNotification = {

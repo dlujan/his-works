@@ -41,7 +41,7 @@ export default function LegalScreen() {
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <List.Section>
+          <List.Section style={{ marginHorizontal: -20 }}>
             <List.Item
               title="Privacy Policy"
               left={(props) => <List.Icon {...props} icon="lock-outline" />}
