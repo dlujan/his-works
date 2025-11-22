@@ -32,7 +32,7 @@ export default function TestimonyRemindersModal() {
         user_uuid: user!.uuid,
         testimony_uuid: testimony.uuid,
         scheduled_for: dayjs().add(2, "week").toISOString(),
-        type: "custom",
+        type: "one-time",
       });
       if (error) throw error;
     } catch (error: any) {

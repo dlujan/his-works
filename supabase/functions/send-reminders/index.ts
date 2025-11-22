@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
       return null;
     }
 
-    // Dynamic lists for YEARLY + QUARTERLY
+    // Dynamic lists for recurring types
     const dynamicYearQuarterTitles = [
       "👇 Remember this?",
       "💭 Think back on this moment.",
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
         let finalBody;
 
         if (phrase) {
-          // YEARLY or QUARTERLY dynamic messaging
+          // Recurring dynamic messaging
           finalTitle = dynamicYearQuarterTitles[
             Math.floor(Math.random() * dynamicYearQuarterTitles.length)
           ];
@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
 
           finalBody = bodyFn(phrase);
         } else {
-          // CUSTOM → use generic
+          // FALLBACK → use generic
           finalTitle =
             genericTitles[Math.floor(Math.random() * genericTitles.length)];
           finalBody =
@@ -267,6 +267,8 @@ Deno.serve(async (req) => {
         next = current.add(1, "year").toISOString();
       } else if (reminder.type === "quarterly") {
         next = current.add(3, "month").toISOString();
+      } else if (reminder.type === "bi-weekly") {
+        next = current.add(2, "week").toISOString();
       }
 
       if (next) {

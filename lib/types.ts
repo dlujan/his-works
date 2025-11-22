@@ -45,8 +45,10 @@ export type Reminder = {
   type?: ReminderType;
 };
 export enum ReminderType {
+  ONE_TIME = "one-time",
   YEARLY = "yearly",
   QUARTERLY = "quarterly",
+  BI_WEEKLY = "bi-weekly",
 }
 export type AppNotification = {
   uuid: string;

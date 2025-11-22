@@ -1,12 +1,20 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { supabase } from "@/lib/supabase";
-import { Reminder } from "@/lib/types";
+import { Reminder, ReminderType } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import { Button, List, PaperProvider, useTheme } from "react-native-paper";
+import {
+  Button,
+  List,
+  PaperProvider,
+  Switch,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { DatePickerInput } from "react-native-paper-dates";
+import { CustomRadioButton } from "../CustomRadioButton";
 
 export default function ReminderRow({
   reminder,
@@ -18,6 +26,10 @@ export default function ReminderRow({
   const theme = useTheme<AppTheme>();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(reminder.scheduled_for ?? "");
+  const [recurring, setRecurring] = useState(
+    reminder.type !== ReminderType.ONE_TIME
+  );
+  const [interval, setInterval] = useState(reminder.type ?? "one-time");
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
@@ -48,6 +60,7 @@ export default function ReminderRow({
         .from("reminder")
         .update({
           scheduled_for: date,
+          type: interval,
         })
         .eq("uuid", reminder.uuid);
       if (error) throw error;
@@ -97,14 +110,13 @@ export default function ReminderRow({
     month: "long",
     day: "numeric",
   });
-  const dateChanged =
-    new Date(reminder.scheduled_for).getDate() !== new Date(date).getDate();
-
   return (
     <List.Accordion
       key={reminder.uuid}
       title={title}
-      description={`${reminder.type} • ${getDaysUntil(reminder.scheduled_for)}`}
+      description={`${reminder.type} • ${getDaysUntil(
+        reminder.scheduled_for
+      )} ${reminder.type !== ReminderType.ONE_TIME ? "(recurring)" : ""}`}
       expanded={expanded}
       onPress={() => setExpanded(!expanded)}
       right={(props) => (
@@ -114,7 +126,7 @@ export default function ReminderRow({
       <PaperProvider theme={dateModalTheme}>
         <DatePickerInput
           locale="en"
-          label="Date"
+          label="Reminder Date"
           placeholder="Scheduled for"
           value={date ? new Date(date) : undefined}
           onChange={(d) => {
@@ -127,6 +139,58 @@ export default function ReminderRow({
           validRange={{ startDate: new Date() }}
         />
       </PaperProvider>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 5,
+          paddingTop: 8,
+        }}
+      >
+        <Text variant="titleSmall" style={{ color: theme.colors.onSurface }}>
+          Recurring
+        </Text>
+        <Switch
+          value={recurring}
+          onValueChange={(value) => {
+            setRecurring(value);
+            if (value) setInterval("quarterly");
+            else setInterval("one-time");
+          }}
+        />
+      </View>
+
+      {recurring && (
+        <View style={{ marginTop: 8, marginLeft: 4 }}>
+          <Text
+            variant="titleSmall"
+            style={{ color: theme.colors.onSurface, marginBottom: 6 }}
+          >
+            Interval
+          </Text>
+
+          <CustomRadioButton
+            selected={interval === ReminderType.BI_WEEKLY}
+            onPress={() => setInterval(ReminderType.BI_WEEKLY)}
+            label="Bi-Weekly"
+            color={theme.colors.primary}
+          />
+          <CustomRadioButton
+            selected={interval === ReminderType.QUARTERLY}
+            onPress={() => setInterval(ReminderType.QUARTERLY)}
+            label="Quarterly"
+            color={theme.colors.primary}
+          />
+          <CustomRadioButton
+            selected={interval === ReminderType.YEARLY}
+            onPress={() => setInterval(ReminderType.YEARLY)}
+            label="Yearly"
+            color={theme.colors.primary}
+          />
+        </View>
+      )}
+
       <View style={styles.actions}>
         <Button
           mode="contained"
@@ -138,7 +202,7 @@ export default function ReminderRow({
         <Button
           mode="contained-tonal"
           loading={saving}
-          disabled={!dateChanged || saving}
+          disabled={saving}
           onPress={updateDate}
         >
           Save
