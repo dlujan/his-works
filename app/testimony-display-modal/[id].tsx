@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 22,
     lineHeight: 34,
-    fontWeight: "400",
+    fontFamily: "PTSerifRegular",
     color: "#fff",
     textAlign: "center",
   },

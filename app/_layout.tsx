@@ -11,7 +11,9 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useNotificationNavigation } from "@/hooks/useNotificationNavigation";
 import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
+
 import { StatusBar } from "expo-status-bar";
 import { Text, TouchableOpacity } from "react-native";
 import { PaperProvider } from "react-native-paper";
@@ -30,6 +32,17 @@ export default function RootLayout() {
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
   const navigationTheme = isDark ? navigationDarkTheme : navigationLightTheme;
   useNotificationNavigation();
+
+  const [loaded] = useFonts({
+    PTSerifBold: require("../assets/fonts/PTSerif-Bold.ttf"),
+    PTSerifItalic: require("../assets/fonts/PTSerif-Italic.ttf"),
+    PTSerifRegular: require("../assets/fonts/PTSerif-Regular.ttf"),
+  });
+
+  if (!loaded) {
+    // Async font loading only occurs in development.
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
