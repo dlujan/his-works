@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { User as AppUser } from "@/lib/types";
+import { refreshPushTokenIfPossible } from "@/utils/refreshPushTokenIfPossible";
 import { useRouter } from "expo-router";
 
 type SignInArgs = { email: string; password: string };
@@ -68,6 +69,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!loading && user) {
+      refreshToken();
+    }
+  }, [loading, user]);
+
+  async function refreshToken() {
+    const newToken = await refreshPushTokenIfPossible();
+
+    if (!newToken) return;
+
+    if (newToken !== user?.expo_push_token) {
+      await supabase
+        .from("user")
+        .update({ expo_push_token: newToken })
+        .eq("uuid", user?.uuid);
+    }
+  }
 
   // 🔹 Fetch user from your "user" table
   const fetchUser = async (id: string) => {
