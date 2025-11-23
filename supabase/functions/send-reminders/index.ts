@@ -143,14 +143,13 @@ Deno.serve(async (req) => {
     // Dynamic lists for recurring types
     const dynamicYearQuarterTitles = [
       "👇 Remember this?",
-      "💭 Think back on this moment.",
-      "📖 Look back on this testimony.",
-      "🌟 A moment worth remembering.",
+      "💭 Reflect on this moment.",
+      "📖 Revisit this testimony.",
     ];
     const dynamicYearQuarterBodies = [
       (phrase: string) => `Remember this from ${phrase}?`,
       (phrase: string) => `God moved in your life ${phrase}. Tap to revisit.`,
-      (phrase: string) => `A meaningful moment from ${phrase} ago.`,
+      (phrase: string) => `An answered prayer from ${phrase} ago.`,
       (phrase: string) => `Look back on God's goodness from ${phrase}.`,
     ];
     const genericTitles = [
