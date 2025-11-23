@@ -13,8 +13,9 @@ import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
-
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { Text, TouchableOpacity } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
@@ -38,6 +39,16 @@ export default function RootLayout() {
     PTSerifItalic: require("../assets/fonts/PTSerif-Italic.ttf"),
     PTSerifRegular: require("../assets/fonts/PTSerif-Regular.ttf"),
   });
+
+  useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
   if (!loaded) {
     // Async font loading only occurs in development.
