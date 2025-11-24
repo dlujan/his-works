@@ -1,4 +1,4 @@
-import type { AppTheme } from "@/constants/paper-theme";
+import { palette, type AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { filterProfanity } from "@/utils/filterProfanity";
@@ -318,9 +318,7 @@ export default function AccountDetailsScreen() {
               style={[
                 styles.message,
                 {
-                  color: message.includes("success")
-                    ? "green"
-                    : "rgba(179, 38, 30, 1)",
+                  color: message.includes("success") ? "green" : palette.error,
                 },
               ]}
             >
@@ -342,7 +340,7 @@ export default function AccountDetailsScreen() {
               onPress={handleDelete}
               loading={deleting}
               disabled={deleting || saving}
-              buttonColor="rgba(179, 38, 30, 1)"
+              buttonColor={palette.error}
             >
               Delete Account
             </Button>

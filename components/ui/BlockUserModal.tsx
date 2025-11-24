@@ -1,3 +1,4 @@
+import { palette } from "@/constants/paper-theme";
 import React from "react";
 import { Text, View } from "react-native";
 import { Button, useTheme } from "react-native-paper";
@@ -83,7 +84,7 @@ export function BlockUserModal({
 
         <Button
           mode="contained"
-          buttonColor="rgba(179, 38, 30, 1)"
+          buttonColor={palette.error}
           textColor="white"
           onPress={() => {
             onBlock(isBlocked);

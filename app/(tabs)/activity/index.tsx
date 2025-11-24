@@ -1,26 +1,20 @@
+import NotificationRow from "@/components/notifications/NotificationRow";
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useMyNotifications } from "@/hooks/data/useMyNotifications";
 import { supabase } from "@/lib/supabase";
 import { AppNotification, AppNotificationType } from "@/lib/types";
-import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import {
+  Alert,
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  List,
-  Surface,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { ActivityIndicator, Surface, Text, useTheme } from "react-native-paper";
 
 export default function ActivityScreen() {
   const theme = useTheme<AppTheme>();
@@ -45,18 +39,34 @@ export default function ActivityScreen() {
   };
 
   const handleOpenItem = async (notification: AppNotification) => {
-    const { uuid, type, data } = notification;
+    const { type, data } = notification;
     if (type === AppNotificationType.REMINDER && data.testimony_uuid) {
       router.push(`/testimony-display-modal/${data.testimony_uuid}`);
-      await markerNotificationAsRead(uuid);
+      await markerNotificationAsRead(notification);
     }
   };
 
-  const markerNotificationAsRead = async (id: string) => {
+  const handleDelete = async (notification: AppNotification) => {
+    const { error } = await supabase
+      .from("notification")
+      .delete()
+      .eq("uuid", notification.uuid);
+
+    if (error) {
+      Alert.alert(error.message);
+      return;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["notifications", user?.uuid] });
+  };
+
+  const markerNotificationAsRead = async (notification: AppNotification) => {
+    if (notification.read) return;
+
     const { error } = await supabase
       .from("notification")
       .update({ read: true })
-      .eq("uuid", id);
+      .eq("uuid", notification.uuid);
 
     if (error) {
       console.log(error.message);
@@ -66,56 +76,15 @@ export default function ActivityScreen() {
     queryClient.invalidateQueries({ queryKey: ["notifications", user?.uuid] });
   };
 
-  const getIconSlug = (notification: AppNotification) => {
-    const { type, read } = notification;
-    if (type === AppNotificationType.REMINDER)
-      return read ? "bell-outline" : "bell-badge";
-    if (type === AppNotificationType.LIKE) return "heart-outline";
-    if (type === AppNotificationType.COMMENT) return "message-outline";
-    return "information-outline";
-  };
-
   const renderItem = useCallback(
     ({ item }: { item: AppNotification }) => (
-      <Pressable
-        onPress={() => handleOpenItem(item)}
-        style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
-      >
-        <List.Item
-          title={item.title ?? "Notification"}
-          description={item.body ?? ""}
-          titleStyle={{ color: theme.colors.onSurface, fontWeight: "600" }}
-          descriptionNumberOfLines={3}
-          descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
-          style={[
-            styles.listItem,
-            !item.read && { backgroundColor: theme.colors.primaryContainer },
-          ]}
-          left={(props) => (
-            <List.Icon
-              {...props}
-              icon={getIconSlug(item)}
-              color={
-                !item.read
-                  ? theme.colors.primary
-                  : theme.colors.onSurfaceVariant
-              }
-            />
-          )}
-          right={() => (
-            <View style={styles.itemMeta}>
-              <Text
-                variant="labelSmall"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                {formatTimeSince(item.created_at)}
-              </Text>
-            </View>
-          )}
-        />
-      </Pressable>
+      <NotificationRow
+        item={item}
+        onOpen={handleOpenItem}
+        onDelete={handleDelete}
+      />
     ),
-    [theme.colors]
+    [handleOpenItem, theme]
   );
 
   return (
@@ -182,8 +151,6 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   separator: { height: 12 },
-  listItem: { borderRadius: 16, backgroundColor: "transparent" },
-  itemMeta: { alignItems: "flex-end", justifyContent: "center" },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",

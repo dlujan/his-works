@@ -1,4 +1,4 @@
-import { AppTheme } from "@/constants/paper-theme";
+import { AppTheme, palette } from "@/constants/paper-theme";
 import { supabase } from "@/lib/supabase";
 import { Reminder, ReminderType } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -199,7 +199,7 @@ export default function ReminderRow({
         <Button
           mode="contained"
           onPress={() => deleteReminder(reminder.uuid)}
-          buttonColor="rgba(179, 38, 30, 1)"
+          buttonColor={palette.error}
         >
           Delete
         </Button>
