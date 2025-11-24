@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import { filterProfanity } from "@/utils/filterProfanity";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Keyboard, View } from "react-native";
@@ -16,10 +17,12 @@ export default function PostConfirmation() {
     if (!session?.user) return;
     setLoading(true);
 
+    const moderatedName = filterProfanity(fullName.trim());
+
     await supabase
       .from("user")
       .update({
-        full_name: fullName,
+        full_name: moderatedName,
       })
       .eq("uuid", session.user.id);
 
