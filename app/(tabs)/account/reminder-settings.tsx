@@ -168,9 +168,19 @@ export default function ReminderSettingsScreen() {
             titleStyle={
               settings.timeOfDay === "morning" && {
                 fontWeight: "600",
-                color: theme.colors.primary,
               }
             }
+            descriptionStyle={theme.dark && { color: theme.colors.onSurface }}
+            style={{
+              borderRadius: 12,
+              marginHorizontal: 16,
+              backgroundColor:
+                settings.timeOfDay === "morning"
+                  ? theme.dark
+                    ? theme.colors.primary
+                    : theme.colors.primarySoft
+                  : "transparent",
+            }}
           />
 
           <List.Item
@@ -191,10 +201,19 @@ export default function ReminderSettingsScreen() {
             titleStyle={
               settings.timeOfDay === "evening" && {
                 fontWeight: "600",
-                color: theme.colors.primary,
               }
             }
-            containerStyle={{ backgroundColor: "blue" }}
+            descriptionStyle={theme.dark && { color: theme.colors.onSurface }}
+            style={{
+              borderRadius: 12,
+              marginHorizontal: 16,
+              backgroundColor:
+                settings.timeOfDay === "evening"
+                  ? theme.dark
+                    ? theme.colors.primary
+                    : theme.colors.primarySoft
+                  : "transparent",
+            }}
           />
         </List.Section>
 

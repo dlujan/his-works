@@ -96,7 +96,7 @@ export default function NotificationRow({
           style={{
             backgroundColor: item.read
               ? theme.colors.background
-              : theme.colors.primarySoft,
+              : theme.colors.primaryContainer,
             paddingVertical: 14,
           }}
           left={(props) => (
@@ -105,7 +105,9 @@ export default function NotificationRow({
               icon={getIconSlug(item)}
               color={
                 !item.read
-                  ? theme.colors.primary
+                  ? theme.dark
+                    ? theme.colors.primarySoft
+                    : theme.colors.primary
                   : theme.colors.onSurfaceVariant
               }
             />
