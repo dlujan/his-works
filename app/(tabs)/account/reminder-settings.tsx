@@ -12,7 +12,9 @@ import {
 import { palette, type AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
-import registerForPushNotificationsAsync from "@/utils/registerForPushNotificationsAsync";
+import registerForPushNotificationsAsync, {
+  devicePushPermissionGranted,
+} from "@/utils/registerForPushNotificationsAsync";
 
 export default function ReminderSettingsScreen() {
   const theme = useTheme<AppTheme>();
@@ -27,6 +29,10 @@ export default function ReminderSettingsScreen() {
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const [deviceHasPermission, setDeviceHasPermission] = useState(false);
+
+  useEffect(() => {}, []);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -45,6 +51,11 @@ export default function ReminderSettingsScreen() {
       }
     };
     loadSettings();
+
+    (async () => {
+      const granted = await devicePushPermissionGranted();
+      setDeviceHasPermission(granted);
+    })();
   }, [authUser]);
 
   const handleToggle = (key: keyof typeof settings) => {
@@ -79,20 +90,25 @@ export default function ReminderSettingsScreen() {
   const enablePushNotifications = async () => {
     setRegistering(true);
     try {
-      // Ask for push notifications
+      // 1. Register and get token
       const expoPushToken = await registerForPushNotificationsAsync();
 
-      // Update custom user table
-      if (expoPushToken) {
-        await supabase
-          .from("user")
-          .update({
-            expo_push_token: expoPushToken,
-          })
-          .eq("uuid", authUser?.id);
+      if (!expoPushToken) {
+        setMessage("Please enable push notifications in your device settings.");
+        return;
       }
+
+      // 2. Save token to database
+      await supabase
+        .from("user")
+        .update({
+          expo_push_token: expoPushToken,
+        })
+        .eq("uuid", authUser?.id);
+
       setMessage("Successfully registered for push notifications.");
-      // remove deep link url somehow?
+
+      // 3. Refresh user data so UI updates
       await refreshUser();
     } catch (err: any) {
       console.error(err);
@@ -223,9 +239,11 @@ export default function ReminderSettingsScreen() {
             style={[
               styles.message,
               {
-                color: message.includes("success")
-                  ? "green"
-                  : theme.colors.error,
+                color:
+                  message.includes("success") ||
+                  message.includes("Successfully")
+                    ? "green"
+                    : theme.colors.error,
               },
             ]}
           >
@@ -242,7 +260,7 @@ export default function ReminderSettingsScreen() {
         >
           Save Preferences
         </Button>
-        {!user?.expo_push_token && (
+        {(!deviceHasPermission || !user?.expo_push_token) && (
           <Button
             mode="contained"
             onPress={enablePushNotifications}
