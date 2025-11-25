@@ -194,6 +194,7 @@ export default function ReminderSettingsScreen() {
                 color: theme.colors.primary,
               }
             }
+            containerStyle={{ backgroundColor: "blue" }}
           />
         </List.Section>
 

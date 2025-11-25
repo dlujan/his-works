@@ -145,12 +145,9 @@ export default function ActivityScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   listContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 12,
     paddingBottom: 32,
   },
-  separator: { height: 12 },
+  separator: {},
   emptyState: {
     alignItems: "center",
     justifyContent: "center",

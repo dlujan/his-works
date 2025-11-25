@@ -134,7 +134,7 @@ export default function SearchScreen() {
     >
       <View style={styles.searchBarContainer}>
         <TextInput
-          placeholder="Search testimonies or people..."
+          placeholder="Discover testimonies and people..."
           mode="outlined"
           value={query}
           onChangeText={setQuery}

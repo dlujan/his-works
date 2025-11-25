@@ -104,13 +104,6 @@ export default function AccountScreen() {
             onPress={() => router.push("/account/reminder-settings")}
           />
           <List.Item
-            title="Legal"
-            // description="Legal documents and such"
-            left={(props) => <List.Icon {...props} icon="scale-balance" />}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => router.push("/account/legal")}
-          />
-          <List.Item
             title="Blocked Accounts"
             // description="Legal documents and such"
             left={(props) => (
@@ -139,6 +132,13 @@ export default function AccountScreen() {
                 subject: "Support Request",
               });
             }}
+          />
+          <List.Item
+            title="Legal"
+            // description="Legal documents and such"
+            left={(props) => <List.Icon {...props} icon="scale-balance" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => router.push("/account/legal")}
           />
         </List.Section>
       </View>

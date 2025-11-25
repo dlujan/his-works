@@ -4,7 +4,7 @@ import { formatTimeSince } from "@/utils/time";
 import { useRef } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
-import { List, Text, useTheme } from "react-native-paper";
+import { Icon, List, Text, useTheme } from "react-native-paper";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -66,7 +66,7 @@ export default function NotificationRow({
             { opacity: pressed ? 0.8 : 1 },
           ]}
         >
-          <Text style={styles.deleteText}>Delete</Text>
+          <Icon source="trash-can" size={20} color={palette.surface} />
         </Pressable>
       </Animated.View>
     );
@@ -93,7 +93,12 @@ export default function NotificationRow({
           titleStyle={{ color: theme.colors.onSurface, fontWeight: "600" }}
           descriptionNumberOfLines={3}
           descriptionStyle={{ color: theme.colors.onSurfaceVariant }}
-          style={{ backgroundColor: theme.colors.background }}
+          style={{
+            backgroundColor: item.read
+              ? theme.colors.background
+              : theme.colors.primarySoft,
+            paddingVertical: 14,
+          }}
           left={(props) => (
             <List.Icon
               {...props}
@@ -132,7 +137,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: palette.error,
   },
-
   deleteButton: {
     width: "100%",
     height: "100%",
