@@ -16,6 +16,7 @@ export const palette = {
   primary: "#3F7D3C",
   primarySoft: "#A6D8AA",
   success: "#4F7D58",
+  warning: "#C76E00",
   error: "rgba(179, 38, 30, 1)",
   logoBackground: "#FCE7CF",
 } as const;

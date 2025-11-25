@@ -9,14 +9,15 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { type AppTheme } from "@/constants/paper-theme";
+import { palette, type AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import registerForPushNotificationsAsync from "@/utils/registerForPushNotificationsAsync";
 
 export default function ReminderSettingsScreen() {
   const theme = useTheme<AppTheme>();
-  const { session } = useAuth();
-  const user = session?.user ?? null;
+  const { session, user, refreshUser } = useAuth();
+  const authUser = session?.user ?? null;
 
   const [settings, setSettings] = useState({
     yearly: true,
@@ -24,15 +25,16 @@ export default function ReminderSettingsScreen() {
     timeOfDay: "morning" as "morning" | "evening",
   });
   const [loading, setLoading] = useState(false);
+  const [registering, setRegistering] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
-      if (!user) return;
+      if (!authUser) return;
       const { data, error } = await supabase
         .from("user")
         .select("reminder_settings")
-        .eq("uuid", user.id)
+        .eq("uuid", authUser.id)
         .single();
 
       if (!error && data?.reminder_settings) {
@@ -43,7 +45,7 @@ export default function ReminderSettingsScreen() {
       }
     };
     loadSettings();
-  }, [user]);
+  }, [authUser]);
 
   const handleToggle = (key: keyof typeof settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -54,14 +56,14 @@ export default function ReminderSettingsScreen() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!authUser) return;
     setLoading(true);
     setMessage(null);
     try {
       const { error } = await supabase
         .from("user")
         .update({ reminder_settings: settings })
-        .eq("uuid", user.id);
+        .eq("uuid", authUser.id);
 
       if (error) throw error;
       setMessage("Reminders updated successfully!");
@@ -71,6 +73,32 @@ export default function ReminderSettingsScreen() {
       setMessage(err.message || "Failed to update reminder settings.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const enablePushNotifications = async () => {
+    setRegistering(true);
+    try {
+      // Ask for push notifications
+      const expoPushToken = await registerForPushNotificationsAsync();
+
+      // Update custom user table
+      if (expoPushToken) {
+        await supabase
+          .from("user")
+          .update({
+            expo_push_token: expoPushToken,
+          })
+          .eq("uuid", authUser?.id);
+      }
+      setMessage("Successfully registered for push notifications.");
+      // remove deep link url somehow?
+      await refreshUser();
+    } catch (err: any) {
+      console.error(err);
+      setMessage(err.message || "Failed to enable push notifications.");
+    } finally {
+      setRegistering(false);
     }
   };
 
@@ -190,10 +218,22 @@ export default function ReminderSettingsScreen() {
           onPress={handleSave}
           loading={loading}
           disabled={loading}
-          style={styles.saveButton}
+          style={styles.actionButton}
         >
           Save Preferences
         </Button>
+        {!user?.expo_push_token && (
+          <Button
+            mode="contained"
+            onPress={enablePushNotifications}
+            loading={registering}
+            disabled={registering}
+            style={styles.actionButton}
+            buttonColor={palette.warning}
+          >
+            Enable Push Notifications
+          </Button>
+        )}
       </ScrollView>
     </Surface>
   );
@@ -211,7 +251,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginHorizontal: -20,
   },
-  saveButton: {
+  actionButton: {
     marginTop: 8,
   },
   testButton: {
