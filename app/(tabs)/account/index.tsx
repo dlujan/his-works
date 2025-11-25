@@ -1,6 +1,8 @@
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useMyFollowers } from "@/hooks/data/useMyFollowers";
+import * as Linking from "expo-linking";
+import * as MailComposer from "expo-mail-composer";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -116,6 +118,27 @@ export default function AccountScreen() {
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
             onPress={() => router.push("/account/blocked-accounts")}
+          />
+          <List.Item
+            title="Feedback Board"
+            // description="Legal documents and such"
+            left={(props) => <List.Icon {...props} icon="lightbulb-outline" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={() => {
+              const url = `https://hisworks.userjot.com`;
+              Linking.openURL(url);
+            }}
+          />
+          <List.Item
+            title="Contact Support"
+            left={(props) => <List.Icon {...props} icon="email-outline" />}
+            right={(props) => <List.Icon {...props} icon="chevron-right" />}
+            onPress={async () => {
+              MailComposer.composeAsync({
+                recipients: ["daniel.lujan96@gmail.com"],
+                subject: "Support Request",
+              });
+            }}
           />
         </List.Section>
       </View>
