@@ -217,7 +217,7 @@ export default function EditTestimonyScreen() {
 
               if (error) throw error;
               queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
-              Alert.alert("Deleted", "Your testimony has been removed.");
+              Alert.alert("Deleted", "Your testimony has been deleted.");
               router.back();
             } catch (error: any) {
               console.error("Error deleting testimony:", error);

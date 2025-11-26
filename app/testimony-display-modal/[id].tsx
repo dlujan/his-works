@@ -23,7 +23,6 @@ export default function TestimonyDisplayModal() {
   const theme = useTheme<AppTheme>();
   const [testimony, setTestimony] = useState<Testimony | null>(null);
   const [loading, setLoading] = useState(true);
-  const [img, setImg] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
