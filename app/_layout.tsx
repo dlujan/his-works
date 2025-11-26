@@ -102,6 +102,24 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen
+                  name="forgot-password"
+                  options={{
+                    headerShown: true,
+                    title: "Forgot password",
+                    headerBackTitle: "Back",
+                    headerTitleStyle: { fontWeight: 600 },
+                  }}
+                />
+                <Stack.Screen
+                  name="reset-password"
+                  options={{
+                    headerShown: true,
+                    title: "Reset password",
+                    headerBackTitle: "Back",
+                    headerTitleStyle: { fontWeight: 600 },
+                  }}
+                />
+                <Stack.Screen
                   name="confirm-notice"
                   options={{
                     headerShown: false,

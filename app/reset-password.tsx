@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -15,35 +15,55 @@ import {
 } from "react-native-paper";
 
 import { useAuth } from "@/context/auth-context";
-import { useRouter } from "expo-router";
+import { supabase } from "@/lib/supabase";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-export default function LoginScreen() {
-  const { signInWithPassword } = useAuth();
+export default function ResetPasswordScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { refreshUser } = useAuth();
+  const { token } = useLocalSearchParams();
 
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
+  const canSubmit = password.length > 0 && !loading;
 
-  const handleSubmit = async () => {
-    if (!canSubmit) return;
+  // Log the user in with the token Supabase sent
+  useEffect(() => {
+    if (token) {
+      (async () => {
+        // Exchange recovery token for a session
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: token as string,
+          type: "email",
+        });
 
-    try {
-      setLoading(true);
-      setError(null);
-      await signInWithPassword({ email: email.trim(), password });
-    } catch (authError) {
-      const message =
-        authError instanceof Error
-          ? authError.message
-          : "Unable to sign in. Check your credentials and try again.";
-      setError(message);
-    } finally {
-      setLoading(false);
+        if (error) {
+          console.error("verifyOtp error", error);
+        } else {
+          // User is now logged in temporarily
+          await refreshUser();
+        }
+      })();
+    }
+  }, [token]);
+
+  const handleReset = async () => {
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setLoading(true);
+
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (!error) {
+      setMessage("Password updated! Logging you in...");
+      setTimeout(() => router.replace("/(tabs)"), 1000);
     }
   };
 
@@ -52,42 +72,29 @@ export default function LoginScreen() {
       behavior={Platform.select({ ios: "padding", android: undefined })}
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
     >
-      {/* Card-like Surface */}
       <View style={styles.card}>
         <Text
           variant="headlineMedium"
           style={[styles.title, { color: theme.colors.onSurface }]}
         >
-          Welcome back
+          Reset password
         </Text>
 
         <Text
           variant="bodyMedium"
           style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
         >
-          Continue your rhythm of remembering God's faithfulness.
+          Enter your new password.
         </Text>
 
         <View style={styles.form}>
           <TextInput
-            label="Email"
-            value={email}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            onChangeText={setEmail}
-            mode="outlined"
-            disabled={loading}
-            style={styles.input}
-            returnKeyType="done"
-            submitBehavior="blurAndSubmit"
-            onSubmitEditing={Keyboard.dismiss}
-          />
-
-          <TextInput
             label="Password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(null);
+            }}
             secureTextEntry
             mode="outlined"
             disabled={loading}
@@ -96,18 +103,43 @@ export default function LoginScreen() {
             submitBehavior="blurAndSubmit"
             onSubmitEditing={Keyboard.dismiss}
           />
-
-          <HelperText
-            type="error"
-            visible={Boolean(error)}
-            style={[styles.helper, { color: theme.colors.error }]}
-          >
-            {error ?? ""}
-          </HelperText>
+          <TextInput
+            label="Confirm Password"
+            value={confirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              setError(null);
+            }}
+            secureTextEntry
+            mode="outlined"
+            disabled={loading}
+            style={styles.input}
+            returnKeyType="done"
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={Keyboard.dismiss}
+          />
+          {message && (
+            <HelperText
+              type="info"
+              visible={Boolean(message)}
+              style={[styles.helper, { color: theme.colors.primary }]}
+            >
+              {message ?? ""}
+            </HelperText>
+          )}
+          {error && (
+            <HelperText
+              type="error"
+              visible={Boolean(error)}
+              style={[styles.helper, { color: theme.colors.error }]}
+            >
+              {error ?? ""}
+            </HelperText>
+          )}
 
           <Button
             mode="contained"
-            onPress={handleSubmit}
+            onPress={handleReset}
             loading={loading}
             disabled={!canSubmit}
             style={styles.submitButton}
@@ -116,27 +148,6 @@ export default function LoginScreen() {
             Log In
           </Button>
         </View>
-
-        <Button
-          mode="text"
-          onPress={() => router.replace("/signup")}
-          disabled={loading}
-          textColor={theme.colors.primary}
-          style={styles.switch}
-          labelStyle={styles.switchLabel}
-        >
-          Need an account? Sign up
-        </Button>
-        <Button
-          mode="text"
-          onPress={() => router.push("/forgot-password")}
-          disabled={loading}
-          textColor={theme.colors.primary}
-          style={styles.switch}
-          labelStyle={styles.switchLabel}
-        >
-          Forgot your password? Reset it here
-        </Button>
       </View>
     </KeyboardAvoidingView>
   );

@@ -14,20 +14,17 @@ import {
   useTheme,
 } from "react-native-paper";
 
-import { useAuth } from "@/context/auth-context";
-import { useRouter } from "expo-router";
+import { supabase } from "@/lib/supabase";
 
-export default function LoginScreen() {
-  const { signInWithPassword } = useAuth();
+export default function ForgotPasswordScreen() {
   const theme = useTheme();
-  const router = useRouter();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !loading;
+  const canSubmit = email.trim().length > 0 && !loading;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -35,12 +32,17 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       setError(null);
-      await signInWithPassword({ email: email.trim(), password });
-    } catch (authError) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (!error) {
+        setMessage(
+          "Check your email for a reset link and open it on this device."
+        );
+      }
+    } catch (err) {
       const message =
-        authError instanceof Error
-          ? authError.message
-          : "Unable to sign in. Check your credentials and try again.";
+        err instanceof Error
+          ? err.message
+          : "Unable to send link. Check your email and try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -58,14 +60,15 @@ export default function LoginScreen() {
           variant="headlineMedium"
           style={[styles.title, { color: theme.colors.onSurface }]}
         >
-          Welcome back
+          Forgot password
         </Text>
 
         <Text
           variant="bodyMedium"
           style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
         >
-          Continue your rhythm of remembering God's faithfulness.
+          Enter your email below and we'll send you a link to reset your
+          password.
         </Text>
 
         <View style={styles.form}>
@@ -83,27 +86,24 @@ export default function LoginScreen() {
             submitBehavior="blurAndSubmit"
             onSubmitEditing={Keyboard.dismiss}
           />
-
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            mode="outlined"
-            disabled={loading}
-            style={styles.input}
-            returnKeyType="done"
-            submitBehavior="blurAndSubmit"
-            onSubmitEditing={Keyboard.dismiss}
-          />
-
-          <HelperText
-            type="error"
-            visible={Boolean(error)}
-            style={[styles.helper, { color: theme.colors.error }]}
-          >
-            {error ?? ""}
-          </HelperText>
+          {message && (
+            <HelperText
+              type="info"
+              visible={Boolean(message)}
+              style={[styles.helper, { color: theme.colors.primary }]}
+            >
+              {message ?? ""}
+            </HelperText>
+          )}
+          {error && (
+            <HelperText
+              type="error"
+              visible={Boolean(error)}
+              style={[styles.helper, { color: theme.colors.error }]}
+            >
+              {error ?? ""}
+            </HelperText>
+          )}
 
           <Button
             mode="contained"
@@ -113,30 +113,9 @@ export default function LoginScreen() {
             style={styles.submitButton}
             contentStyle={{ paddingVertical: 4 }}
           >
-            Log In
+            Send Link
           </Button>
         </View>
-
-        <Button
-          mode="text"
-          onPress={() => router.replace("/signup")}
-          disabled={loading}
-          textColor={theme.colors.primary}
-          style={styles.switch}
-          labelStyle={styles.switchLabel}
-        >
-          Need an account? Sign up
-        </Button>
-        <Button
-          mode="text"
-          onPress={() => router.push("/forgot-password")}
-          disabled={loading}
-          textColor={theme.colors.primary}
-          style={styles.switch}
-          labelStyle={styles.switchLabel}
-        >
-          Forgot your password? Reset it here
-        </Button>
       </View>
     </KeyboardAvoidingView>
   );
