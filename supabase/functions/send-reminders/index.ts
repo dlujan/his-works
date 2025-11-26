@@ -216,7 +216,8 @@ Deno.serve(async (req) => {
             data: {
               testimony_uuid: r.testimony_uuid,
               reminder_uuid: r.uuid,
-              url: `hisworks://testimony-display-modal/${r.testimony_uuid}`,
+              url:
+                `hisworks://testimony-display-modal/${r.testimony_uuid}?reminderId=${r.uuid}`,
             },
           },
         };

@@ -1,6 +1,8 @@
 import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -19,25 +21,30 @@ import {
 } from "react-native-paper";
 
 export default function TestimonyDisplayModal() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, reminderId } = useLocalSearchParams<{
+    id?: string;
+    reminderId?: string;
+  }>();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const theme = useTheme<AppTheme>();
+
   const [testimony, setTestimony] = useState<Testimony | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
   const titleOptions = [
-    "See What God Has Done",
-    "A Work of God",
-    "Testimony of His Faithfulness",
-    "Give Thanks to God",
+    "Remember this moment?",
+    "Thank God again for this",
+    "Reflect on God's faithfullness",
+    "Remember how God moved?",
   ];
   const subtitlesOptions = [
-    "Take a moment to remember this work of God.",
-    "Pause and reflect on what He has done.",
-    "Remember the faithfulness of the Lord.",
-    "Let this remind you of His goodness.",
-    "See how God has worked in your story.",
+    "Revisit this testimony of God's faithfulness.",
+    "Remember this moment when God showed up.",
+    "Take a moment to reflect on this answered prayer.",
+    "Look back on this work of God in your life.",
   ];
 
   useEffect(() => {
@@ -49,6 +56,30 @@ export default function TestimonyDisplayModal() {
       subtitlesOptions[Math.floor(Math.random() * subtitlesOptions.length)];
     setSubtitle(randomSubtitle);
   }, []);
+
+  useEffect(() => {
+    if (!reminderId) return;
+
+    const markReminderNotificationsRead = async () => {
+      // Mark all unread reminder notifications for this reminder as read
+      const { error } = await supabase
+        .from("notification")
+        .update({ read: true })
+        .eq("type", "reminder")
+        .eq("read", false)
+        .eq("data->>reminder_uuid", reminderId);
+
+      queryClient.invalidateQueries({
+        queryKey: ["notifications", user?.uuid],
+      });
+
+      if (error) {
+        console.error("Failed to mark reminder notifications read:", error);
+      }
+    };
+
+    markReminderNotificationsRead();
+  }, [reminderId]);
 
   const fetchTestimony = useCallback(async () => {
     if (!id) return;

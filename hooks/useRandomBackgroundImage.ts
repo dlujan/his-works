@@ -48,7 +48,6 @@ export function useRandomBackgroundImage() {
                     `?w=${
                         Math.round(optimizedWith)
                     }&h=${optimizedHeight}&auto=format&fit=crop&q=60`;
-                console.log(sizedUrl);
                 setImageUrl(sizedUrl);
                 return;
             }
