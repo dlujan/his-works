@@ -33,8 +33,9 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/ios-splash-1242x2688.png",
+          "image": "./assets/images/icon2-1024x1024.png",
           "imageWidth": 200,
+          "resizeMode": "contain",
           "backgroundColor": "#FCE7CF",
           "dark": {
             "backgroundColor": "#FCE7CF"
