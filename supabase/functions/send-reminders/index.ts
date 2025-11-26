@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
     const dynamicYearQuarterBodies = [
       (phrase: string) => `Remember this from ${phrase}?`,
       (phrase: string) => `God moved in your life ${phrase}. Tap to revisit.`,
-      (phrase: string) => `An answered prayer from ${phrase} ago.`,
+      (phrase: string) => `An answered prayer from ${phrase}.`,
       (phrase: string) => `Look back on God's goodness from ${phrase}.`,
     ];
     const genericTitles = [
