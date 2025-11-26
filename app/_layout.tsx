@@ -23,12 +23,6 @@ import "react-native-reanimated";
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-// Set the animation options (optional)
-SplashScreen.setOptions({
-  duration: 1000,
-  fade: true,
-});
-
 export const unstable_settings = {
   anchor: "(tabs)",
 };
