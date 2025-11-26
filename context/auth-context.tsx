@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { User as AppUser } from "@/lib/types";
 import { refreshPushTokenIfPossible } from "@/utils/refreshPushTokenIfPossible";
-import { useRouter } from "expo-router";
+import { SplashScreen, useRouter } from "expo-router";
 
 type SignInArgs = { email: string; password: string };
 type SignUpArgs = { email: string; password: string };
@@ -23,7 +23,10 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: PropsWithChildren) {
+export function AuthProvider({
+  children,
+  fontsLoaded,
+}: PropsWithChildren<{ fontsLoaded: boolean }>) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,6 +78,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       refreshToken();
     }
   }, [loading, user]);
+
+  useEffect(() => {
+    if (!loading && fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [loading, fontsLoaded]);
 
   async function refreshToken() {
     const newToken = await refreshPushTokenIfPossible();

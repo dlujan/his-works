@@ -15,11 +15,19 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
 import { Text, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import "react-native-reanimated";
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
+
+// Set the animation options (optional)
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -29,36 +37,20 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const queryClient = new QueryClient();
   const router = useRouter();
-
   const isDark = colorScheme === "dark";
   const paperTheme = isDark ? paperDarkTheme : paperLightTheme;
   const navigationTheme = isDark ? navigationDarkTheme : navigationLightTheme;
   useNotificationNavigation();
 
-  const [loaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     PTSerifBold: require("../assets/fonts/PTSerif-Bold.ttf"),
     PTSerifItalic: require("../assets/fonts/PTSerif-Italic.ttf"),
     PTSerifRegular: require("../assets/fonts/PTSerif-Regular.ttf"),
   });
 
-  useEffect(() => {
-    SplashScreen.preventAutoHideAsync();
-  }, []);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AuthProvider fontsLoaded={fontsLoaded}>
         <PaperProvider theme={paperTheme}>
           <ThemeProvider value={navigationTheme}>
             <GestureHandlerRootView>
