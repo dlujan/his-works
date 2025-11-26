@@ -39,7 +39,7 @@ export default function ResetPasswordScreen() {
         // Exchange recovery token for a session
         const { error } = await supabase.auth.verifyOtp({
           token_hash: token as string,
-          type: "email",
+          type: "recovery",
         });
 
         if (error) {
