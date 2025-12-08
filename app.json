@@ -2,7 +2,7 @@
   "expo": {
     "name": "HisWorks",
     "slug": "his-works",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon2-1024x1024.png",
     "scheme": "hisworks",
