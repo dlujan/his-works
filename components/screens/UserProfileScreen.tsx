@@ -29,6 +29,7 @@ import {
 } from "react-native";
 import {
   ActivityIndicator,
+  Avatar,
   Button,
   Icon,
   IconButton,
@@ -255,6 +256,9 @@ const UserProfileScreen = () => {
       const liked = item.liked_by_user ?? false;
       const likesCount = item.likes_count ?? 0;
       const commentsCount = item.comments_count ?? 0;
+      const initials = item.user_full_name
+        ? item.user_full_name.charAt(0).toUpperCase()
+        : "A";
       return (
         <Pressable
           onPress={() => router.push(`/home/post/${item.uuid}`)}
@@ -269,10 +273,21 @@ const UserProfileScreen = () => {
               },
             ]}
           >
-            <Image
-              source={{ uri: item.user_avatar_url }}
-              style={styles.avatar}
-            />
+            {item.user_avatar_url ? (
+              <Image
+                source={{ uri: item.user_avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <Avatar.Text
+                size={42}
+                label={initials}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                }}
+                color={theme.colors.onPrimaryContainer}
+              />
+            )}
 
             <View style={styles.postBody}>
               <View style={styles.headerRow}>
@@ -363,6 +378,10 @@ const UserProfileScreen = () => {
     );
   }
 
+  const initials = profile.full_name
+    ? profile.full_name.charAt(0).toUpperCase()
+    : "A";
+
   return (
     <Surface
       style={[styles.screen, { backgroundColor: theme.colors.background }]}
@@ -408,11 +427,24 @@ const UserProfileScreen = () => {
             </Button>
           </View>
 
-          <Image
-            source={{ uri: profile.avatar_url }}
-            style={styles.profileAvatar}
-            resizeMode="cover"
-          />
+          {profile.avatar_url ? (
+            <Image
+              source={{ uri: profile.avatar_url }}
+              style={styles.profileAvatar}
+              resizeMode="cover"
+            />
+          ) : (
+            <Avatar.Text
+              size={64}
+              label={initials}
+              style={{
+                backgroundColor: theme.colors.primaryContainer,
+                top: -8,
+                borderRadius: 32,
+              }}
+              color={theme.colors.onPrimaryContainer}
+            />
+          )}
         </View>
       </View>
       {isLoadingTestimonies ? (

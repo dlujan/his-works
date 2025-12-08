@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
+  Avatar,
   Surface,
   Text,
   TextInput,
@@ -86,45 +87,62 @@ export default function SearchScreen() {
   }, [query]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Testimony }) => (
-      <Pressable
-        onPress={() => router.push(`/home/post/${item.uuid}`)}
-        style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
-      >
-        <View
-          style={[
-            styles.postContainer,
-            {
-              backgroundColor: theme.colors.background,
-              borderBottomColor: theme.colors.outlineVariant,
-            },
-          ]}
+    ({ item }: { item: Testimony }) => {
+      const initials = item.user.full_name
+        ? item.user.full_name.charAt(0).toUpperCase()
+        : "A";
+      return (
+        <Pressable
+          onPress={() => router.push(`/home/post/${item.uuid}`)}
+          style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
         >
-          <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
-          <View style={styles.postBody}>
-            <View style={styles.headerRow}>
-              <Text
-                style={[styles.nameText, { color: theme.colors.onSurface }]}
-              >
-                {item.user.full_name}
-              </Text>
-              <Text
-                style={[
-                  styles.timestamp,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
-                {formatTimeSince(item.created_at)}
+          <View
+            style={[
+              styles.postContainer,
+              {
+                backgroundColor: theme.colors.background,
+                borderBottomColor: theme.colors.outlineVariant,
+              },
+            ]}
+          >
+            {item.user.avatar_url ? (
+              <Image
+                source={{ uri: item.user.avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <Avatar.Text
+                size={42}
+                label={initials}
+                style={{ backgroundColor: theme.colors.primaryContainer }}
+                color={theme.colors.onPrimaryContainer}
+              />
+            )}
+            <View style={styles.postBody}>
+              <View style={styles.headerRow}>
+                <Text
+                  style={[styles.nameText, { color: theme.colors.onSurface }]}
+                >
+                  {item.user.full_name}
+                </Text>
+                <Text
+                  style={[
+                    styles.timestamp,
+                    { color: theme.colors.onSurfaceVariant },
+                  ]}
+                >
+                  {formatTimeSince(item.created_at)}
+                </Text>
+              </View>
+
+              <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
+                {truncate(item.text, 100)}
               </Text>
             </View>
-
-            <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-              {truncate(item.text, 100)}
-            </Text>
           </View>
-        </View>
-      </Pressable>
-    ),
+        </Pressable>
+      );
+    },
     [theme.colors]
   );
 

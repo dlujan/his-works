@@ -1,10 +1,8 @@
 import type { AppTheme } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
 import {
   openBrowserAsync,
   WebBrowserPresentationStyle,
 } from "expo-web-browser";
-import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -14,19 +12,7 @@ import {
 import { List, Surface, useTheme } from "react-native-paper";
 
 export default function LegalScreen() {
-  const { session, signOut } = useAuth();
   const theme = useTheme<AppTheme>();
-
-  const authUser = session?.user ?? null;
-  const { user } = useAuth();
-
-  const [name, setName] = useState(user?.full_name ?? "");
-  const [email, setEmail] = useState(authUser?.email ?? "");
-  // const [phone, setPhone] = useState(user?.phone ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? "");
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   return (
     <KeyboardAvoidingView

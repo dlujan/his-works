@@ -30,6 +30,7 @@ import {
 } from "react-native";
 import {
   ActivityIndicator,
+  Avatar,
   Button,
   Icon,
   IconButton,
@@ -222,6 +223,9 @@ const TestimonyPostScreen = () => {
     ({ item }: { item: TestimonyComment }) => {
       const likesCount = item.likes_count ?? 0;
       const liked = item.liked_by_user ?? false;
+      const initials = item.user.full_name
+        ? item.user.full_name.charAt(0).toUpperCase()
+        : "A";
       return (
         <View
           style={[
@@ -232,7 +236,22 @@ const TestimonyPostScreen = () => {
             },
           ]}
         >
-          <Image source={{ uri: item.user.avatar_url }} style={styles.avatar} />
+          {item.user.avatar_url ? (
+            <Image
+              source={{ uri: item.user.avatar_url }}
+              style={styles.avatar}
+            />
+          ) : (
+            <Avatar.Text
+              size={42}
+              label={initials}
+              style={{
+                backgroundColor: theme.colors.primaryContainer,
+                marginRight: 10,
+              }}
+              color={theme.colors.onPrimaryContainer}
+            />
+          )}
           <View style={styles.commentBody}>
             <View style={styles.commentHeader}>
               <TouchableOpacity
@@ -323,6 +342,9 @@ const TestimonyPostScreen = () => {
     const commentsCount = testimony.comments_count ?? 0;
     const following = testimony.followed_by_user ?? false;
     const showFollowBtn = !following && testimony.user_uuid !== user?.uuid;
+    const initials = testimony.user.full_name
+      ? testimony.user.full_name.charAt(0).toUpperCase()
+      : "A";
 
     return (
       <View
@@ -336,10 +358,22 @@ const TestimonyPostScreen = () => {
           onPress={() => openProfile(testimony.user_uuid)}
         >
           <View style={styles.headerInfo}>
-            <Image
-              source={{ uri: testimony.user.avatar_url }}
-              style={styles.avatar}
-            />
+            {testimony.user.avatar_url ? (
+              <Image
+                source={{ uri: testimony.user.avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <Avatar.Text
+                size={42}
+                label={initials}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                  marginRight: 10,
+                }}
+                color={theme.colors.onPrimaryContainer}
+              />
+            )}
             <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
               {testimony.user.full_name}
             </Text>

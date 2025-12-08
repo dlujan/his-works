@@ -21,6 +21,7 @@ import {
 } from "react-native";
 import {
   ActivityIndicator,
+  Avatar,
   Button,
   Icon,
   IconButton,
@@ -90,6 +91,9 @@ export default function HomeScreen() {
       const liked = item.liked_by_user ?? false;
       const likesCount = item.likes_count ?? 0;
       const commentsCount = item.comments_count ?? 0;
+      const initials = item.user_full_name
+        ? item.user_full_name.charAt(0).toUpperCase()
+        : "A";
       return (
         <Pressable
           onPress={() => router.push(`/home/post/${item.uuid}`)}
@@ -104,10 +108,19 @@ export default function HomeScreen() {
               },
             ]}
           >
-            <Image
-              source={{ uri: item.user_avatar_url }}
-              style={styles.avatar}
-            />
+            {item.user_avatar_url ? (
+              <Image
+                source={{ uri: item.user_avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <Avatar.Text
+                size={42}
+                label={initials}
+                style={{ backgroundColor: theme.colors.primaryContainer }}
+                color={theme.colors.onPrimaryContainer}
+              />
+            )}
 
             <View style={styles.postBody}>
               {item.recommended && (

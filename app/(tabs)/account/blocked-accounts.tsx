@@ -13,7 +13,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import { Avatar, Button, Text, useTheme } from "react-native-paper";
 
 export default function BlockedAccounts() {
   const { user } = useAuth();
@@ -72,6 +72,9 @@ export default function BlockedAccounts() {
   // -------------------------------------------------------
   const renderItem = useCallback(
     ({ item }: { item: Partial<User> }) => {
+      const initials = item.full_name
+        ? item.full_name.charAt(0).toUpperCase()
+        : "A";
       return (
         <View
           style={[
@@ -83,7 +86,18 @@ export default function BlockedAccounts() {
           ]}
         >
           <View style={styles.avatarName}>
-            <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
+            {item.avatar_url ? (
+              <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
+            ) : (
+              <Avatar.Text
+                size={42}
+                label={initials}
+                style={{
+                  backgroundColor: theme.colors.primaryContainer,
+                }}
+                color={theme.colors.onPrimaryContainer}
+              />
+            )}
 
             <View>
               <Text
