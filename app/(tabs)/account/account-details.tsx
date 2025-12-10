@@ -2,6 +2,7 @@ import { palette, type AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { filterProfanity } from "@/utils/filterProfanity";
+import { moderateImage } from "@/utils/moderateImage";
 import { FunctionsHttpError } from "@supabase/supabase-js";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -227,24 +228,6 @@ export default function AccountDetailsScreen() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const moderateImage = async (url: string) => {
-    const { data, error } = await supabase.functions.invoke("moderate-image", {
-      body: {
-        image_url: url,
-      },
-    });
-    if (error && error instanceof FunctionsHttpError) {
-      const errorMessage = await error.context.json();
-      Alert.alert(errorMessage.error.message);
-      setDeleting(false);
-      return {};
-    }
-    return {
-      flagged: data.flagged,
-      categories: data.categories,
-    };
   };
 
   return (

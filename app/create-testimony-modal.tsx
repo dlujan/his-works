@@ -1,11 +1,30 @@
+import { TagMultiSelect } from "@/components/TagMultiSelect";
+import type { AppTheme } from "@/constants/paper-theme";
+import { useAuth } from "@/context/auth-context";
+import { useTags } from "@/hooks/data/useTags";
+import { useRandomBackgroundImage } from "@/hooks/useRandomBackgroundImage";
+import { supabase } from "@/lib/supabase";
+import { ReminderType } from "@/lib/types";
+import { filterProfanity } from "@/utils/filterProfanity";
+import { moderateImage } from "@/utils/moderateImage";
+import { setNextReminderDate } from "@/utils/reminders";
+import { useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -17,19 +36,10 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
-
-import { TagMultiSelect } from "@/components/TagMultiSelect";
-import type { AppTheme } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
-import { useTags } from "@/hooks/data/useTags";
-import { useRandomBackgroundImage } from "@/hooks/useRandomBackgroundImage";
-import { supabase } from "@/lib/supabase";
-import { ReminderType } from "@/lib/types";
-import { filterProfanity } from "@/utils/filterProfanity";
-import { setNextReminderDate } from "@/utils/reminders";
-import { useQueryClient } from "@tanstack/react-query";
-import dayjs from "dayjs";
 import { DatePickerInput } from "react-native-paper-dates";
+import uuid from "react-native-uuid";
+
+const MAX_IMAGES = 12;
 
 export default function CreateTestimonyModal() {
   const theme = useTheme<AppTheme>();
@@ -54,6 +64,10 @@ export default function CreateTestimonyModal() {
   );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<
+    { localUri?: string; compressedUri?: string; uploading: boolean }[]
+  >([]);
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
 
   const imageUrl = useRandomBackgroundImage();
 
@@ -64,6 +78,122 @@ export default function CreateTestimonyModal() {
       surface: theme.colors.background, // modal background
       onSurface: theme.colors.onSurface, // modal text
     },
+  };
+
+  const handleSelectImages = async () => {
+    try {
+      // Already at limit? Block selection.
+      if (selectedImages.length >= MAX_IMAGES) {
+        Alert.alert(
+          "Limit reached",
+          `You can only attach up to ${MAX_IMAGES} photos.`
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: false,
+        quality: 0.8,
+        exif: false,
+      });
+
+      if (result.canceled || !result.assets?.length) {
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // 🔥 Critical Fix: Capture current count BEFORE setting state
+      // -------------------------------------------------------------
+      const currentCount = selectedImages.length;
+
+      const remainingSlots = MAX_IMAGES - currentCount;
+
+      // Only use assets that fit
+      const usableAssets = result.assets.slice(0, remainingSlots);
+
+      // If no space at all, bail out
+      if (usableAssets.length === 0) {
+        Alert.alert(
+          "Limit reached",
+          `You can only attach up to ${MAX_IMAGES} photos.`
+        );
+        return;
+      }
+
+      // 1️⃣ Add placeholder loader squares immediately
+      const placeholders = usableAssets.map(() => ({ uploading: true }));
+      setSelectedImages((prev) => [...prev, ...placeholders]);
+
+      // -------------------------------------------------------------
+      // 🔥 indexToReplace must use `currentCount`, NOT selectedImages.length
+      // -------------------------------------------------------------
+      const placeholderIndexOffset = currentCount;
+
+      // 2️⃣ Process each usable asset sequentially
+      for (let i = 0; i < usableAssets.length; i++) {
+        const asset = usableAssets[i];
+        const indexToReplace = placeholderIndexOffset + i;
+
+        if (!asset.uri) continue;
+
+        // ----- Compress -----
+        const compressed = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        // ----- Moderate -----
+        const base64 = await fetch(compressed.uri)
+          .then((res) => res.blob())
+          .then(
+            (blob) =>
+              new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              })
+          );
+
+        const { flagged, categories } = await moderateImage(base64);
+
+        if (flagged) {
+          Alert.alert(
+            "Inappropriate Image",
+            `A photo was blocked: ${categories.join(", ")}`
+          );
+
+          // Remove placeholder for this asset
+          setSelectedImages((prev) =>
+            prev.filter((_, idx) => idx !== indexToReplace)
+          );
+
+          continue;
+        }
+
+        // 3️⃣ Replace placeholder with real data
+        setSelectedImages((prev) => {
+          const updated = [...prev];
+
+          // If something removed a slot while processing, ensure we do not overflow
+          if (indexToReplace >= updated.length) return updated;
+
+          updated[indexToReplace] = {
+            localUri: asset.uri,
+            compressedUri: compressed.uri,
+            uploading: false,
+          };
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Error selecting images:", err);
+      Alert.alert("Error", "Failed to select photos.");
+    } finally {
+    }
   };
 
   const handleSubmit = async () => {
@@ -144,6 +274,46 @@ export default function CreateTestimonyModal() {
 
       if (reminderError) {
         console.error("Failed to create reminders:", reminderError);
+      }
+
+      // 4️⃣ Upload all selected images sequentially + insert DB rows
+      for (let index = 0; index < selectedImages.length; index++) {
+        const img = selectedImages[index];
+
+        const imageUuid = uuid.v4() as string;
+        const filePath = `${testimonyId}/${imageUuid}.jpg`;
+
+        // Convert compressed image to ArrayBuffer
+        const arraybuffer = await fetch(img.compressedUri!).then((res) =>
+          res.arrayBuffer()
+        );
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from("testimony_pics")
+          .upload(filePath, arraybuffer, {
+            contentType: "image/jpeg",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicData } = supabase.storage
+          .from("testimony_pics")
+          .getPublicUrl(filePath);
+
+        const publicImgUrl = publicData.publicUrl;
+
+        // Insert into testimony_image
+        const { error: insertImageError } = await supabase
+          .from("testimony_image")
+          .insert({
+            testimony_uuid: testimonyId,
+            image_path: publicImgUrl,
+            sort_order: index,
+          });
+
+        if (insertImageError) throw insertImageError;
       }
 
       queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
@@ -273,44 +443,6 @@ export default function CreateTestimonyModal() {
             </View>
           )}
 
-          {/* <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text
-                variant="titleSmall"
-                style={{ color: theme.colors.onSurface }}
-              >
-                Yearly Reminder
-              </Text>
-              <Text
-                variant="bodySmall"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                Receive an annual reminder for this testimony.
-              </Text>
-            </View>
-            <Switch value={yearlyReminder} onValueChange={setYearlyReminder} />
-          </View>
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text
-                variant="titleSmall"
-                style={{ color: theme.colors.onSurface }}
-              >
-                3-Month Reminder
-              </Text>
-              <Text
-                variant="bodySmall"
-                style={{ color: theme.colors.onSurfaceVariant }}
-              >
-                Receive a reminder every 3 months
-              </Text>
-            </View>
-            <Switch
-              value={quarterlyReminder}
-              onValueChange={setQuarterlyReminder}
-            />
-          </View> */}
-
           {message && (
             <Text
               variant="bodySmall"
@@ -326,17 +458,116 @@ export default function CreateTestimonyModal() {
               {message}
             </Text>
           )}
+
+          {/* Image Picker Section */}
+          <View style={{ marginVertical: 16 }}>
+            <Text
+              variant="titleSmall"
+              style={{ marginBottom: 8, color: theme.colors.onSurface }}
+            >
+              Add Photos (optional)
+            </Text>
+
+            {/* Button to open image picker */}
+            <Button
+              mode="outlined"
+              onPress={handleSelectImages}
+              icon="image-multiple"
+              style={{ marginBottom: 12 }}
+            >
+              Select Photos
+            </Button>
+
+            {/* Selected Images Grid */}
+            {selectedImages.length > 0 && (
+              <View style={styles.imageGrid}>
+                {selectedImages.map((img, index) => (
+                  <View key={index} style={styles.imageItem}>
+                    {img.uploading ? (
+                      // Loader placeholder
+                      <View style={styles.loaderContainer}>
+                        <ActivityIndicator
+                          size="small"
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setPreviewImageUri(img.localUri as string)
+                          }
+                          activeOpacity={0.8}
+                        >
+                          <Image
+                            source={{ uri: img.localUri }}
+                            style={styles.imagePreview}
+                            resizeMode="cover"
+                          />
+                        </TouchableOpacity>
+
+                        {/* Remove button */}
+                        <TouchableOpacity
+                          style={styles.removeButton}
+                          onPress={() =>
+                            setSelectedImages((prev) =>
+                              prev.filter((_, i) => i !== index)
+                            )
+                          }
+                        >
+                          <Text style={styles.removeButtonText}>×</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Button
               mode="contained"
               onPress={handleSubmit}
-              disabled={!details || loading}
+              disabled={
+                !details || loading || selectedImages.some((i) => i.uploading)
+              }
               loading={loading}
             >
               Create Testimony
             </Button>
           </View>
         </ScrollView>
+        <Modal
+          visible={!!previewImageUri}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setPreviewImageUri(null)}
+        >
+          <View style={styles.fullscreenContainer}>
+            {/* X Close Button */}
+            <TouchableOpacity
+              style={styles.fullscreenCloseButton}
+              onPress={() => setPreviewImageUri(null)}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <Text style={styles.fullscreenCloseText}>×</Text>
+            </TouchableOpacity>
+
+            {/* Image display */}
+            <TouchableOpacity
+              style={styles.fullscreenCloseArea}
+              onPress={() => setPreviewImageUri(null)}
+              activeOpacity={1}
+            >
+              <Image
+                source={{ uri: previewImageUri || undefined }}
+                style={styles.fullscreenImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </Surface>
     </KeyboardAvoidingView>
   );
@@ -380,5 +611,82 @@ const styles = StyleSheet.create({
   message: {
     textAlign: "center",
     marginTop: 4,
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  loaderContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  imageItem: {
+    width: "31%", // fits 3 per row with gaps
+    aspectRatio: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#ccc",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+  removeButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removeButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: -1,
+  },
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullscreenCloseButton: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fullscreenCloseText: {
+    color: "white",
+    fontSize: 28,
+    fontWeight: "600",
+    lineHeight: 28,
+  },
+  fullscreenCloseArea: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  fullscreenImage: {
+    width: "100%",
+    height: "100%",
   },
 });
