@@ -20,6 +20,13 @@ export type Tag = {
   updated_at: string;
   name: string;
 };
+export type TestimonyImage = {
+  uuid: string;
+  created_at: string;
+  testimony_uuid: string;
+  image_path: string;
+  sort_order: number;
+};
 export type Testimony = {
   uuid: string;
   created_at: string;
@@ -34,6 +41,7 @@ export type Testimony = {
   bible_verse?: string;
   tags?: string[];
   reminders?: Reminder[];
+  images?: TestimonyImage[];
 };
 export type Reminder = {
   uuid: string;

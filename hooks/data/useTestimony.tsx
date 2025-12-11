@@ -27,6 +27,7 @@ const fetchData = async (id: string, appUserId?: string) => {
       sent_at,
       type
     ),
+    testimony_image(*),
     user(avatar_url, full_name),
     testimony_like(user_uuid),
     comment(uuid)
@@ -67,6 +68,7 @@ const fetchData = async (id: string, appUserId?: string) => {
   return {
     ...data,
     tags: data.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
+    images: data.testimony_image,
     reminders: data.reminder?.map((rem: any) => rem),
     likes_count: likesCount,
     liked_by_user: likedByUser,

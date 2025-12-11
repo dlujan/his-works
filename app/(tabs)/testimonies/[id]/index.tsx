@@ -6,14 +6,20 @@ import { useTestimony } from "@/hooks/data/useTestimony";
 import { supabase } from "@/lib/supabase";
 import { ReminderType } from "@/lib/types";
 import { filterProfanity } from "@/utils/filterProfanity";
+import { moderateImage } from "@/utils/moderateImage";
 import { getNextReminder, setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  Dimensions,
+  Image,
   Keyboard,
+  Modal,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -31,6 +37,9 @@ import {
   useTheme,
 } from "react-native-paper";
 import { DatePickerInput } from "react-native-paper-dates";
+import uuid from "react-native-uuid";
+
+const MAX_IMAGES = 12;
 
 export default function EditTestimonyScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -49,6 +58,20 @@ export default function EditTestimonyScreen() {
   const [isPrivate, setIsPrivate] = useState(testimony?.is_private);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<
+    {
+      uuid?: string;
+      localUri?: string;
+      compressedUri?: string;
+      remoteUrl?: string;
+      uploading: boolean;
+      isNew?: boolean;
+      sort_order?: number;
+    }[]
+  >([]);
+  const [previewImageUri, setPreviewImageUri] = useState<
+    string | null | undefined
+  >(null);
 
   const dateModalTheme = {
     ...theme,
@@ -67,6 +90,20 @@ export default function EditTestimonyScreen() {
       setIsPublic(testimony.is_public);
       setIsPrivate(testimony.is_private);
       setTags(testimony.tags ?? []);
+      setSelectedImages(
+        //@ts-ignore
+        testimony.images
+          ?.map((img) => ({
+            uuid: img.uuid,
+            localUri: img.image_path,
+            compressedUri: img.image_path,
+            remoteUrl: img.image_path,
+            uploading: false,
+            isNew: false,
+            sort_order: img.sort_order,
+          }))
+          .sort((a, b) => a.sort_order - b.sort_order)
+      );
     }
   }, [testimony]);
 
@@ -175,6 +212,71 @@ export default function EditTestimonyScreen() {
         }
       }
 
+      // 5️⃣ Insert/upsert images
+      const originalImages = testimony.images || []; // from the DB
+      const currentImages = selectedImages; // from state
+
+      const deleted = originalImages.filter(
+        (o) => !currentImages.some((c) => c.remoteUrl === o.image_path)
+      );
+
+      // Delete removed images
+      for (const img of deleted) {
+        // Delete DB row
+        await supabase.from("testimony_image").delete().eq("uuid", img.uuid);
+
+        // Delete file from storage
+        // Extract path from full URL:
+        const storagePath = img.image_path.split("/testimony_pics/")[1];
+
+        if (storagePath) {
+          await supabase.storage.from("testimony_pics").remove([storagePath]);
+        }
+      }
+
+      // Upload new images, update sort order for kept images
+      for (let index = 0; index < currentImages.length; index++) {
+        const img = currentImages[index];
+
+        if (!img.isNew) {
+          // Update order
+          await supabase
+            .from("testimony_image")
+            .update({
+              sort_order: index,
+            })
+            .eq("image_path", img.remoteUrl);
+        } else {
+          const imageUuid = uuid.v4() as string;
+          const filePath = `${id}/${imageUuid}.jpg`;
+
+          const arraybuffer = await fetch(img.compressedUri!).then((res) =>
+            res.arrayBuffer()
+          );
+
+          const { error: uploadError } = await supabase.storage
+            .from("testimony_pics")
+            .upload(filePath, arraybuffer, {
+              contentType: "image/jpeg",
+              upsert: false,
+            });
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicData } = supabase.storage
+            .from("testimony_pics")
+            .getPublicUrl(filePath);
+
+          const publicImgUrl = publicData.publicUrl;
+
+          await supabase.from("testimony_image").insert({
+            testimony_uuid: id,
+            image_path: publicImgUrl,
+            sort_order: index,
+          });
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["testimony", id] });
       queryClient.invalidateQueries({
         queryKey: ["my-testimonies", user!.uuid],
@@ -209,11 +311,29 @@ export default function EditTestimonyScreen() {
           onPress: async () => {
             setLoading(true);
             try {
+              // Grab images
+              const { data: testimony_images } = await supabase
+                .from("testimony_image")
+                .select("testimony_uuid,image_path")
+                .eq("testimony_uuid", id);
+
+              // Delete testimony
               const { error } = await supabase
                 .from("testimony")
                 .delete()
                 .eq("uuid", id)
                 .eq("user_uuid", authUser.id);
+
+              // Delete storage images (testimony_image rows will cascade)
+              if (testimony_images) {
+                const deletePaths = testimony_images.map(
+                  (img: { image_path: string }) =>
+                    img.image_path.split("/testimony_pics/")[1]
+                );
+                await supabase.storage
+                  .from("testimony_pics")
+                  .remove(deletePaths);
+              }
 
               if (error) throw error;
               queryClient.invalidateQueries({ queryKey: ["my-testimonies"] });
@@ -232,6 +352,123 @@ export default function EditTestimonyScreen() {
         },
       ]
     );
+  };
+
+  const handleSelectImages = async () => {
+    try {
+      // Already at limit? Block selection.
+      if (selectedImages.length >= MAX_IMAGES) {
+        Alert.alert(
+          "Limit reached",
+          `You can only attach up to ${MAX_IMAGES} photos.`
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        allowsEditing: false,
+        quality: 0.8,
+        exif: false,
+      });
+
+      if (result.canceled || !result.assets?.length) {
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // 🔥 Critical Fix: Capture current count BEFORE setting state
+      // -------------------------------------------------------------
+      const currentCount = selectedImages.length;
+
+      const remainingSlots = MAX_IMAGES - currentCount;
+
+      // Only use assets that fit
+      const usableAssets = result.assets.slice(0, remainingSlots);
+
+      // If no space at all, bail out
+      if (usableAssets.length === 0) {
+        Alert.alert(
+          "Limit reached",
+          `You can only attach up to ${MAX_IMAGES} photos.`
+        );
+        return;
+      }
+
+      // 1️⃣ Add placeholder loader squares immediately
+      const placeholders = usableAssets.map(() => ({ uploading: true }));
+      setSelectedImages((prev) => [...prev, ...placeholders]);
+
+      // -------------------------------------------------------------
+      // 🔥 indexToReplace must use `currentCount`, NOT selectedImages.length
+      // -------------------------------------------------------------
+      const placeholderIndexOffset = currentCount;
+
+      // 2️⃣ Process each usable asset sequentially
+      for (let i = 0; i < usableAssets.length; i++) {
+        const asset = usableAssets[i];
+        const indexToReplace = placeholderIndexOffset + i;
+
+        if (!asset.uri) continue;
+
+        // ----- Compress -----
+        const compressed = await ImageManipulator.manipulateAsync(
+          asset.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        // ----- Moderate -----
+        const base64 = await fetch(compressed.uri)
+          .then((res) => res.blob())
+          .then(
+            (blob) =>
+              new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+              })
+          );
+
+        const { flagged, categories } = await moderateImage(base64);
+
+        if (flagged) {
+          Alert.alert(
+            "Inappropriate Image",
+            `A photo was blocked: ${categories.join(", ")}`
+          );
+
+          // Remove placeholder for this asset
+          setSelectedImages((prev) =>
+            prev.filter((_, idx) => idx !== indexToReplace)
+          );
+
+          continue;
+        }
+
+        // 3️⃣ Replace placeholder with real data
+        setSelectedImages((prev) => {
+          const updated = [...prev];
+
+          // If something removed a slot while processing, ensure we do not overflow
+          if (indexToReplace >= updated.length) return updated;
+
+          updated[indexToReplace] = {
+            localUri: asset.uri,
+            compressedUri: compressed.uri,
+            uploading: false,
+            isNew: true,
+          };
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Error selecting images:", err);
+      Alert.alert("Error", "Failed to select photos.");
+    } finally {
+    }
   };
 
   if (!testimony && !isLoading) {
@@ -401,6 +638,61 @@ export default function EditTestimonyScreen() {
             )}
           </View>
 
+          {/* Button to open image picker */}
+          <Button
+            mode="outlined"
+            onPress={handleSelectImages}
+            icon="image-multiple"
+            style={{ marginBottom: 12 }}
+          >
+            Select Photos
+          </Button>
+
+          {selectedImages && selectedImages.length > 0 && (
+            <View style={styles.imageGrid}>
+              {selectedImages.map((img, index) => (
+                <View key={index} style={styles.imageItem}>
+                  {img.uploading ? (
+                    // Loader placeholder
+                    <View style={styles.loaderContainer}>
+                      <ActivityIndicator
+                        size="small"
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        onPress={() =>
+                          setPreviewImageUri(img.localUri as string)
+                        }
+                        activeOpacity={0.8}
+                      >
+                        <Image
+                          source={{ uri: img.localUri }}
+                          style={styles.imagePreview}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+
+                      {/* Remove button */}
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() =>
+                          setSelectedImages((prev) =>
+                            prev.filter((_, i) => i !== index)
+                          )
+                        }
+                      >
+                        <Text style={styles.removeButtonText}>×</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              ))}
+            </View>
+          )}
+
           {message && (
             <Text
               variant="bodySmall"
@@ -442,6 +734,74 @@ export default function EditTestimonyScreen() {
           </View>
         </ScrollView>
       )}
+      <Modal
+        visible={!!previewImageUri}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setPreviewImageUri(null)}
+      >
+        <View style={styles.fullscreenContainer}>
+          {/* X Close Button */}
+          <TouchableOpacity
+            style={styles.fullscreenCloseButton}
+            onPress={() => setPreviewImageUri(null)}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text style={styles.fullscreenCloseText}>×</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.modalLeftArrow}
+            onPress={() => {
+              const currentIndex = selectedImages.findIndex(
+                (img) => img.localUri === previewImageUri
+              );
+              const previousIndex =
+                currentIndex === 0
+                  ? selectedImages.length - 1
+                  : currentIndex - 1;
+              const image = selectedImages[previousIndex];
+              setPreviewImageUri(image.localUri);
+            }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
+              ←
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.modalRightArrow}
+            onPress={() => {
+              const currentIndex = selectedImages.findIndex(
+                (img) => img.localUri === previewImageUri
+              );
+              const nextIndex =
+                currentIndex + 1 === selectedImages.length
+                  ? 0
+                  : currentIndex + 1;
+              const image = selectedImages[nextIndex];
+              setPreviewImageUri(image.localUri);
+            }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
+              →
+            </Text>
+          </TouchableOpacity>
+
+          {/* Image display */}
+          <TouchableOpacity
+            style={styles.fullscreenCloseArea}
+            activeOpacity={1}
+          >
+            <Image
+              source={{ uri: previewImageUri || undefined }}
+              style={styles.fullscreenImage}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </Surface>
   );
 }
@@ -500,5 +860,108 @@ const styles = StyleSheet.create({
   message: {
     textAlign: "center",
     marginTop: 4,
+  },
+  imageGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  loaderContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+  },
+  imageItem: {
+    width: "31%", // fits 3 per row with gaps
+    aspectRatio: 1,
+    borderRadius: 8,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#ccc",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+  removeButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  removeButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: -1,
+  },
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.9)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullscreenCloseButton: {
+    position: "absolute",
+    top: 60,
+    right: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalLeftArrow: {
+    position: "absolute",
+    top: Dimensions.get("screen").height / 2,
+    left: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalRightArrow: {
+    position: "absolute",
+    top: Dimensions.get("screen").height / 2,
+    right: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fullscreenCloseText: {
+    color: "white",
+    fontSize: 28,
+    fontWeight: "600",
+    lineHeight: 28,
+  },
+  arrowText: {
+    lineHeight: 32,
+  },
+  fullscreenCloseArea: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  fullscreenImage: {
+    width: "100%",
+    height: "100%",
   },
 });

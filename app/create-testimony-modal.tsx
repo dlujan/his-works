@@ -15,8 +15,8 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -28,6 +28,7 @@ import {
   View,
 } from "react-native";
 import {
+  ActivityIndicator,
   Button,
   PaperProvider,
   Surface,
@@ -67,7 +68,9 @@ export default function CreateTestimonyModal() {
   const [selectedImages, setSelectedImages] = useState<
     { localUri?: string; compressedUri?: string; uploading: boolean }[]
   >([]);
-  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
+  const [previewImageUri, setPreviewImageUri] = useState<
+    string | null | undefined
+  >(null);
 
   const imageUrl = useRandomBackgroundImage();
 
@@ -554,10 +557,48 @@ export default function CreateTestimonyModal() {
               <Text style={styles.fullscreenCloseText}>×</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.modalLeftArrow}
+              onPress={() => {
+                const currentIndex = selectedImages.findIndex(
+                  (img) => img.localUri === previewImageUri
+                );
+                const previousIndex =
+                  currentIndex === 0
+                    ? selectedImages.length - 1
+                    : currentIndex - 1;
+                const image = selectedImages[previousIndex];
+                setPreviewImageUri(image.localUri);
+              }}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
+                ←
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalRightArrow}
+              onPress={() => {
+                const currentIndex = selectedImages.findIndex(
+                  (img) => img.localUri === previewImageUri
+                );
+                const nextIndex =
+                  currentIndex + 1 === selectedImages.length
+                    ? 0
+                    : currentIndex + 1;
+                const image = selectedImages[nextIndex];
+                setPreviewImageUri(image.localUri);
+              }}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+            >
+              <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
+                →
+              </Text>
+            </TouchableOpacity>
+
             {/* Image display */}
             <TouchableOpacity
               style={styles.fullscreenCloseArea}
-              onPress={() => setPreviewImageUri(null)}
               activeOpacity={1}
             >
               <Image
@@ -678,13 +719,39 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     lineHeight: 28,
   },
+  modalLeftArrow: {
+    position: "absolute",
+    top: Dimensions.get("screen").height / 2,
+    left: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalRightArrow: {
+    position: "absolute",
+    top: Dimensions.get("screen").height / 2,
+    right: 20,
+    zIndex: 50,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  arrowText: {
+    lineHeight: 32,
+  },
   fullscreenCloseArea: {
     width: "100%",
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
-
   fullscreenImage: {
     width: "100%",
     height: "100%",
