@@ -367,6 +367,7 @@ export default function CreateTestimonyModal() {
             multiline
             numberOfLines={6}
             maxLength={1000}
+            autoCorrect
             style={[styles.input, styles.multiline]}
           />
 

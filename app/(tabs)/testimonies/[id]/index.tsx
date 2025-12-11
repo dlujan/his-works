@@ -558,6 +558,7 @@ export default function EditTestimonyScreen() {
             multiline
             numberOfLines={8}
             maxLength={1000}
+            autoCorrect
             style={[styles.input, styles.multiline]}
           />
 

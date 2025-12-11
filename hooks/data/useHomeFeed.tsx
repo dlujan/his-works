@@ -29,7 +29,6 @@ const fetchFeed = async (
   });
 
   if (error) throw new Error(error.message);
-
   return {
     testimonies: data ?? [],
     nextPage: page + 1,

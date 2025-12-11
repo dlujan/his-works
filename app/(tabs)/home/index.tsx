@@ -88,12 +88,14 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: HomeFeedTestimony }) => {
+      console.log(item.images);
       const liked = item.liked_by_user ?? false;
       const likesCount = item.likes_count ?? 0;
       const commentsCount = item.comments_count ?? 0;
       const initials = item.user_full_name
         ? item.user_full_name.charAt(0).toUpperCase()
         : "A";
+      const images = item.images ?? [];
       return (
         <Pressable
           onPress={() => router.push(`/home/post/${item.uuid}`)}
@@ -168,6 +170,11 @@ export default function HomeScreen() {
               <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
                 {truncate(item.text, 300)}
               </Text>
+
+              {images.length > 0 &&
+                images.map((img) => (
+                  <Text key={img.uuid}>{img.image_path}</Text>
+                ))}
 
               <View style={styles.actionsRow}>
                 <View style={styles.likesRow}>
