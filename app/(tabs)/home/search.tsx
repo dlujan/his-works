@@ -179,6 +179,7 @@ export default function SearchScreen() {
       ) : (
         <FlatList
           data={results}
+          showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}

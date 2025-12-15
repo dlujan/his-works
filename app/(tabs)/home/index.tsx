@@ -1,3 +1,4 @@
+import PostItem from "@/components/testimonies/PostItem";
 import { ActionBottomSheet } from "@/components/ui/ActionBottomSheet";
 import ReportModal from "@/components/ui/ReportModal";
 import type { AppTheme } from "@/constants/paper-theme";
@@ -5,26 +6,18 @@ import { useAuth } from "@/context/auth-context";
 import { useLikeTestimony } from "@/hooks/data/mutations/useLikeTestimony";
 import { useReportTestimony } from "@/hooks/data/mutations/useReportTestimony";
 import { HomeFeedTestimony, useHomeFeed } from "@/hooks/data/useHomeFeed";
-import { truncate } from "@/utils/strings";
-import { formatTimeSince } from "@/utils/time";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   FlatList,
-  Image,
   RefreshControl,
-  ScrollView,
   Share,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import {
   ActivityIndicator,
-  Avatar,
   Button,
-  Icon,
-  IconButton,
   Surface,
   Text,
   useTheme,
@@ -90,7 +83,6 @@ export default function HomeScreen() {
     ({ item }: { item: HomeFeedTestimony }) => (
       <PostItem
         item={item}
-        user={user}
         theme={theme}
         router={router}
         onPressMore={setSelectedTestimony}
@@ -130,6 +122,7 @@ export default function HomeScreen() {
               tintColor={theme.colors.primary}
             />
           }
+          showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
@@ -224,233 +217,8 @@ export default function HomeScreen() {
   );
 }
 
-function PostItem({
-  item,
-  user,
-  theme,
-  onPressMore,
-  onPressProfile,
-  onPressShare,
-  onToggleLike,
-  router,
-}: {
-  item: HomeFeedTestimony;
-  user: any;
-  theme: AppTheme;
-  onPressMore: (item: HomeFeedTestimony) => void;
-  onPressProfile: (uuid: string) => void;
-  onPressShare: (item: HomeFeedTestimony) => void;
-  onToggleLike: (item: HomeFeedTestimony) => void;
-  router: any;
-}) {
-  const [postWidth, setPostWidth] = useState(0);
-
-  const openPost = () => {
-    router.push(`/home/post/${item.uuid}`);
-  };
-
-  const images = item.images ?? [];
-  const liked = item.liked_by_user ?? false;
-  const likesCount = item.likes_count ?? 0;
-  const commentsCount = item.comments_count ?? 0;
-  const initials = item.user_full_name
-    ? item.user_full_name.charAt(0).toUpperCase()
-    : "A";
-
-  return (
-    <View
-      style={[
-        styles.postContainer,
-        {
-          backgroundColor: theme.colors.background,
-          borderBottomColor: theme.colors.outlineVariant,
-        },
-      ]}
-    >
-      <TouchableOpacity onPress={() => onPressProfile(item.user_uuid)}>
-        {item.user_avatar_url ? (
-          <Image source={{ uri: item.user_avatar_url }} style={styles.avatar} />
-        ) : (
-          <Avatar.Text
-            size={42}
-            label={initials}
-            style={{ backgroundColor: theme.colors.primaryContainer }}
-            color={theme.colors.onPrimaryContainer}
-          />
-        )}
-      </TouchableOpacity>
-
-      <View
-        style={styles.postBody}
-        onLayout={(e) => setPostWidth(e.nativeEvent.layout.width)}
-      >
-        {item.recommended && (
-          <Text
-            variant="bodySmall"
-            style={{ color: theme.colors.onSurfaceVariant }}
-          >
-            Recommended
-          </Text>
-        )}
-
-        {/* Header */}
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            style={styles.headerProfileRow}
-            onPress={() => onPressProfile(item.user_uuid)}
-          >
-            <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
-              {item.user_full_name}
-            </Text>
-            <Text
-              style={[
-                styles.timestamp,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
-            >
-              {formatTimeSince(item.created_at)}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{ marginRight: 10 }}
-            onPress={() => onPressMore(item)}
-          >
-            <Icon
-              source="dots-horizontal"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Text */}
-        <TouchableOpacity onPress={openPost}>
-          <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-            {truncate(item.text, 300)}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Images Carousel */}
-        {images.length > 0 && postWidth > 0 && (
-          <View
-            style={{ width: postWidth, paddingTop: 8 }}
-            pointerEvents="box-none"
-          >
-            <ScrollView
-              horizontal
-              pagingEnabled={false} // important! pagingEnabled hides the next image
-              snapToInterval={postWidth - 40}
-              decelerationRate="fast"
-              showsHorizontalScrollIndicator={false}
-              style={{ width: postWidth }}
-              contentContainerStyle={{ paddingRight: 40 }}
-            >
-              {images.map((img) => (
-                <View
-                  key={img.uuid}
-                  style={{
-                    width: postWidth - 40, // shows 40px of next image
-                    height: postWidth - 40, // maintain square look
-                    marginRight: 10,
-                  }}
-                >
-                  <Image
-                    source={{ uri: img.image_path }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: 10,
-                      resizeMode: "cover",
-                    }}
-                  />
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Actions */}
-        <TouchableOpacity onPress={openPost} style={styles.actionsRow}>
-          <View style={styles.likesRow}>
-            <IconButton
-              icon={liked ? "heart" : "heart-outline"}
-              size={20}
-              iconColor={theme.colors.primary}
-              style={styles.iconButton}
-              onPress={() => onToggleLike(item)}
-            />
-            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
-              {likesCount}
-            </Text>
-
-            <IconButton
-              icon={"comment-outline"}
-              size={20}
-              iconColor={theme.colors.primary}
-              style={styles.iconButton}
-            />
-            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
-              {commentsCount}
-            </Text>
-          </View>
-
-          <IconButton
-            icon="share-outline"
-            size={20}
-            onPress={() => onPressShare(item)}
-            iconColor={theme.colors.onSurfaceVariant}
-            style={styles.iconButton}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  postContainer: {
-    flexDirection: "row",
-    gap: 12,
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    paddingBottom: 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  avatar: { width: 42, height: 42, borderRadius: 21 },
-  postBody: { flex: 1 },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  headerProfileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  nameText: { fontSize: 15, fontWeight: "600" },
-  timestamp: { fontSize: 13, marginLeft: 6 },
-  excerpt: { fontSize: 15, lineHeight: 22 },
-  actionsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  likesRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    left: -10,
-  },
-  iconButton: { margin: 0 },
-  likeCount: {
-    fontSize: 13,
-    fontWeight: "500",
-    includeFontPadding: false,
-    textRendering: "geometricPrecision",
-  },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",

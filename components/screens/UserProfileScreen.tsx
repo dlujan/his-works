@@ -458,6 +458,7 @@ const UserProfileScreen = () => {
           data={testimonies}
           keyExtractor={(item) => item.uuid}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
