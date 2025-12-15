@@ -12,8 +12,8 @@ import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Image,
-  Pressable,
   RefreshControl,
+  ScrollView,
   Share,
   StyleSheet,
   TouchableOpacity,
@@ -87,141 +87,25 @@ export default function HomeScreen() {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: HomeFeedTestimony }) => {
-      console.log(item.images);
-      const liked = item.liked_by_user ?? false;
-      const likesCount = item.likes_count ?? 0;
-      const commentsCount = item.comments_count ?? 0;
-      const initials = item.user_full_name
-        ? item.user_full_name.charAt(0).toUpperCase()
-        : "A";
-      const images = item.images ?? [];
-      return (
-        <Pressable
-          onPress={() => router.push(`/home/post/${item.uuid}`)}
-          style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
-        >
-          <View
-            style={[
-              styles.postContainer,
-              {
-                backgroundColor: theme.colors.background,
-                borderBottomColor: theme.colors.outlineVariant,
-              },
-            ]}
-          >
-            {item.user_avatar_url ? (
-              <Image
-                source={{ uri: item.user_avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <Avatar.Text
-                size={42}
-                label={initials}
-                style={{ backgroundColor: theme.colors.primaryContainer }}
-                color={theme.colors.onPrimaryContainer}
-              />
-            )}
-
-            <View style={styles.postBody}>
-              {item.recommended && (
-                <Text
-                  variant="bodySmall"
-                  style={{
-                    color: theme.colors.onSurfaceVariant,
-                  }}
-                >
-                  Recommended
-                </Text>
-              )}
-              <View style={styles.headerRow}>
-                <TouchableOpacity
-                  style={styles.headerProfileRow}
-                  disabled={item.user_uuid === user!.uuid}
-                  onPress={() => openProfile(item.user_uuid)}
-                >
-                  <Text
-                    style={[styles.nameText, { color: theme.colors.onSurface }]}
-                  >
-                    {item.user_full_name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.timestamp,
-                      { color: theme.colors.onSurfaceVariant },
-                    ]}
-                  >
-                    {formatTimeSince(item.created_at)}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{ marginRight: 10 }}
-                  onPress={() => setSelectedTestimony(item)}
-                >
-                  <Icon
-                    source="dots-horizontal"
-                    size={20}
-                    color={theme.colors.onSurfaceVariant}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
-                {truncate(item.text, 300)}
-              </Text>
-
-              {images.length > 0 &&
-                images.map((img) => (
-                  <Text key={img.uuid}>{img.image_path}</Text>
-                ))}
-
-              <View style={styles.actionsRow}>
-                <View style={styles.likesRow}>
-                  <IconButton
-                    icon={liked ? "heart" : "heart-outline"}
-                    size={20}
-                    iconColor={theme.colors.primary}
-                    style={styles.iconButton}
-                    onPress={() =>
-                      likeTestimony({
-                        testimonyUuid: item.uuid,
-                        viewerUuid: user?.uuid!,
-                        liked: !liked,
-                      })
-                    }
-                  />
-                  <Text
-                    style={[styles.likeCount, { color: theme.colors.primary }]}
-                  >
-                    {likesCount}
-                  </Text>
-                  <IconButton
-                    icon={"comment-outline"}
-                    size={20}
-                    iconColor={theme.colors.primary}
-                    style={styles.iconButton}
-                  />
-                  <Text
-                    style={[styles.likeCount, { color: theme.colors.primary }]}
-                  >
-                    {commentsCount}
-                  </Text>
-                </View>
-                <IconButton
-                  icon="share-outline"
-                  size={20}
-                  onPress={() => handleShare(item)}
-                  iconColor={theme.colors.onSurfaceVariant}
-                  style={styles.iconButton}
-                />
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      );
-    },
-    [handleShare, likeTestimony, theme.colors, user?.uuid]
+    ({ item }: { item: HomeFeedTestimony }) => (
+      <PostItem
+        item={item}
+        user={user}
+        theme={theme}
+        router={router}
+        onPressMore={setSelectedTestimony}
+        onPressProfile={openProfile}
+        onPressShare={handleShare}
+        onToggleLike={(item) =>
+          likeTestimony({
+            testimonyUuid: item.uuid,
+            viewerUuid: user?.uuid!,
+            liked: !item.liked_by_user,
+          })
+        }
+      />
+    ),
+    [user, theme, likeTestimony]
   );
 
   return (
@@ -337,6 +221,190 @@ export default function HomeScreen() {
         onReport={(reason) => handleReportTestimony(reason)}
       />
     </Surface>
+  );
+}
+
+function PostItem({
+  item,
+  user,
+  theme,
+  onPressMore,
+  onPressProfile,
+  onPressShare,
+  onToggleLike,
+  router,
+}: {
+  item: HomeFeedTestimony;
+  user: any;
+  theme: AppTheme;
+  onPressMore: (item: HomeFeedTestimony) => void;
+  onPressProfile: (uuid: string) => void;
+  onPressShare: (item: HomeFeedTestimony) => void;
+  onToggleLike: (item: HomeFeedTestimony) => void;
+  router: any;
+}) {
+  const [postWidth, setPostWidth] = useState(0);
+
+  const openPost = () => {
+    router.push(`/home/post/${item.uuid}`);
+  };
+
+  const images = item.images ?? [];
+  const liked = item.liked_by_user ?? false;
+  const likesCount = item.likes_count ?? 0;
+  const commentsCount = item.comments_count ?? 0;
+  const initials = item.user_full_name
+    ? item.user_full_name.charAt(0).toUpperCase()
+    : "A";
+
+  return (
+    <View
+      style={[
+        styles.postContainer,
+        {
+          backgroundColor: theme.colors.background,
+          borderBottomColor: theme.colors.outlineVariant,
+        },
+      ]}
+    >
+      <TouchableOpacity onPress={() => onPressProfile(item.user_uuid)}>
+        {item.user_avatar_url ? (
+          <Image source={{ uri: item.user_avatar_url }} style={styles.avatar} />
+        ) : (
+          <Avatar.Text
+            size={42}
+            label={initials}
+            style={{ backgroundColor: theme.colors.primaryContainer }}
+            color={theme.colors.onPrimaryContainer}
+          />
+        )}
+      </TouchableOpacity>
+
+      <View
+        style={styles.postBody}
+        onLayout={(e) => setPostWidth(e.nativeEvent.layout.width)}
+      >
+        {item.recommended && (
+          <Text
+            variant="bodySmall"
+            style={{ color: theme.colors.onSurfaceVariant }}
+          >
+            Recommended
+          </Text>
+        )}
+
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={styles.headerProfileRow}
+            onPress={() => onPressProfile(item.user_uuid)}
+          >
+            <Text style={[styles.nameText, { color: theme.colors.onSurface }]}>
+              {item.user_full_name}
+            </Text>
+            <Text
+              style={[
+                styles.timestamp,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+            >
+              {formatTimeSince(item.created_at)}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ marginRight: 10 }}
+            onPress={() => onPressMore(item)}
+          >
+            <Icon
+              source="dots-horizontal"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Text */}
+        <TouchableOpacity onPress={openPost}>
+          <Text style={[styles.excerpt, { color: theme.colors.onSurface }]}>
+            {truncate(item.text, 300)}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Images Carousel */}
+        {images.length > 0 && postWidth > 0 && (
+          <View
+            style={{ width: postWidth, paddingTop: 8 }}
+            pointerEvents="box-none"
+          >
+            <ScrollView
+              horizontal
+              pagingEnabled={false} // important! pagingEnabled hides the next image
+              snapToInterval={postWidth - 40}
+              decelerationRate="fast"
+              showsHorizontalScrollIndicator={false}
+              style={{ width: postWidth }}
+              contentContainerStyle={{ paddingRight: 40 }}
+            >
+              {images.map((img) => (
+                <View
+                  key={img.uuid}
+                  style={{
+                    width: postWidth - 40, // shows 40px of next image
+                    height: postWidth - 40, // maintain square look
+                    marginRight: 10,
+                  }}
+                >
+                  <Image
+                    source={{ uri: img.image_path }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 10,
+                      resizeMode: "cover",
+                    }}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Actions */}
+        <TouchableOpacity onPress={openPost} style={styles.actionsRow}>
+          <View style={styles.likesRow}>
+            <IconButton
+              icon={liked ? "heart" : "heart-outline"}
+              size={20}
+              iconColor={theme.colors.primary}
+              style={styles.iconButton}
+              onPress={() => onToggleLike(item)}
+            />
+            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
+              {likesCount}
+            </Text>
+
+            <IconButton
+              icon={"comment-outline"}
+              size={20}
+              iconColor={theme.colors.primary}
+              style={styles.iconButton}
+            />
+            <Text style={[styles.likeCount, { color: theme.colors.primary }]}>
+              {commentsCount}
+            </Text>
+          </View>
+
+          <IconButton
+            icon="share-outline"
+            size={20}
+            onPress={() => onPressShare(item)}
+            iconColor={theme.colors.onSurfaceVariant}
+            style={styles.iconButton}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
