@@ -14,15 +14,16 @@ import { supabase } from "@/lib/supabase";
 import { filterProfanity } from "@/utils/filterProfanity";
 import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Share,
   StyleSheet,
   TouchableOpacity,
@@ -38,6 +39,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
+import ImageCarouselModal from "../testimonies/ImageCarouselModal";
 import { ActionBottomSheet } from "../ui/ActionBottomSheet";
 import ReportModal from "../ui/ReportModal";
 
@@ -337,6 +339,11 @@ const TestimonyPostScreen = () => {
       );
     }
 
+    const [postWidth, setPostWidth] = useState(0);
+    const [previewImageUri, setPreviewImageUri] = useState<
+      string | null | undefined
+    >(null);
+
     const liked = testimony.liked_by_user ?? false;
     const likesCount = testimony.likes_count ?? 0;
     const commentsCount = testimony.comments_count ?? 0;
@@ -352,6 +359,7 @@ const TestimonyPostScreen = () => {
           styles.postContainer,
           { borderBottomColor: theme.colors.outlineVariant },
         ]}
+        onLayout={(e) => setPostWidth(e.nativeEvent.layout.width)}
       >
         <TouchableOpacity
           style={styles.headerRow}
@@ -412,6 +420,42 @@ const TestimonyPostScreen = () => {
           {testimony.text}
         </Text>
 
+        {/* Images Carousel */}
+        {testimony.images && testimony.images.length > 0 && postWidth > 0 && (
+          <View style={{ width: postWidth }} pointerEvents="box-none">
+            <ScrollView
+              horizontal
+              pagingEnabled={false} // important! pagingEnabled hides the next image
+              decelerationRate="fast"
+              showsHorizontalScrollIndicator={false}
+              style={{ width: postWidth }}
+              contentContainerStyle={{ paddingRight: 40 }}
+            >
+              {testimony.images.map((img) => (
+                <TouchableOpacity
+                  key={img.uuid}
+                  style={{
+                    width: postWidth - 40, // shows 40px of next image
+                    height: postWidth - 40, // maintain square look
+                    marginRight: 10,
+                  }}
+                  onPress={() => setPreviewImageUri(img.image_path)}
+                >
+                  <Image
+                    source={img.image_path}
+                    contentFit="cover"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 16,
+                    }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         {testimony.bible_verse && (
           <View style={styles.verseRow}>
             <Text style={[styles.verseIcon, { color: theme.colors.primary }]}>
@@ -429,24 +473,26 @@ const TestimonyPostScreen = () => {
         )}
 
         {/* Tags */}
-        <View style={styles.tagContainer}>
-          {testimony.tags?.map((tag) => (
-            <View
-              key={tag}
-              style={[
-                styles.tagPill,
-                { backgroundColor: theme.colors.primary + "20" },
-              ]}
-            >
-              <Text
-                variant="labelSmall"
-                style={{ color: theme.colors.primary, fontWeight: "500" }}
+        {testimony.tags && testimony.tags.length > 0 && (
+          <View style={styles.tagContainer}>
+            {testimony.tags?.map((tag) => (
+              <View
+                key={tag}
+                style={[
+                  styles.tagPill,
+                  { backgroundColor: theme.colors.primary + "20" },
+                ]}
               >
-                {tag}
-              </Text>
-            </View>
-          ))}
-        </View>
+                <Text
+                  variant="labelSmall"
+                  style={{ color: theme.colors.primary, fontWeight: "500" }}
+                >
+                  {tag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Actions */}
         <View style={styles.actionsRow}>
@@ -485,6 +531,15 @@ const TestimonyPostScreen = () => {
             style={styles.iconButton}
           />
         </View>
+        <ImageCarouselModal
+          visible={!!previewImageUri}
+          // @ts-ignore
+          images={testimony.images?.map((img) => ({
+            localUri: img.image_path,
+          }))}
+          previewImageUri={previewImageUri}
+          onSetImage={setPreviewImageUri}
+        />
       </View>
     );
   };
@@ -671,6 +726,7 @@ const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   postContainer: {
     padding: 16,
+    paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerRow: {
@@ -691,7 +747,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    marginVertical: 8,
+    marginTop: 10,
   },
   tagPill: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   actionsRow: {

@@ -2,15 +2,11 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { HomeFeedTestimony } from "@/hooks/data/useHomeFeed";
 import { truncate } from "@/utils/strings";
 import { formatTimeSince } from "@/utils/time";
-import React, { useState } from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image } from "expo-image";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, Icon, IconButton, Text } from "react-native-paper";
+import ImageCarouselModal from "./ImageCarouselModal";
 
 function PostItem({
   item,
@@ -30,6 +26,34 @@ function PostItem({
   router: any;
 }) {
   const [postWidth, setPostWidth] = useState(0);
+  const [previewImageUri, setPreviewImageUri] = useState<
+    string | null | undefined
+  >(null);
+  const [modalImages, setModalImages] = useState<
+    {
+      uuid?: string;
+      localUri?: string;
+      compressedUri?: string;
+      remoteUrl?: string;
+      uploading: boolean;
+      isNew?: boolean;
+      sort_order?: number;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    if (item) {
+      setModalImages(
+        //@ts-ignore
+        item.images
+          ?.map((img) => ({
+            localUri: img.image_path,
+            sort_order: img.sort_order,
+          }))
+          .sort((a, b) => a.sort_order - b.sort_order)
+      );
+    }
+  }, [item]);
 
   const openPost = () => {
     router.push(`/home/post/${item.uuid}`);
@@ -63,10 +87,7 @@ function PostItem({
           <TouchableOpacity onPress={() => onPressProfile(item.user_uuid)}>
             {/* Avatar */}
             {item.user_avatar_url ? (
-              <Image
-                source={{ uri: item.user_avatar_url }}
-                style={styles.avatar}
-              />
+              <Image source={item.user_avatar_url} style={styles.avatar} />
             ) : (
               <Avatar.Text
                 size={42}
@@ -141,7 +162,7 @@ function PostItem({
         {/* Images Carousel */}
         {images.length > 0 && postWidth > 0 && (
           <View
-            style={{ width: postWidth, paddingTop: 8 }}
+            style={{ width: postWidth, marginTop: 12 }}
             pointerEvents="box-none"
           >
             <ScrollView
@@ -153,24 +174,25 @@ function PostItem({
               contentContainerStyle={{ paddingRight: 40 }}
             >
               {images.map((img) => (
-                <View
+                <TouchableOpacity
                   key={img.uuid}
                   style={{
                     width: postWidth - 40, // shows 40px of next image
                     height: postWidth - 40, // maintain square look
                     marginRight: 10,
                   }}
+                  onPress={() => setPreviewImageUri(img.image_path)}
                 >
                   <Image
-                    source={{ uri: img.image_path }}
+                    source={img.image_path}
+                    contentFit="cover"
                     style={{
                       width: "100%",
                       height: "100%",
                       borderRadius: 16,
-                      resizeMode: "cover",
                     }}
                   />
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
@@ -226,6 +248,12 @@ function PostItem({
           </TouchableOpacity>
         </View>
       </View>
+      <ImageCarouselModal
+        visible={!!previewImageUri}
+        images={modalImages}
+        previewImageUri={previewImageUri}
+        onSetImage={setPreviewImageUri}
+      />
     </View>
   );
 }

@@ -1,4 +1,5 @@
 import { TagMultiSelect } from "@/components/TagMultiSelect";
+import ImageCarouselModal from "@/components/testimonies/ImageCarouselModal";
 import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useTags } from "@/hooks/data/useTags";
@@ -10,17 +11,15 @@ import { moderateImage } from "@/utils/moderateImage";
 import { setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { Image } from "expo-image";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Dimensions,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -504,9 +503,9 @@ export default function CreateTestimonyModal() {
                           activeOpacity={0.8}
                         >
                           <Image
-                            source={{ uri: img.localUri }}
+                            source={img.localUri}
                             style={styles.imagePreview}
-                            resizeMode="cover"
+                            contentFit="cover"
                           />
                         </TouchableOpacity>
 
@@ -542,74 +541,12 @@ export default function CreateTestimonyModal() {
             </Button>
           </View>
         </ScrollView>
-        <Modal
+        <ImageCarouselModal
           visible={!!previewImageUri}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setPreviewImageUri(null)}
-        >
-          <View style={styles.fullscreenContainer}>
-            {/* X Close Button */}
-            <TouchableOpacity
-              style={styles.fullscreenCloseButton}
-              onPress={() => setPreviewImageUri(null)}
-              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            >
-              <Text style={styles.fullscreenCloseText}>×</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalLeftArrow}
-              onPress={() => {
-                const currentIndex = selectedImages.findIndex(
-                  (img) => img.localUri === previewImageUri
-                );
-                const previousIndex =
-                  currentIndex === 0
-                    ? selectedImages.length - 1
-                    : currentIndex - 1;
-                const image = selectedImages[previousIndex];
-                setPreviewImageUri(image.localUri);
-              }}
-              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            >
-              <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
-                ←
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalRightArrow}
-              onPress={() => {
-                const currentIndex = selectedImages.findIndex(
-                  (img) => img.localUri === previewImageUri
-                );
-                const nextIndex =
-                  currentIndex + 1 === selectedImages.length
-                    ? 0
-                    : currentIndex + 1;
-                const image = selectedImages[nextIndex];
-                setPreviewImageUri(image.localUri);
-              }}
-              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
-            >
-              <Text style={[styles.fullscreenCloseText, styles.arrowText]}>
-                →
-              </Text>
-            </TouchableOpacity>
-
-            {/* Image display */}
-            <TouchableOpacity
-              style={styles.fullscreenCloseArea}
-              activeOpacity={1}
-            >
-              <Image
-                source={{ uri: previewImageUri || undefined }}
-                style={styles.fullscreenImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-        </Modal>
+          images={selectedImages}
+          previewImageUri={previewImageUri}
+          onSetImage={setPreviewImageUri}
+        />
       </Surface>
     </KeyboardAvoidingView>
   );
@@ -695,66 +632,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginTop: -1,
-  },
-  fullscreenContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fullscreenCloseButton: {
-    position: "absolute",
-    top: 60,
-    right: 20,
-    zIndex: 50,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fullscreenCloseText: {
-    color: "white",
-    fontSize: 28,
-    fontWeight: "600",
-    lineHeight: 28,
-  },
-  modalLeftArrow: {
-    position: "absolute",
-    top: Dimensions.get("screen").height / 2,
-    left: 20,
-    zIndex: 50,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalRightArrow: {
-    position: "absolute",
-    top: Dimensions.get("screen").height / 2,
-    right: 20,
-    zIndex: 50,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  arrowText: {
-    lineHeight: 32,
-  },
-  fullscreenCloseArea: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fullscreenImage: {
-    width: "100%",
-    height: "100%",
   },
 });
