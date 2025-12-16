@@ -103,13 +103,28 @@ export default function TestimoniesScreen() {
               >
                 {dateLabel}
               </Text>
-              {item.is_private && (
-                <Icon
-                  source="lock"
-                  size={12}
-                  color={theme.colors.onSurfaceVariant}
-                />
-              )}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                {item.images && item.images.length > 0 && (
+                  <Icon
+                    source="image"
+                    size={12}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+                {item.is_private && (
+                  <Icon
+                    source="lock"
+                    size={12}
+                    color={theme.colors.onSurfaceVariant}
+                  />
+                )}
+              </View>
             </View>
 
             <Text style={[styles.text, { color: theme.colors.onSurface }]}>

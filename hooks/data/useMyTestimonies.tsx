@@ -28,6 +28,7 @@ const fetchData = async (
           name
         )
       ),
+       testimony_image(*),
       reminder (
         uuid,
         scheduled_for
@@ -62,6 +63,7 @@ const fetchData = async (
       ...t,
       tags: t.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
       reminders: t.reminder?.map((rem: any) => rem),
+      images: t.testimony_image,
       likes_count: likesCount,
     };
   });

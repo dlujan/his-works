@@ -506,11 +506,12 @@ export default function EditTestimonyScreen() {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity
-            style={styles.topRow}
-            onPress={() => router.push(`/testimonies/${id}/reminders`)}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.topRow}>
+            <TouchableOpacity
+              onPress={() => router.push(`/testimonies/${id}/reminders`)}
+              style={{ flexDirection: "row", alignItems: "center" }}
+              activeOpacity={0.8}
+            >
               <Icon
                 source="bell-outline"
                 size={16}
@@ -538,7 +539,7 @@ export default function EditTestimonyScreen() {
                   Reminder settings
                 </Text>
               )}
-            </View>
+            </TouchableOpacity>
             <Link href={`/testimonies/${id}/post`}>
               <Text
                 variant="bodySmall"
@@ -547,7 +548,7 @@ export default function EditTestimonyScreen() {
                 View Post
               </Text>
             </Link>
-          </TouchableOpacity>
+          </View>
 
           <TextInput
             label="My testimony"
@@ -714,7 +715,10 @@ export default function EditTestimonyScreen() {
               mode="contained"
               onPress={handleSave}
               loading={loading}
-              disabled={loading}
+              disabled={
+                loading ||
+                (selectedImages && selectedImages.some((i) => i.uploading))
+              }
             >
               Save changes
             </Button>
@@ -727,7 +731,10 @@ export default function EditTestimonyScreen() {
               mode="text"
               textColor={theme.colors.error}
               onPress={handleDelete}
-              disabled={loading}
+              disabled={
+                loading ||
+                (selectedImages && selectedImages.some((i) => i.uploading))
+              }
             >
               Delete testimony
             </Button>
@@ -804,6 +811,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
+    marginBottom: 8,
   },
   loaderContainer: {
     flex: 1,

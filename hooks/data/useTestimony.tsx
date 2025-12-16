@@ -68,7 +68,9 @@ const fetchData = async (id: string, appUserId?: string) => {
   return {
     ...data,
     tags: data.testimony_tag?.map((tt: any) => tt.tag.name) ?? [],
-    images: data.testimony_image,
+    images: data.testimony_image.sort(
+      (a: any, b: any) => a.sort_order - b.sort_order
+    ),
     reminders: data.reminder?.map((rem: any) => rem),
     likes_count: likesCount,
     liked_by_user: likedByUser,

@@ -5,20 +5,17 @@ import { Testimony } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  ImageBackground,
-  ScrollView,
-  Share,
-  StyleSheet,
-  View,
-} from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, ScrollView, Share, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   IconButton,
   Text,
   useTheme,
 } from "react-native-paper";
+
+const IMAGE_INTERVAL = 3000; // ms between transitions
+const FADE_DURATION = 1000;
 
 export default function TestimonyDisplayModal() {
   const { id, reminderId } = useLocalSearchParams<{
@@ -34,10 +31,15 @@ export default function TestimonyDisplayModal() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
+  const fadeInAnim = useRef(new Animated.Value(0)).current;
+  const fadeOutAnim = useRef(new Animated.Value(1)).current;
+  const [imageIndex, setImageIndex] = useState(0);
+  const [nextIndex, setNextIndex] = useState(1);
+
   const titleOptions = [
     "Remember this moment?",
     "Thank God again for this",
-    "Reflect on God's faithfullness",
+    "Reflect on God's faithfulness",
     "Remember how God moved?",
   ];
   const subtitlesOptions = [
@@ -47,21 +49,20 @@ export default function TestimonyDisplayModal() {
     "Look back on this work of God in your life.",
   ];
 
-  useEffect(() => {
-    const randomTitle =
-      titleOptions[Math.floor(Math.random() * titleOptions.length)];
-    setTitle(randomTitle);
+  const images = testimony?.images?.map((i) => i.image_path) ?? [];
+  const hasMultipleImages = images.length > 1;
 
-    const randomSubtitle =
-      subtitlesOptions[Math.floor(Math.random() * subtitlesOptions.length)];
-    setSubtitle(randomSubtitle);
+  useEffect(() => {
+    setTitle(titleOptions[Math.floor(Math.random() * titleOptions.length)]);
+    setSubtitle(
+      subtitlesOptions[Math.floor(Math.random() * subtitlesOptions.length)]
+    );
   }, []);
 
   useEffect(() => {
     if (!reminderId) return;
 
     const markReminderNotificationsRead = async () => {
-      // Mark all unread reminder notifications for this reminder as read
       const { error } = await supabase
         .from("notification")
         .update({ read: true })
@@ -83,13 +84,22 @@ export default function TestimonyDisplayModal() {
 
   const fetchTestimony = useCallback(async () => {
     if (!id) return;
+
     const { data, error } = await supabase
       .from("testimony")
-      .select("*, user(full_name, avatar_url)")
+      .select("*, user(full_name, avatar_url), testimony_image(*)")
       .eq("uuid", id)
       .single();
 
-    if (!error && data) setTestimony(data);
+    if (!error && data) {
+      setTestimony({
+        ...data,
+        images: data.testimony_image.sort(
+          (a: any, b: any) => a.sort_order - b.sort_order
+        ),
+      });
+    }
+
     setLoading(false);
   }, [id]);
 
@@ -109,14 +119,46 @@ export default function TestimonyDisplayModal() {
     }
   };
 
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleDateString(undefined, {
+  const formatDate = (isoString: string) =>
+    new Date(isoString).toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
+
+  useEffect(() => {
+    if (!hasMultipleImages) return;
+
+    const interval = setInterval(() => {
+      const next = (imageIndex + 1) % images.length;
+      setNextIndex(next);
+
+      // Reset fade values
+      fadeInAnim.setValue(0);
+      fadeOutAnim.setValue(1);
+
+      // Run both fade animations in parallel
+      Animated.parallel([
+        Animated.timing(fadeInAnim, {
+          toValue: 1,
+          duration: FADE_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeOutAnim, {
+          toValue: 0,
+          duration: FADE_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // When done, swap the images
+        setImageIndex(next);
+        fadeInAnim.setValue(1);
+        fadeOutAnim.setValue(2);
+      });
+    }, IMAGE_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [imageIndex, hasMultipleImages, images.length]);
 
   if (loading || !testimony) {
     return (
@@ -126,18 +168,32 @@ export default function TestimonyDisplayModal() {
     );
   }
 
+  const baseImage =
+    images[imageIndex] ||
+    testimony.image_url ||
+    "https://images.pexels.com/photos/1105389/pexels-photo-1105389.jpeg";
+
+  const nextImage = hasMultipleImages
+    ? images[nextIndex]
+    : "https://images.pexels.com/photos/1105389/pexels-photo-1105389.jpeg";
+
   return (
-    <ImageBackground
-      source={{
-        uri:
-          testimony.image_url ||
-          "https://images.pexels.com/photos/1105389/pexels-photo-1105389.jpeg",
-      }}
-      style={styles.background}
-      resizeMode="cover"
-    >
+    <View style={styles.background}>
+      <Animated.Image
+        source={{ uri: baseImage }}
+        style={[StyleSheet.absoluteFill, { opacity: fadeOutAnim }]}
+        resizeMode="cover"
+      />
+
+      <Animated.Image
+        source={{ uri: nextImage }}
+        style={[StyleSheet.absoluteFill, { opacity: fadeInAnim }]}
+        resizeMode="cover"
+      />
+
+      {/* Gradient overlay */}
       <LinearGradient
-        colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0.9)"]}
+        colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.8)"]}
         style={StyleSheet.absoluteFill}
       />
 
@@ -147,7 +203,7 @@ export default function TestimonyDisplayModal() {
         <Text style={styles.headerSubtitle}>{subtitle}</Text>
       </View>
 
-      {/* Scrollable Content */}
+      {/* Content */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -159,7 +215,6 @@ export default function TestimonyDisplayModal() {
         )}
 
         <Text style={styles.author}>— {testimony.user.full_name}</Text>
-
         <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
       </ScrollView>
 
@@ -172,7 +227,7 @@ export default function TestimonyDisplayModal() {
           onPress={handleShare}
         />
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
