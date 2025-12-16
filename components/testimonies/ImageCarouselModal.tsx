@@ -134,7 +134,6 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     width: Dimensions.get("window").width,
-    height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },

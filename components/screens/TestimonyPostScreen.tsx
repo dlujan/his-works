@@ -426,7 +426,7 @@ const TestimonyPostScreen = () => {
             <ScrollView
               horizontal
               pagingEnabled={false} // important! pagingEnabled hides the next image
-              decelerationRate="fast"
+              decelerationRate="normal"
               showsHorizontalScrollIndicator={false}
               style={{ width: postWidth }}
               contentContainerStyle={{ paddingRight: 40 }}
