@@ -20,6 +20,7 @@ import {
   Alert,
   FlatList,
   Image,
+  Platform,
   Pressable,
   RefreshControl,
   Share,
@@ -70,13 +71,25 @@ const UserProfileScreen = () => {
     useState<UserProfileTestimony>();
 
   const handleShare = useCallback(async (item: Testimony) => {
-    try {
-      await Share.share({
-        title: "Shared testimony",
-        message: `${item.user.full_name} — ${item.text}`,
-      });
-    } catch (error) {
-      console.warn("Unable to share testimony", error);
+    if (Platform.OS === "ios") {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user.full_name}`,
+          url: "https://apps.apple.com/us/app/hisworks/id6754654556",
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
+    } else {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user.full_name}`,
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
     }
   }, []);
 

@@ -6,7 +6,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, ScrollView, Share, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Platform,
+  ScrollView,
+  Share,
+  StyleSheet,
+  View,
+} from "react-native";
 import {
   ActivityIndicator,
   IconButton,
@@ -109,13 +116,25 @@ export default function TestimonyDisplayModal() {
 
   const handleShare = async () => {
     if (!testimony) return;
-    try {
-      await Share.share({
-        title: "Shared testimony",
-        message: `${testimony.user.full_name} — ${testimony.text}`,
-      });
-    } catch (error) {
-      console.warn("Unable to share testimony", error);
+    if (Platform.OS === "ios") {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${testimony.text} — ${testimony.user.full_name}`,
+          url: "https://apps.apple.com/us/app/hisworks/id6754654556",
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
+    } else {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${testimony.text} — ${testimony.user.full_name}`,
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
     }
   };
 

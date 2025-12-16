@@ -105,23 +105,47 @@ const TestimonyPostScreen = () => {
 
   // 🧠 Actions
   const handleShareTestimony = useCallback(async (item: any) => {
-    try {
-      await Share.share({
-        title: "Shared testimony",
-        message: `${item.user.full_name} — ${item.text}`,
-      });
-    } catch (error) {
-      console.warn("Unable to share testimony", error);
+    if (Platform.OS) {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user.full_name}`,
+          url: "https://apps.apple.com/us/app/hisworks/id6754654556",
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
+    } else {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user.full_name}`,
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
     }
   }, []);
   const handleShareComment = useCallback(async (item: TestimonyComment) => {
-    try {
-      await Share.share({
-        title: "Shared comment",
-        message: `${item.user.full_name} — ${item.text}`,
-      });
-    } catch (error) {
-      console.warn("Unable to share comment", error);
+    if (Platform.OS) {
+      try {
+        await Share.share({
+          title: "Shared comment",
+          message: `${item.text} — ${item.user.full_name}`,
+          url: "https://apps.apple.com/us/app/hisworks/id6754654556",
+        });
+      } catch (error) {
+        console.warn("Unable to share comment", error);
+      }
+    } else {
+      try {
+        await Share.share({
+          title: "Shared comment",
+          message: `${item.text} — ${item.user.full_name}`,
+        });
+      } catch (error) {
+        console.warn("Unable to share comment", error);
+      }
     }
   }, []);
 

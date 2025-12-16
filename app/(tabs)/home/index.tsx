@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   FlatList,
+  Platform,
   RefreshControl,
   Share,
   StyleSheet,
@@ -48,13 +49,25 @@ export default function HomeScreen() {
   const testimonies = data?.pages.flatMap((p) => p.testimonies) ?? [];
 
   const handleShare = useCallback(async (item: HomeFeedTestimony) => {
-    try {
-      await Share.share({
-        title: "Shared testimony",
-        message: `${item.user_full_name} — ${item.text}`,
-      });
-    } catch (error) {
-      console.warn("Unable to share testimony", error);
+    if (Platform.OS === "ios") {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user_full_name}`,
+          url: "https://apps.apple.com/us/app/hisworks/id6754654556",
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
+    } else {
+      try {
+        await Share.share({
+          title: "Shared testimony",
+          message: `${item.text} — ${item.user_full_name}`,
+        });
+      } catch (error) {
+        console.warn("Unable to share testimony", error);
+      }
     }
   }, []);
 
