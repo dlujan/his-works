@@ -446,7 +446,10 @@ const TestimonyPostScreen = () => {
 
         {/* Images Carousel */}
         {testimony.images && testimony.images.length > 0 && postWidth > 0 && (
-          <View style={{ width: postWidth }} pointerEvents="box-none">
+          <View
+            style={[styles.images, { width: postWidth }]}
+            pointerEvents="box-none"
+          >
             <ScrollView
               horizontal
               pagingEnabled={false} // important! pagingEnabled hides the next image
@@ -459,8 +462,8 @@ const TestimonyPostScreen = () => {
                 <TouchableOpacity
                   key={img.uuid}
                   style={{
-                    width: postWidth - 40, // shows 40px of next image
-                    height: postWidth - 40, // maintain square look
+                    width: postWidth - 120,
+                    height: postWidth - 120,
                     marginRight: 10,
                   }}
                   onPress={() => setPreviewImageUri(img.image_path)}
@@ -471,7 +474,7 @@ const TestimonyPostScreen = () => {
                     style={{
                       width: "100%",
                       height: "100%",
-                      borderRadius: 16,
+                      borderRadius: 24,
                     }}
                   />
                 </TouchableOpacity>
@@ -764,21 +767,22 @@ const styles = StyleSheet.create({
   nameText: { fontSize: 15, fontWeight: "600" },
   timestamp: { fontSize: 13, marginLeft: 6 },
   text: { fontSize: 15, lineHeight: 22, marginBottom: 10 },
-  verseRow: { flexDirection: "row", alignItems: "center" },
+  images: {
+    marginBottom: 10,
+  },
+  verseRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   verseIcon: { marginRight: 6, fontSize: 14 },
   verseText: { fontSize: 13, fontStyle: "italic" },
   tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    marginTop: 10,
   },
   tagPill: { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   actionsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 6,
   },
   likesRow: { flexDirection: "row", alignItems: "center" },
   iconButton: { margin: 0 },

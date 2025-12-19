@@ -171,14 +171,14 @@ function PostItem({
               decelerationRate="normal"
               showsHorizontalScrollIndicator={false}
               style={{ width: postWidth }}
-              contentContainerStyle={{ paddingRight: 40 }}
+              contentContainerStyle={{ paddingLeft: 55 }}
             >
               {images.map((img) => (
                 <TouchableOpacity
                   key={img.uuid}
                   style={{
-                    width: postWidth - 40, // shows 40px of next image
-                    height: postWidth - 40, // maintain square look
+                    width: postWidth - 120,
+                    height: postWidth - 120,
                     marginRight: 10,
                   }}
                   onPress={() => setPreviewImageUri(img.image_path)}
