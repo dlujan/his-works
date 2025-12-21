@@ -532,6 +532,7 @@ export default function EditTestimonyScreen() {
                   style={{
                     color: theme.colors.onSurfaceVariant,
                     marginLeft: 6,
+                    textDecorationLine: "underline",
                   }}
                 >
                   Next reminder {nextReminderText}
@@ -552,7 +553,10 @@ export default function EditTestimonyScreen() {
             <Link href={`/testimonies/${id}/post`}>
               <Text
                 variant="bodySmall"
-                style={{ color: theme.colors.onSurfaceVariant }}
+                style={{
+                  color: theme.colors.onSurfaceVariant,
+                  textDecorationLine: "underline",
+                }}
               >
                 View Post
               </Text>
