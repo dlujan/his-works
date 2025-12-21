@@ -64,7 +64,12 @@ export default function OnboardingReminderPreferences2() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={{ width: "100%", alignItems: "center" }}>
         <Image
           source={logo}
@@ -72,7 +77,8 @@ export default function OnboardingReminderPreferences2() {
           style={{
             width: 160,
             height: 160,
-            bottom: -10,
+            marginBottom: theme.dark ? 10 : -20,
+            borderRadius: 20,
           }}
         />
       </View>

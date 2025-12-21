@@ -1,15 +1,16 @@
-import { palette } from "@/constants/paper-theme";
+import { AppTheme, palette } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
-import { Button, List, Switch, Text } from "react-native-paper";
+import { Button, List, Switch, Text, useTheme } from "react-native-paper";
 const logo = require("../../assets/images/android-icon2-512x512.png");
 
 export default function OnboardingReminderPreferences() {
   const router = useRouter();
   const { session, refreshUser } = useAuth();
+  const theme = useTheme<AppTheme>();
   const authUser = session?.user ?? null;
 
   const [settings, setSettings] = useState({
@@ -63,7 +64,12 @@ export default function OnboardingReminderPreferences() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={{ width: "100%", alignItems: "center" }}>
         <Image
           source={logo}
@@ -71,7 +77,8 @@ export default function OnboardingReminderPreferences() {
           style={{
             width: 160,
             height: 160,
-            bottom: -10,
+            marginBottom: theme.dark ? 10 : -20,
+            borderRadius: 20,
           }}
         />
       </View>

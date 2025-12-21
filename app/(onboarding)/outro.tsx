@@ -1,14 +1,20 @@
-import { palette } from "@/constants/paper-theme";
+import { AppTheme, palette } from "@/constants/paper-theme";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 const logo = require("../../assets/images/android-icon2-512x512.png");
 
 export default function OnboardingReminderPreferences2() {
   const router = useRouter();
+  const theme = useTheme<AppTheme>();
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={{ width: "100%", alignItems: "center" }}>
         <Image
           source={logo}
@@ -16,7 +22,8 @@ export default function OnboardingReminderPreferences2() {
           style={{
             width: 160,
             height: 160,
-            bottom: -10,
+            marginBottom: theme.dark ? 10 : -20,
+            borderRadius: 20,
           }}
         />
       </View>
@@ -31,9 +38,7 @@ export default function OnboardingReminderPreferences2() {
         variant="bodyMedium"
         style={{ marginBottom: 24, textAlign: "center" }}
       >
-        Now it's time to add your first testimony. Also, be sure to check out
-        your home feed or use the search tool to see how God is working in the
-        lives of others.
+        Now it's time to add your first testimony.
       </Text>
 
       <View style={styles.buttons}>
@@ -49,7 +54,7 @@ export default function OnboardingReminderPreferences2() {
           Create First Testimony
         </Button>
         <Button mode="text" onPress={() => router.push("/(tabs)")}>
-          Take me to the app
+          No thanks
         </Button>
       </View>
     </View>

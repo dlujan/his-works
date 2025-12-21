@@ -1,20 +1,26 @@
-import { palette } from "@/constants/paper-theme";
+import { AppTheme, palette } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
+import { Button, Text, useTheme } from "react-native-paper";
 const logo = require("../assets/images/android-icon2-512x512.png");
 
 export default function PostConfirmation() {
   const router = useRouter();
   const { session } = useAuth();
+  const theme = useTheme<AppTheme>();
   const handleContinue = async () => {
     if (!session?.user) return;
     router.replace("/(onboarding)/name");
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={{ width: "100%", alignItems: "center" }}>
         <Image
           source={logo}
@@ -22,7 +28,8 @@ export default function PostConfirmation() {
           style={{
             width: 160,
             height: 160,
-            bottom: -10,
+            marginBottom: theme.dark ? 10 : -20,
+            borderRadius: 20,
           }}
         />
       </View>
@@ -54,6 +61,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: palette.surface,
   },
 });

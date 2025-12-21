@@ -135,7 +135,12 @@ export default function OnboardingProfilePic() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={styles.avatarContainer}>
         {avatarUrl ? (
           <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />

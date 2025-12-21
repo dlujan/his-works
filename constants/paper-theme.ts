@@ -11,6 +11,7 @@ export const palette = {
   background: "#FFF4EC",
   surface: "#FBE6D4",
   surfaceSoft: "#EFD9C5",
+  dark: "#181312",
   ink: "#36241A",
   inkMuted: "#6B4E3D",
   primary: "#3F7D3C",
@@ -79,7 +80,7 @@ const darkElevation = {
 } as const;
 
 const darkOverrides = {
-  background: "#181312",
+  background: palette.dark,
   surface: "#221C1A",
   surfaceBright: "rgba(47, 29, 19, 0.92)",
   surfaceVariant: "rgba(166, 216, 170, 0.12)",

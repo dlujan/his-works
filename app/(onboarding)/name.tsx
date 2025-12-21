@@ -1,16 +1,17 @@
-import { palette } from "@/constants/paper-theme";
+import { AppTheme, palette } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { filterProfanity } from "@/utils/filterProfanity";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Keyboard, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
 const logo = require("../../assets/images/android-icon2-512x512.png");
 
 export default function OnboardingName() {
   const router = useRouter();
   const { session, refreshUser } = useAuth();
+  const theme = useTheme<AppTheme>();
 
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,12 @@ export default function OnboardingName() {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.dark ? palette.dark : palette.surface },
+      ]}
+    >
       <View style={{ width: "100%", alignItems: "center" }}>
         <Image
           source={logo}
@@ -42,7 +48,8 @@ export default function OnboardingName() {
           style={{
             width: 160,
             height: 160,
-            bottom: -10,
+            marginBottom: theme.dark ? 10 : -20,
+            borderRadius: 20,
           }}
         />
       </View>
