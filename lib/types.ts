@@ -6,6 +6,7 @@ export type User = {
   avatar_url?: string;
   expo_push_token?: string;
   reminder_settings: {
+    monthly: boolean;
     yearly: boolean;
     quarterly: boolean;
     timeOfDay: "morning" | "evening";

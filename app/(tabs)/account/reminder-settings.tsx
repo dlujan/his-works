@@ -22,6 +22,7 @@ export default function ReminderSettingsScreen() {
   const authUser = session?.user ?? null;
 
   const [settings, setSettings] = useState({
+    monthly: true,
     yearly: true,
     quarterly: true,
     timeOfDay: "morning" as "morning" | "evening",
@@ -146,6 +147,17 @@ export default function ReminderSettingsScreen() {
               <Switch
                 value={settings.quarterly}
                 onValueChange={() => handleToggle("quarterly")}
+              />
+            )}
+          />
+          <List.Item
+            title="Monthly Reminder"
+            description="Receive a monthly reminder for every testimony."
+            left={(props) => <List.Icon {...props} icon="progress-clock" />}
+            right={() => (
+              <Switch
+                value={settings.monthly}
+                onValueChange={() => handleToggle("monthly")}
               />
             )}
           />

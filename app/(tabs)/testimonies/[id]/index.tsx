@@ -203,6 +203,15 @@ export default function EditTestimonyScreen() {
           });
         }
 
+        if (user?.reminder_settings.monthly) {
+          newReminders.push({
+            user_uuid: user.uuid,
+            testimony_uuid: id,
+            scheduled_for: setNextReminderDate(testimonyDate, "month"),
+            type: ReminderType.MONTHLY,
+          });
+        }
+
         if (newReminders.length > 0) {
           const { error: insertError } = await supabase
             .from("reminder")

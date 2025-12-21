@@ -23,11 +23,18 @@ export function getNextReminder(reminders: Reminder[]) {
 
 export function setNextReminderDate(
   baseDate: Dayjs,
-  interval: "year" | "quarter",
+  interval: "year" | "quarter" | "month",
 ) {
   const now = dayjs();
   const start = baseDate;
-  const intervalMonths = interval === "year" ? 12 : 3;
+  let intervalMonths = 1;
+  if (interval === "year") {
+    intervalMonths = 12;
+  } else if (interval === "quarter") {
+    intervalMonths = 3;
+  } else if (interval === "month") {
+    intervalMonths = 1;
+  }
 
   let next = start.add(intervalMonths, "month");
 

@@ -62,6 +62,9 @@ export default function CreateTestimonyModal() {
   const [quarterlyReminder, setQuarterlyReminder] = useState(
     user?.reminder_settings.quarterly
   );
+  const [monthlyReminder, setMonthlyReminder] = useState(
+    user?.reminder_settings.monthly
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedImages, setSelectedImages] = useState<
@@ -270,6 +273,16 @@ export default function CreateTestimonyModal() {
           type: ReminderType.QUARTERLY,
         });
       }
+
+      if (monthlyReminder) {
+        reminders.push({
+          user_uuid: authUser.id,
+          testimony_uuid: testimony.uuid,
+          scheduled_for: setNextReminderDate(testimonyDate, "month"),
+          type: ReminderType.MONTHLY,
+        });
+      }
+
       const { error: reminderError } = await supabase
         .from("reminder")
         .insert(reminders);
