@@ -97,13 +97,15 @@ export default function LoginScreen() {
             onSubmitEditing={Keyboard.dismiss}
           />
 
-          <HelperText
-            type="error"
-            visible={Boolean(error)}
-            style={[styles.helper, { color: theme.colors.error }]}
-          >
-            {error ?? ""}
-          </HelperText>
+          {error && (
+            <HelperText
+              type="error"
+              visible={Boolean(error)}
+              style={[styles.helper, { color: theme.colors.error }]}
+            >
+              {error}
+            </HelperText>
+          )}
 
           <Button
             mode="contained"
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 12,
+    marginBottom: 16,
   },
   input: {
     backgroundColor: "transparent",
@@ -179,7 +182,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   switch: {
-    marginTop: 24,
     alignSelf: "center",
   },
   switchLabel: {

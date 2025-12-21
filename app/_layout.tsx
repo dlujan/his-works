@@ -126,6 +126,10 @@ export default function RootLayout() {
 
                 {/* Authenticated tabs area */}
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="(onboarding)"
+                  options={{ headerShown: false }}
+                />
 
                 {/* Modals, inside authenticated area */}
                 <Stack.Screen

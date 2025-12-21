@@ -33,8 +33,6 @@ export default function ReminderSettingsScreen() {
 
   const [deviceHasPermission, setDeviceHasPermission] = useState(false);
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
     const loadSettings = async () => {
       if (!authUser) return;

@@ -1,17 +1,11 @@
 import { palette } from "@/constants/paper-theme";
-import { useAuth } from "@/context/auth-context";
 import { useRouter } from "expo-router";
 import { Image, StyleSheet, View } from "react-native";
 import { Button, Text } from "react-native-paper";
-const logo = require("../assets/images/android-icon2-512x512.png");
+const logo = require("../../assets/images/android-icon2-512x512.png");
 
-export default function PostConfirmation() {
+export default function OnboardingReminderPreferences2() {
   const router = useRouter();
-  const { session } = useAuth();
-  const handleContinue = async () => {
-    if (!session?.user) return;
-    router.replace("/(onboarding)/name");
-  };
 
   return (
     <View style={styles.container}>
@@ -28,23 +22,36 @@ export default function PostConfirmation() {
       </View>
 
       <Text
-        variant="headlineMedium"
+        variant="headlineSmall"
         style={{ marginBottom: 8, textAlign: "center" }}
       >
-        Account Confirmed ✅
+        You're all set!
       </Text>
-
       <Text
         variant="bodyMedium"
         style={{ marginBottom: 24, textAlign: "center" }}
       >
-        Welcome to HisWorks! Before we get started, let's get to know you
-        better.
+        Now it's time to add your first testimony. Also, be sure to check out
+        your home feed or use the search tool to see how God is working in the
+        lives of others.
       </Text>
 
-      <Button mode="contained" onPress={handleContinue}>
-        Continue
-      </Button>
+      <View style={styles.buttons}>
+        <Button
+          mode="contained"
+          onPress={() => {
+            router.push("/(tabs)");
+            setTimeout(() => {
+              router.push("/create-testimony-modal");
+            }, 1000);
+          }}
+        >
+          Create First Testimony
+        </Button>
+        <Button mode="text" onPress={() => router.push("/(tabs)")}>
+          Take me to the app
+        </Button>
+      </View>
     </View>
   );
 }
@@ -56,4 +63,5 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: palette.surface,
   },
+  buttons: { gap: 10 },
 });
