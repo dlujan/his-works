@@ -3,7 +3,7 @@ import { useAuth } from "@/context/auth-context";
 import { useMyFollowers } from "@/hooks/data/useMyFollowers";
 import * as Linking from "expo-linking";
 import * as MailComposer from "expo-mail-composer";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Avatar, List, Surface, Text, useTheme } from "react-native-paper";
@@ -87,9 +87,9 @@ export default function AccountScreen() {
           )}
         </View>
 
-        <Link href="/post-confirmation">
+        {/* <Link href="/post-confirmation">
           <Text>Onboarding</Text>
-        </Link>
+        </Link> */}
 
         {/* List of navigation items */}
         <List.Section style={{ marginHorizontal: -20 }}>

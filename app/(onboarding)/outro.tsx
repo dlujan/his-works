@@ -43,7 +43,7 @@ export default function OnboardingReminderPreferences2() {
             router.push("/(tabs)");
             setTimeout(() => {
               router.push("/create-testimony-modal");
-            }, 1000);
+            }, 800);
           }}
         >
           Create First Testimony
