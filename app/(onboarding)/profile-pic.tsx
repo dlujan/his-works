@@ -18,7 +18,7 @@ const logo = require("../../assets/images/android-icon2-512x512.png");
 
 export default function OnboardingProfilePic() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const theme = useTheme<AppTheme>();
 
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url ?? "");
@@ -119,8 +119,6 @@ export default function OnboardingProfilePic() {
       // For immediate change
       const uncachedUrl = `${publicData.publicUrl}?v=${Date.now()}`;
       setAvatarUrl(uncachedUrl);
-      //@ts-ignore
-      setUser((prev) => ({ ...prev, avatar_url: uncachedUrl }));
 
       setMessage("Profile pic updated successfully!");
     } catch (error) {
@@ -131,6 +129,7 @@ export default function OnboardingProfilePic() {
       );
     } finally {
       setUploading(false);
+      await refreshUser();
     }
   };
 
@@ -178,7 +177,6 @@ export default function OnboardingProfilePic() {
           mode="contained"
           onPress={() => router.push("/reminder-preferences")}
           disabled={!avatarUrl || uploading}
-          loading={uploading}
         >
           Continue
         </Button>
