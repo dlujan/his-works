@@ -14,12 +14,12 @@ import { supabase } from "@/lib/supabase";
 import { filterProfanity } from "@/utils/filterProfanity";
 import { formatTimeSince } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -469,8 +469,8 @@ const TestimonyPostScreen = () => {
                   onPress={() => setPreviewImageUri(img.image_path)}
                 >
                   <Image
-                    source={img.image_path}
-                    contentFit="cover"
+                    source={{ uri: img.image_path }}
+                    resizeMode="cover"
                     style={{
                       width: "100%",
                       height: "100%",

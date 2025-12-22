@@ -1,7 +1,7 @@
-import { Image } from "expo-image";
 import { useEffect, useRef } from "react";
 import {
   Dimensions,
+  Image,
   Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -93,9 +93,9 @@ const ImageCarouselModal = ({
           {images.map((img) => (
             <View key={img.uuid || img.localUri} style={styles.imageWrapper}>
               <Image
-                source={img.localUri}
+                source={{ uri: img.localUri }}
                 style={styles.fullscreenImage}
-                contentFit="contain"
+                resizeMode="contain"
               />
             </View>
           ))}

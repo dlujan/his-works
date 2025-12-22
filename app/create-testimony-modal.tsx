@@ -11,13 +11,13 @@ import { moderateImage } from "@/utils/moderateImage";
 import { setNextReminderDate } from "@/utils/reminders";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { Image } from "expo-image";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -516,9 +516,9 @@ export default function CreateTestimonyModal() {
                           activeOpacity={0.8}
                         >
                           <Image
-                            source={img.localUri}
+                            source={{ uri: img.localUri }}
                             style={styles.imagePreview}
-                            contentFit="cover"
+                            resizeMode="cover"
                           />
                         </TouchableOpacity>
 

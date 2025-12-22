@@ -2,9 +2,14 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { HomeFeedTestimony } from "@/hooks/data/useHomeFeed";
 import { truncate } from "@/utils/strings";
 import { formatTimeSince } from "@/utils/time";
-import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Avatar, Icon, IconButton, Text } from "react-native-paper";
 import ImageCarouselModal from "./ImageCarouselModal";
 
@@ -87,7 +92,10 @@ function PostItem({
           <TouchableOpacity onPress={() => onPressProfile(item.user_uuid)}>
             {/* Avatar */}
             {item.user_avatar_url ? (
-              <Image source={item.user_avatar_url} style={styles.avatar} />
+              <Image
+                source={{ uri: item.user_avatar_url }}
+                style={styles.avatar}
+              />
             ) : (
               <Avatar.Text
                 size={42}
@@ -184,8 +192,8 @@ function PostItem({
                   onPress={() => setPreviewImageUri(img.image_path)}
                 >
                   <Image
-                    source={img.image_path}
-                    contentFit="cover"
+                    source={{ uri: img.image_path }}
+                    resizeMode="cover"
                     style={{
                       width: "100%",
                       height: "100%",
