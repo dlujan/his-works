@@ -1,4 +1,4 @@
-import type { Session } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import type { PropsWithChildren } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { User as AppUser } from "@/lib/types";
 import { refreshPushTokenIfPossible } from "@/utils/refreshPushTokenIfPossible";
 import { SplashScreen, useRouter } from "expo-router";
+import { usePostHog } from "posthog-react-native";
 
 type SignInArgs = { email: string; password: string };
 type SignUpArgs = { email: string; password: string };
@@ -27,6 +28,8 @@ export function AuthProvider({
   children,
   fontsLoaded,
 }: PropsWithChildren<{ fontsLoaded: boolean }>) {
+  const posthog = usePostHog();
+
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +48,7 @@ export function AuthProvider({
 
         if (data.session?.user) {
           await fetchUser(data.session.user.id);
+          posthogIdentify(data.session.user);
         }
       } catch (error) {
         console.warn("Failed to load session:", error);
@@ -115,6 +119,15 @@ export function AuthProvider({
     setUser(data);
   };
 
+  const posthogIdentify = (user: User) => {
+    const distinctId = posthog.getDistinctId();
+    if (distinctId !== user.id) {
+      posthog.identify(user.id, {
+        email: user.email || null,
+      });
+    }
+  };
+
   const value = useMemo<AuthContextValue>(
     () => ({
       session,
@@ -149,6 +162,7 @@ export function AuthProvider({
 
       signOut: async () => {
         await supabase.auth.signOut();
+        posthog.reset();
         setUser(null);
         router.replace("/welcome");
       },

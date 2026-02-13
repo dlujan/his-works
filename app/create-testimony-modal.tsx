@@ -14,10 +14,12 @@ import dayjs from "dayjs";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { usePostHog } from "posthog-react-native";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
+  InputAccessoryView,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -49,6 +51,7 @@ export default function CreateTestimonyModal() {
   const authUser = session?.user ?? null;
   const { user } = useAuth();
   const { tags: availableTags } = useTags();
+  const posthog = usePostHog();
 
   const [details, setDetails] = useState("");
   const [bibleVerse, setBibleVerse] = useState("");
@@ -74,6 +77,7 @@ export default function CreateTestimonyModal() {
     string | null | undefined
   >(null);
 
+  const inputAccessoryViewID = useMemo(() => "testimonyAccessory", []);
   const imageUrl = useRandomBackgroundImage();
 
   const dateModalTheme = {
@@ -203,6 +207,8 @@ export default function CreateTestimonyModal() {
 
   const handleSubmit = async () => {
     if (!details || !authUser) return;
+
+    posthog.capture("create_testimony_button_pressed");
 
     setLoading(true);
     setMessage(null);
@@ -381,7 +387,37 @@ export default function CreateTestimonyModal() {
             maxLength={1000}
             autoCorrect
             style={[styles.input, styles.multiline]}
+            inputAccessoryViewID={
+              Platform.OS === "ios" ? inputAccessoryViewID : undefined
+            }
           />
+          {/* ✅ iOS only: accessory bar with Done button */}
+          {Platform.OS === "ios" && (
+            <InputAccessoryView nativeID={inputAccessoryViewID}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  paddingHorizontal: 12,
+                  paddingVertical: 12,
+                  borderTopWidth: 1,
+                  borderTopColor: "#ddd",
+                  backgroundColor: "#f7f7f7",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={Keyboard.dismiss}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Text
+                    style={{ fontWeight: "600", fontSize: 16, color: "#000" }}
+                  >
+                    Done
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </InputAccessoryView>
+          )}
 
           <TextInput
             label="Bible Verse"
@@ -414,7 +450,6 @@ export default function CreateTestimonyModal() {
           {/* Tag selection */}
           <View style={{ marginBottom: 8 }}>
             <TagMultiSelect
-              useModal={true}
               availableTags={availableTags}
               tags={tags}
               setTags={setTags}
