@@ -77,7 +77,7 @@ export default function CreateTestimonyModal() {
     string | null | undefined
   >(null);
 
-  const inputAccessoryViewID = useMemo(() => "testimonyAccessory", []);
+  const inputAccessoryViewID = useMemo(() => "testimonyAccessoryA", []);
   const imageUrl = useRandomBackgroundImage();
 
   const dateModalTheme = {
@@ -378,7 +378,7 @@ export default function CreateTestimonyModal() {
 
           <TextInput
             label="Your testimony"
-            placeholder="Your testimony (e.g. healing, new job, answered prayer)"
+            placeholder="Your testimony (e.g. healing, new job, answered prayer, any blessing)"
             mode="outlined"
             value={details}
             onChangeText={setDetails}
@@ -400,9 +400,9 @@ export default function CreateTestimonyModal() {
                   justifyContent: "flex-end",
                   paddingHorizontal: 12,
                   paddingVertical: 12,
+                  backgroundColor: theme.colors.background,
                   borderTopWidth: 1,
-                  borderTopColor: "#ddd",
-                  backgroundColor: "#f7f7f7",
+                  borderTopColor: theme.colors.backdrop,
                 }}
               >
                 <TouchableOpacity
@@ -410,7 +410,11 @@ export default function CreateTestimonyModal() {
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Text
-                    style={{ fontWeight: "600", fontSize: 16, color: "#000" }}
+                    style={{
+                      fontWeight: "600",
+                      fontSize: 18,
+                      color: theme.colors.onSurface,
+                    }}
                   >
                     Done
                   </Text>

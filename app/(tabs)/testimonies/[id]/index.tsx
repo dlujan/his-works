@@ -14,11 +14,13 @@ import dayjs from "dayjs";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
+  InputAccessoryView,
   Keyboard,
+  Platform,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -71,6 +73,8 @@ export default function EditTestimonyScreen() {
   const [previewImageUri, setPreviewImageUri] = useState<
     string | null | undefined
   >(null);
+
+  const inputAccessoryViewID = useMemo(() => "testimonyAccessoryB", []);
 
   const dateModalTheme = {
     ...theme,
@@ -573,7 +577,41 @@ export default function EditTestimonyScreen() {
             maxLength={1000}
             autoCorrect
             style={[styles.input, styles.multiline]}
+            inputAccessoryViewID={
+              Platform.OS === "ios" ? inputAccessoryViewID : undefined
+            }
           />
+          {/* ✅ iOS only: accessory bar with Done button */}
+          {Platform.OS === "ios" && (
+            <InputAccessoryView nativeID={inputAccessoryViewID}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  paddingHorizontal: 12,
+                  paddingVertical: 12,
+                  backgroundColor: theme.colors.background,
+                  borderTopWidth: 1,
+                  borderTopColor: theme.colors.backdrop,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={Keyboard.dismiss}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Text
+                    style={{
+                      fontWeight: "600",
+                      fontSize: 17,
+                      color: theme.colors.onSurface,
+                    }}
+                  >
+                    Done
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </InputAccessoryView>
+          )}
 
           <TextInput
             label="Bible verse"
