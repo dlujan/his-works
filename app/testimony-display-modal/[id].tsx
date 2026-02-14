@@ -4,10 +4,12 @@ import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
+  Keyboard,
   Platform,
   ScrollView,
   Share,
@@ -16,13 +18,41 @@ import {
 } from "react-native";
 import {
   ActivityIndicator,
+  Button,
   IconButton,
   Text,
+  TextInput,
   useTheme,
 } from "react-native-paper";
 
 const IMAGE_INTERVAL = 3000; // ms between transitions
 const FADE_DURATION = 1000;
+
+const reflectionQuestionSets = {
+  presence_trust: [
+    "Where did you see God in this moment?",
+    "What does this show you about His character?",
+    "How does this shape the way you trust Him now?",
+  ],
+
+  gratitude_anchor: [
+    "What stands out most to you about this moment?",
+    "What are you thankful for as you remember it?",
+    "What would you want to remember about this in the future?",
+  ],
+
+  faith_movement: [
+    "How did you see God move in this situation?",
+    "What did it require of your faith?",
+    "How does this influence the way you walk forward today?",
+  ],
+
+  peace_assurance: [
+    "What part of this moment means the most to you?",
+    "What does this remind you about God's faithfulness?",
+    "How does remembering this bring you peace today?",
+  ],
+};
 
 export default function TestimonyDisplayModal() {
   const { id, reminderId } = useLocalSearchParams<{
@@ -42,6 +72,18 @@ export default function TestimonyDisplayModal() {
   const fadeOutAnim = useRef(new Animated.Value(1)).current;
   const [imageIndex, setImageIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState(1);
+
+  const [isReflecting, setIsReflecting] = useState(false);
+  const [reflectionStep, setReflectionStep] = useState(0);
+  const [reflectionAnswers, setReflectionAnswers] = useState<string[]>([
+    "",
+    "",
+    "",
+  ]);
+  const [savingReflection, setSavingReflection] = useState(false);
+  const [isReflectionComplete, setIsReflectionComplete] = useState(false);
+  const [reflectionQuestions, setReflectionQuestions] = useState<string[]>([]);
+  const [reflectionSetKey, setReflectionSetKey] = useState<string | null>(null);
 
   const titleOptions = [
     "Remember this moment?",
@@ -89,6 +131,25 @@ export default function TestimonyDisplayModal() {
     markReminderNotificationsRead();
   }, [reminderId]);
 
+  const transition = useRef(new Animated.Value(0)).current;
+  // 0 = testimony view, 1 = reflection view
+  const completeTransition = useRef(new Animated.Value(0)).current;
+
+  const animateTo = (toReflection: boolean) => {
+    Animated.timing(transition, {
+      toValue: toReflection ? 1 : 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  };
+  const animateCompleteTo = (toComplete: boolean) => {
+    Animated.timing(completeTransition, {
+      toValue: toComplete ? 1 : 0,
+      duration: 280,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const fetchTestimony = useCallback(async () => {
     if (!id) return;
 
@@ -113,6 +174,79 @@ export default function TestimonyDisplayModal() {
   useEffect(() => {
     fetchTestimony();
   }, [fetchTestimony]);
+
+  const startReflection = () => {
+    const { key, questions } = getRandomReflectionSet();
+
+    setReflectionSetKey(key);
+    setReflectionQuestions(questions);
+
+    setReflectionAnswers(["", "", ""]);
+    setReflectionStep(0);
+    setIsReflectionComplete(false);
+    completeTransition.setValue(0);
+
+    setIsReflecting(true);
+    animateTo(true);
+  };
+
+  const updateAnswer = (index: number, text: string) => {
+    setReflectionAnswers((prev) => {
+      const next = [...prev];
+      next[index] = text;
+      return next;
+    });
+  };
+
+  const goNext = () => {
+    Keyboard.dismiss();
+    setReflectionStep((s) => Math.min(s + 1, reflectionQuestions.length - 1));
+  };
+
+  const finishReflection = async () => {
+    Keyboard.dismiss();
+
+    // ✅ Check if every answer is empty or whitespace
+    const hasAnyContent = reflectionAnswers.some(
+      (answer) => answer.trim().length > 0
+    );
+
+    try {
+      if (hasAnyContent) {
+        setSavingReflection(true);
+
+        const { error } = await supabase
+          .from("testimony_reflection")
+          .insert({
+            testimony_uuid: testimony?.uuid,
+            user_uuid: user?.uuid,
+            response_data: {
+              responses: reflectionQuestions.map((question, index) => ({
+                question,
+                answer: reflectionAnswers[index].trim(),
+              })),
+            },
+          })
+          .select("uuid")
+          .single();
+
+        if (error) throw error;
+      }
+
+      // ✅ Always show completion screen
+      setIsReflectionComplete(true);
+      animateCompleteTo(true);
+    } catch (error: any) {
+      console.error("Error saving response:", error);
+      Alert.alert(error.message || "Failed to save response.");
+    } finally {
+      setSavingReflection(false);
+    }
+  };
+
+  const handleClose = () => {
+    router.back();
+  };
 
   const handleShare = async () => {
     if (!testimony) return;
@@ -144,6 +278,19 @@ export default function TestimonyDisplayModal() {
       month: "long",
       day: "numeric",
     });
+
+  const getRandomReflectionSet = () => {
+    const keys = Object.keys(reflectionQuestionSets);
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+
+    return {
+      key: randomKey,
+      questions:
+        reflectionQuestionSets[
+          randomKey as keyof typeof reflectionQuestionSets
+        ],
+    };
+  };
 
   useEffect(() => {
     if (!hasMultipleImages) return;
@@ -227,14 +374,191 @@ export default function TestimonyDisplayModal() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.text}>“{testimony.text}”</Text>
+        <View style={{ width: "100%", alignItems: "center" }}>
+          {/* TESTIMONY VIEW */}
+          <Animated.View
+            pointerEvents={isReflecting ? "none" : "auto"}
+            style={{
+              width: "100%",
+              opacity: transition.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
+              transform: [
+                {
+                  translateY: transition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -10],
+                  }),
+                },
+              ],
+            }}
+          >
+            <Text style={styles.text}>“{testimony.text}”</Text>
 
-        {testimony.bible_verse && (
-          <Text style={styles.verse}>{testimony.bible_verse}</Text>
-        )}
+            {testimony.bible_verse && (
+              <Text style={styles.verse}>{testimony.bible_verse}</Text>
+            )}
 
-        <Text style={styles.author}>— {testimony.user.full_name}</Text>
-        <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
+            <Text style={styles.author}>— {testimony.user.full_name}</Text>
+            <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
+
+            <View style={{ marginTop: 28 }} />
+            <Button
+              mode="contained"
+              style={{ alignSelf: "center" }}
+              onPress={startReflection}
+            >
+              Start Reflection
+            </Button>
+            <Button
+              mode="text"
+              textColor="#e6e6e6"
+              style={{ marginTop: 8 }}
+              onPress={handleClose}
+            >
+              Close
+            </Button>
+          </Animated.View>
+
+          {/* REFLECTION VIEW */}
+          {isReflecting && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                width: "100%",
+              }}
+            >
+              {/* --- Reflection content (fades out when complete) --- */}
+              <Animated.View
+                pointerEvents={isReflectionComplete ? "none" : "auto"}
+                style={{
+                  width: "100%",
+                  opacity: Animated.multiply(
+                    transition.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 1],
+                    }),
+                    completeTransition.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 0],
+                    })
+                  ),
+                  transform: [
+                    {
+                      translateY: completeTransition.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, -10],
+                      }),
+                    },
+                  ],
+                }}
+              >
+                <Text style={styles.reflectionStep}>
+                  Reflection {reflectionStep + 1} of{" "}
+                  {reflectionQuestions.length}
+                </Text>
+
+                <Text style={styles.reflectionQuestion}>
+                  {reflectionQuestions[reflectionStep]}
+                </Text>
+
+                <TextInput
+                  key={`reflection-input-${reflectionStep}`}
+                  mode="outlined"
+                  value={reflectionAnswers[reflectionStep]}
+                  onChangeText={(text) => updateAnswer(reflectionStep, text)}
+                  multiline
+                  numberOfLines={6}
+                  placeholder="Your response..."
+                  style={styles.reflectionInput}
+                  textColor={theme.colors.ink}
+                  placeholderTextColor="rgba(63, 36, 21, 0.65)"
+                  maxLength={1200}
+                  editable={!savingReflection}
+                />
+
+                <View style={styles.reflectionButtons}>
+                  {reflectionStep < reflectionQuestions.length - 1 ? (
+                    <Button
+                      mode="contained"
+                      onPress={goNext}
+                      style={{ flex: 1 }}
+                      disabled={savingReflection}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      mode="contained"
+                      onPress={finishReflection}
+                      loading={savingReflection}
+                      disabled={savingReflection}
+                      style={{ flex: 1 }}
+                    >
+                      Finish
+                    </Button>
+                  )}
+                </View>
+
+                {!savingReflection && (
+                  <Button
+                    mode="text"
+                    textColor="#e6e6e6"
+                    style={{ marginTop: 8 }}
+                    onPress={handleClose}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </Animated.View>
+
+              {/* --- Completion content (fades in) --- */}
+              {isReflectionComplete && (
+                <Animated.View
+                  pointerEvents={isReflectionComplete ? "auto" : "none"}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    width: "100%",
+                    opacity: completeTransition.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 1],
+                    }),
+                    transform: [
+                      {
+                        translateY: completeTransition.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [10, 0],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <Text style={styles.completeTitle}>Reflection complete.</Text>
+                  <Text style={styles.completeSubtitle}>
+                    Thanks for taking a moment to remember what God has done.
+                  </Text>
+
+                  <View style={{ marginTop: 18 }} />
+
+                  <Button
+                    mode="contained"
+                    onPress={handleClose}
+                    style={{ alignSelf: "center" }}
+                  >
+                    Close
+                  </Button>
+                </Animated.View>
+              )}
+            </View>
+          )}
+        </View>
       </ScrollView>
 
       {/* Footer */}
@@ -295,6 +619,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   verse: {
+    textAlign: "center",
     fontSize: 16,
     fontStyle: "italic",
     color: "#fff",
@@ -302,20 +627,63 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   author: {
+    textAlign: "center",
     marginTop: 28,
     fontSize: 16,
     fontWeight: "500",
     color: "#fff",
   },
   date: {
+    textAlign: "center",
     fontSize: 14,
     opacity: 0.8,
     color: "#fff",
     marginTop: 4,
   },
+  reflectionStep: {
+    fontSize: 13,
+    color: "#fff",
+    opacity: 0.85,
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  reflectionQuestion: {
+    fontSize: 18,
+    fontFamily: "PTSerifRegular",
+    lineHeight: 26,
+    color: "#fff",
+    marginBottom: 14,
+  },
+  reflectionInput: {
+    width: "100%",
+    backgroundColor: "rgba(255,255,255,0.90)",
+    borderRadius: 12,
+    minHeight: 100,
+  },
+  reflectionButtons: {
+    flexDirection: "row",
+    width: "100%",
+    marginTop: 12,
+  },
   footer: {
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 30,
+  },
+  completeTitle: {
+    textAlign: "center",
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "PTSerifRegular",
+    color: "#fff",
+  },
+  completeSubtitle: {
+    textAlign: "center",
+    marginTop: 10,
+    fontSize: 16,
+    lineHeight: 20,
+    color: "#fff",
+    opacity: 0.9,
   },
 });
