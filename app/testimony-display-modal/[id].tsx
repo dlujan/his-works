@@ -55,9 +55,10 @@ const reflectionQuestionSets = {
 };
 
 export default function TestimonyDisplayModal() {
-  const { id, reminderId } = useLocalSearchParams<{
+  const { id, reminderId, notificationIsRead } = useLocalSearchParams<{
     id?: string;
     reminderId?: string;
+    notificationIsRead?: string;
   }>();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -83,7 +84,7 @@ export default function TestimonyDisplayModal() {
   const [savingReflection, setSavingReflection] = useState(false);
   const [isReflectionComplete, setIsReflectionComplete] = useState(false);
   const [reflectionQuestions, setReflectionQuestions] = useState<string[]>([]);
-  const [reflectionSetKey, setReflectionSetKey] = useState<string | null>(null);
+  const [reflectionExists, setReflectionExists] = useState(false);
 
   const titleOptions = [
     "Remember this moment?",
@@ -109,7 +110,8 @@ export default function TestimonyDisplayModal() {
   }, []);
 
   useEffect(() => {
-    if (!reminderId) return;
+    const isRead = !!notificationIsRead && notificationIsRead === "true";
+    if (!reminderId || isRead) return;
 
     const markReminderNotificationsRead = async () => {
       const { error } = await supabase
@@ -129,7 +131,40 @@ export default function TestimonyDisplayModal() {
     };
 
     markReminderNotificationsRead();
-  }, [reminderId]);
+  }, [reminderId, notificationIsRead]);
+
+  useEffect(() => {
+    if (!reminderId || !user?.uuid) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const checkExistingReflection = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("testimony_reflection")
+          .select("uuid")
+          .eq("user_uuid", user.uuid)
+          .eq("reminder_uuid", reminderId)
+          .single();
+
+        if (error) throw error;
+        if (!cancelled) {
+          setReflectionExists(!!data);
+        }
+      } catch (e) {
+        console.warn("Failed to check reminder reflection:", e);
+        if (!cancelled) setReflectionExists(false);
+      }
+    };
+
+    checkExistingReflection();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reminderId, user?.uuid]);
 
   const transition = useRef(new Animated.Value(0)).current;
   // 0 = testimony view, 1 = reflection view
@@ -178,7 +213,6 @@ export default function TestimonyDisplayModal() {
   const startReflection = () => {
     const { key, questions } = getRandomReflectionSet();
 
-    setReflectionSetKey(key);
     setReflectionQuestions(questions);
 
     setReflectionAnswers(["", "", ""]);
@@ -226,6 +260,7 @@ export default function TestimonyDisplayModal() {
           .insert({
             testimony_uuid: testimony?.uuid,
             user_uuid: user?.uuid,
+            reminder_uuid: reminderId,
             response_data: {
               responses: reflectionQuestions.map((question, index) => ({
                 question,
@@ -410,13 +445,15 @@ export default function TestimonyDisplayModal() {
             <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
 
             <View style={{ marginTop: 28 }} />
-            <Button
-              mode="contained"
-              style={{ alignSelf: "center" }}
-              onPress={startReflection}
-            >
-              Start Reflection
-            </Button>
+            {!reflectionExists && (
+              <Button
+                mode="contained"
+                style={{ alignSelf: "center" }}
+                onPress={startReflection}
+              >
+                Start Reflection
+              </Button>
+            )}
             <Button
               mode="text"
               textColor="#e6e6e6"

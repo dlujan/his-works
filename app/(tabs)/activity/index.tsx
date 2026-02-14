@@ -41,7 +41,14 @@ export default function ActivityScreen() {
   const handleOpenItem = async (notification: AppNotification) => {
     const { type, data } = notification;
     if (type === AppNotificationType.REMINDER && data.testimony_uuid) {
-      router.push(`/testimony-display-modal/${data.testimony_uuid}`);
+      router.push({
+        pathname: "/testimony-display-modal/[id]",
+        params: {
+          id: data.testimony_uuid,
+          reminderId: data.reminder_uuid,
+          notificationIsRead: String(notification.read),
+        },
+      });
       await markerNotificationAsRead(notification);
     }
   };
