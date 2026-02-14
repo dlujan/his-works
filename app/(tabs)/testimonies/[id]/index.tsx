@@ -773,11 +773,11 @@ export default function EditTestimonyScreen() {
             >
               Save changes
             </Button>
-            <Button
+            {/* <Button
               onPress={() => router.push(`/testimony-display-modal/${id}`)}
             >
               Preview
-            </Button>
+            </Button> */}
             <Button
               mode="text"
               textColor={theme.colors.error}
