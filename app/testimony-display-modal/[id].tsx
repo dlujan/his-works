@@ -190,6 +190,12 @@ export default function TestimonyDisplayModal() {
     animateTo(true);
   };
 
+  const cancelReflection = () => {
+    completeTransition.setValue(0);
+    setIsReflecting(false);
+    animateTo(false);
+  };
+
   const updateAnswer = (index: number, text: string) => {
     setReflectionAnswers((prev) => {
       const next = [...prev];
@@ -509,7 +515,7 @@ export default function TestimonyDisplayModal() {
                     mode="text"
                     textColor="#e6e6e6"
                     style={{ marginTop: 8 }}
-                    onPress={handleClose}
+                    onPress={cancelReflection}
                   >
                     Cancel
                   </Button>
