@@ -411,198 +411,193 @@ export default function TestimonyDisplayModal() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={{ width: "100%", alignItems: "center" }}>
-          {/* TESTIMONY VIEW */}
-          <Animated.View
-            pointerEvents={isReflecting ? "none" : "auto"}
-            style={{
-              width: "100%",
-              opacity: transition.interpolate({
-                inputRange: [0, 1],
-                outputRange: [1, 0],
-              }),
-              transform: [
-                {
-                  translateY: transition.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -10],
-                  }),
-                },
-              ],
-            }}
+      <View style={styles.content}>
+        {/* --- TESTIMONY (scrollable) --- */}
+        {!isReflecting && (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.text}>“{testimony.text}”</Text>
-
-            {testimony.bible_verse && (
-              <Text style={styles.verse}>{testimony.bible_verse}</Text>
-            )}
-
-            <Text style={styles.author}>— {testimony.user.full_name}</Text>
-            <Text style={styles.date}>{formatDate(testimony.created_at)}</Text>
-
-            <View style={{ marginTop: 28 }} />
-            {!reflectionExists && (
-              <Button
-                mode="contained"
-                style={{ alignSelf: "center" }}
-                onPress={startReflection}
-              >
-                Start Reflection
-              </Button>
-            )}
-            <Button
-              mode="text"
-              textColor="#e6e6e6"
-              style={{ marginTop: 8 }}
-              onPress={handleClose}
-            >
-              Close
-            </Button>
-          </Animated.View>
-
-          {/* REFLECTION VIEW */}
-          {isReflecting && (
-            <View
+            <Animated.View
+              pointerEvents="auto"
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
                 width: "100%",
+                opacity: transition.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0],
+                }),
+                transform: [
+                  {
+                    translateY: transition.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -10],
+                    }),
+                  },
+                ],
               }}
             >
-              {/* --- Reflection content (fades out when complete) --- */}
-              <Animated.View
-                pointerEvents={isReflectionComplete ? "none" : "auto"}
-                style={{
-                  width: "100%",
-                  opacity: Animated.multiply(
-                    transition.interpolate({
+              <Text style={styles.text}>“{testimony.text}”</Text>
+
+              {testimony.bible_verse && (
+                <Text style={styles.verse}>{testimony.bible_verse}</Text>
+              )}
+
+              <Text style={styles.author}>— {testimony.user.full_name}</Text>
+              <Text style={styles.date}>
+                {formatDate(testimony.created_at)}
+              </Text>
+
+              <View style={{ marginTop: 28 }} />
+              {!reflectionExists && (
+                <Button
+                  mode="contained"
+                  style={{ alignSelf: "center" }}
+                  onPress={startReflection}
+                >
+                  Start Reflection
+                </Button>
+              )}
+              <Button
+                mode="text"
+                textColor="#e6e6e6"
+                style={{ marginTop: 8 }}
+                onPress={handleClose}
+              >
+                Close
+              </Button>
+            </Animated.View>
+          </ScrollView>
+        )}
+
+        {/* --- REFLECTION / COMPLETE (NOT scrollable) --- */}
+        {isReflecting && (
+          <View style={{ width: "100%", alignItems: "center" }}>
+            {/* Reflection content (fades out when complete) */}
+            <Animated.View
+              pointerEvents={isReflectionComplete ? "none" : "auto"}
+              style={{
+                width: "100%",
+                opacity: Animated.multiply(
+                  transition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  }),
+                  completeTransition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 0],
+                  })
+                ),
+                transform: [
+                  {
+                    translateY: completeTransition.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0, 1],
+                      outputRange: [0, -10],
                     }),
-                    completeTransition.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [1, 0],
-                    })
-                  ),
+                  },
+                ],
+              }}
+            >
+              <Text style={styles.reflectionStep}>
+                Reflection {reflectionStep + 1} of {reflectionQuestions.length}
+              </Text>
+
+              <Text style={styles.reflectionQuestion}>
+                {reflectionQuestions[reflectionStep]}
+              </Text>
+
+              <TextInput
+                key={`reflection-input-${reflectionStep}`}
+                mode="outlined"
+                value={reflectionAnswers[reflectionStep]}
+                onChangeText={(text) => updateAnswer(reflectionStep, text)}
+                multiline
+                numberOfLines={6}
+                placeholder="Your response..."
+                style={styles.reflectionInput}
+                textColor={theme.colors.ink}
+                placeholderTextColor="rgba(63, 36, 21, 0.65)"
+                maxLength={1200}
+                editable={!savingReflection}
+              />
+
+              <View style={styles.reflectionButtons}>
+                {reflectionStep < reflectionQuestions.length - 1 ? (
+                  <Button
+                    mode="contained"
+                    onPress={goNext}
+                    style={{ flex: 1 }}
+                    disabled={savingReflection}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    mode="contained"
+                    onPress={finishReflection}
+                    loading={savingReflection}
+                    disabled={savingReflection}
+                    style={{ flex: 1 }}
+                  >
+                    Finish
+                  </Button>
+                )}
+              </View>
+
+              {!savingReflection && (
+                <Button
+                  mode="text"
+                  textColor="#e6e6e6"
+                  style={{ marginTop: 8 }}
+                  onPress={cancelReflection}
+                >
+                  Cancel
+                </Button>
+              )}
+            </Animated.View>
+
+            {/* Completion content (fades in) */}
+            {isReflectionComplete && (
+              <Animated.View
+                pointerEvents="auto"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  width: "100%",
+                  opacity: completeTransition.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  }),
                   transform: [
                     {
                       translateY: completeTransition.interpolate({
                         inputRange: [0, 1],
-                        outputRange: [0, -10],
+                        outputRange: [10, 0],
                       }),
                     },
                   ],
                 }}
               >
-                <Text style={styles.reflectionStep}>
-                  Reflection {reflectionStep + 1} of{" "}
-                  {reflectionQuestions.length}
+                <Text style={styles.completeTitle}>Reflection complete.</Text>
+                <Text style={styles.completeSubtitle}>
+                  Thanks for taking a moment to remember what God has done.
                 </Text>
 
-                <Text style={styles.reflectionQuestion}>
-                  {reflectionQuestions[reflectionStep]}
-                </Text>
+                <View style={{ marginTop: 18 }} />
 
-                <TextInput
-                  key={`reflection-input-${reflectionStep}`}
-                  mode="outlined"
-                  value={reflectionAnswers[reflectionStep]}
-                  onChangeText={(text) => updateAnswer(reflectionStep, text)}
-                  multiline
-                  numberOfLines={6}
-                  placeholder="Your response..."
-                  style={styles.reflectionInput}
-                  textColor={theme.colors.ink}
-                  placeholderTextColor="rgba(63, 36, 21, 0.65)"
-                  maxLength={1200}
-                  editable={!savingReflection}
-                />
-
-                <View style={styles.reflectionButtons}>
-                  {reflectionStep < reflectionQuestions.length - 1 ? (
-                    <Button
-                      mode="contained"
-                      onPress={goNext}
-                      style={{ flex: 1 }}
-                      disabled={savingReflection}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      mode="contained"
-                      onPress={finishReflection}
-                      loading={savingReflection}
-                      disabled={savingReflection}
-                      style={{ flex: 1 }}
-                    >
-                      Finish
-                    </Button>
-                  )}
-                </View>
-
-                {!savingReflection && (
-                  <Button
-                    mode="text"
-                    textColor="#e6e6e6"
-                    style={{ marginTop: 8 }}
-                    onPress={cancelReflection}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </Animated.View>
-
-              {/* --- Completion content (fades in) --- */}
-              {isReflectionComplete && (
-                <Animated.View
-                  pointerEvents={isReflectionComplete ? "auto" : "none"}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    width: "100%",
-                    opacity: completeTransition.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 1],
-                    }),
-                    transform: [
-                      {
-                        translateY: completeTransition.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [10, 0],
-                        }),
-                      },
-                    ],
-                  }}
+                <Button
+                  mode="contained"
+                  onPress={handleClose}
+                  style={{ alignSelf: "center" }}
                 >
-                  <Text style={styles.completeTitle}>Reflection complete.</Text>
-                  <Text style={styles.completeSubtitle}>
-                    Thanks for taking a moment to remember what God has done.
-                  </Text>
-
-                  <View style={{ marginTop: 18 }} />
-
-                  <Button
-                    mode="contained"
-                    onPress={handleClose}
-                    style={{ alignSelf: "center" }}
-                  >
-                    Close
-                  </Button>
-                </Animated.View>
-              )}
-            </View>
-          )}
-        </View>
-      </ScrollView>
+                  Close
+                </Button>
+              </Animated.View>
+            )}
+          </View>
+        )}
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -647,13 +642,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 24,
   },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  content: {
+    flex: 1,
+    paddingVertical: 20,
     paddingHorizontal: 28,
-    paddingVertical: 60,
   },
+  scrollContent: {},
   text: {
     fontSize: 22,
     lineHeight: 34,
