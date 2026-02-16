@@ -12,6 +12,7 @@ export type User = {
     timeOfDay: "morning" | "evening";
   };
   is_suspended: boolean;
+  last_review_prompt_date?: string;
   following: Follow[];
   followers: Follow[];
 };

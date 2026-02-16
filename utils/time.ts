@@ -66,3 +66,15 @@ export function formatTimeUntil(date: string) {
   const years = Math.floor(days / 365);
   return `in ${years}y`;
 }
+
+export function isAtLeastThreeMonthsAgo(dateString?: string | null) {
+  if (!dateString) return false;
+
+  const lastPrompt = new Date(dateString);
+  const now = new Date();
+
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+  return lastPrompt <= threeMonthsAgo;
+}

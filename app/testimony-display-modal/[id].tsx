@@ -2,6 +2,8 @@ import type { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
 import { Testimony } from "@/lib/types";
+import { requestReviewOrFallback } from "@/utils/request-store-review";
+import { isAtLeastThreeMonthsAgo } from "@/utils/time";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
@@ -61,7 +63,7 @@ export default function TestimonyDisplayModal() {
     notificationIsRead?: string;
   }>();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const theme = useTheme<AppTheme>();
 
   const [testimony, setTestimony] = useState<Testimony | null>(null);
@@ -277,11 +279,45 @@ export default function TestimonyDisplayModal() {
       // ✅ Always show completion screen
       setIsReflectionComplete(true);
       animateCompleteTo(true);
+
+      setTimeout(() => {
+        checkIfPromptAppStoreReview();
+      }, 1500);
     } catch (error: any) {
       console.error("Error saving response:", error);
       Alert.alert(error.message || "Failed to save response.");
     } finally {
       setSavingReflection(false);
+    }
+  };
+
+  const checkIfPromptAppStoreReview = async () => {
+    const shouldPromptReview =
+      !user?.last_review_prompt_date ||
+      (user.last_review_prompt_date &&
+        isAtLeastThreeMonthsAgo(user.last_review_prompt_date));
+
+    const today = new Date().toISOString();
+    if (shouldPromptReview) {
+      try {
+        // prompt review
+        await requestReviewOrFallback();
+
+        // update records
+        const { error: updateError } = await supabase
+          .from("user")
+          .update({
+            last_review_prompt_date: today,
+          })
+          .eq("uuid", user?.uuid);
+
+        if (updateError) throw updateError;
+
+        //@ts-ignore
+        setUser((prev) => ({ ...prev, last_review_prompt_date: today }));
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
