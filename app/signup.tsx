@@ -1,12 +1,18 @@
 import { AppTheme } from "@/constants/paper-theme";
 import { useAuth } from "@/context/auth-context";
 import { supabase } from "@/lib/supabase";
+import Checkbox from "expo-checkbox";
 import { useRouter } from "expo-router";
+import {
+  openBrowserAsync,
+  WebBrowserPresentationStyle,
+} from "expo-web-browser";
 import { useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   View,
 } from "react-native";
@@ -26,6 +32,7 @@ export default function SignupScreen() {
   // const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,10 +40,12 @@ export default function SignupScreen() {
     email.trim().length > 0 &&
     password.length > 0 &&
     // name.trim().length > 0 &&
+    agreedToTerms &&
     !loading;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+
     try {
       setLoading(true);
       setError(null);
@@ -134,6 +143,39 @@ export default function SignupScreen() {
             submitBehavior="blurAndSubmit"
             onSubmitEditing={Keyboard.dismiss}
           />
+
+          <Pressable
+            onPress={() => setAgreedToTerms((prev) => !prev)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <Checkbox
+              value={agreedToTerms}
+              onValueChange={setAgreedToTerms}
+              color={agreedToTerms ? theme.colors.primary : undefined}
+            />
+
+            <Text style={{ flex: 1 }}>
+              I agree to the{" "}
+              <Text
+                style={{ color: "#2563EB" }}
+                onPress={async () =>
+                  await openBrowserAsync(
+                    "https://github.com/dlujan/his-works/blob/main/TERMS_OF_USE.md",
+                    {
+                      presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+                    }
+                  )
+                }
+              >
+                Terms of Use
+              </Text>
+              .
+            </Text>
+          </Pressable>
 
           {error && (
             <HelperText
