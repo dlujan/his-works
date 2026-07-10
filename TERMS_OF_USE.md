@@ -44,13 +44,16 @@ You retain ownership of the content you create and post in HisWorks (“User Con
 
 By submitting public testimonies, you grant HisWorks a **non-exclusive, royalty-free license** to display that content within the App so that others can view and interact with it.
 
-You agree that:
+You agree that all content you submit:
 
-- Your content will not include hateful, harmful, or inappropriate material.
-- You have the right to share any content you post.
-- You will respect others’ content and privacy.
+- Is truthful to the best of your knowledge.
+- Does not violate the rights or privacy of others.
+- Does not contain unlawful, defamatory, hateful, harassing, threatening, sexually explicit, violent, or otherwise objectionable material.
+- Does not promote abuse, discrimination, or illegal activity.
 
-We reserve the right to remove or moderate content that violates these terms or the spirit of the HisWorks community.
+**HisWorks has zero tolerance for objectionable content or abusive users.**
+
+Users may report content or accounts they believe violate these Terms. Reports are reviewed promptly, and we strive to review and take appropriate action within **24 hours** of receiving a report. If we determine that content violates these Terms, we may remove the content immediately. Users who post objectionable content or engage in abusive behavior may have their accounts suspended or permanently terminated without prior notice.
 
 ---
 
@@ -58,12 +61,14 @@ We reserve the right to remove or moderate content that violates these terms or 
 
 You agree **not to**:
 
-- Use the App for unlawful purposes
-- Harass or harm other users
-- Upload spam, malware, or unauthorized data
-- Interfere with the operation or security of the App
+- Use the App for any unlawful purpose.
+- Harass, bully, threaten, impersonate, or abuse other users.
+- Post content that is hateful, discriminatory, obscene, sexually explicit, violent, or otherwise objectionable.
+- Upload spam, malware, fraudulent content, or unauthorized data.
+- Attempt to interfere with the operation, security, or integrity of the App.
+- Circumvent moderation, enforcement, or safety measures.
 
-We may suspend or terminate access for users who violate these terms.
+HisWorks reserves the right to investigate suspected violations of these Terms. We may remove content, restrict features, suspend accounts, or permanently terminate accounts that violate these Terms or otherwise threaten the safety of the HisWorks community.
 
 ---
 
@@ -103,10 +108,14 @@ Continued use of the App after changes take effect constitutes your acceptance o
 
 ## 10. Contact Us
 
-If you have questions about these Terms, please contact:
+If you have questions about these Terms, or need assistance with the App, you may contact us at:
 
 **Frank D. Lujan**  
 📧 [daniel.lujan96@gmail.com](mailto:daniel.lujan96@gmail.com)
+
+Users can report objectionable content or abusive behavior directly within the App using the available reporting features. Reports are reviewed promptly, and we strive to take appropriate action within **24 hours**, including removing content that violates these Terms and, when appropriate, suspending or permanently terminating the responsible user's account.
+
+You may also contact us by email if you have questions or concerns regarding content moderation or these Terms.
 
 ---
 
